@@ -34,6 +34,11 @@ class Program extends Model
         return $this->hasMany(Activity::class, 'subject_id')->where('log_name', 'Program')->orderBy('id', 'desc');
     }
 
+    public function activities(): HasMany
+    {
+        return $this->hasMany(ProgramActivity::class, 'program_id', 'id');
+    }
+
     public function status(): BelongsTo
     {
         return $this->belongsTo(ProgramStatus::class, 'program_status_id');
