@@ -14,6 +14,8 @@ return new class extends Migration
         Schema::create('project_statuses', function (Blueprint $table) {
             $table->id();
             $table->string('title');
+            $table->string('color')->default('#cecece');
+            $table->boolean('is_default')->default(false);
             $table->timestamps();
         });
     }

@@ -16,7 +16,6 @@ return new class extends Migration
             $table->string('title');
             $table->string('color')->default('#cecece');
             $table->boolean('is_default')->default(false);
-            $table->tinyInteger('order');
             $table->timestamps();
         });
     }

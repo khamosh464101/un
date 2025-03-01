@@ -19,10 +19,10 @@ class DatabaseSeeder extends Seeder
         // $this->call([ProgramStatusSeeder::class]);
         // User::factory(10)->create();
 
-        // User::factory()->create([
-        //     'name' => 'Test User',
-        //     'email' => 'azim@momtaz.af',
-        //     'password' => bcrypt('azim12azim'),
-        // ]);
+        User::factory()->create([
+            'name' => 'Test User',
+            'email' => 'azim@momtaz.af',
+            'password' => bcrypt('azim12azim'),
+        ]);
     }
 }

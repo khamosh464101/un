@@ -11,15 +11,18 @@ use Modules\Projects\Http\Controllers\ProgramStatusController;
     return $request->user();
 });
 Route::middleware(['auth:sanctum', 'twofactor'])->group(function () {
-    
-    Route::resource('/api/programs-status', ProgramStatusController::class)->only(['index','store', 'update']);
+    Route::post('/api/programs-statuses', [ProgramStatusController::class, 'index']);
+    Route::get('/api/programs-statuses/select2', [ProgramStatusController::class, 'select2']);
+    Route::resource('/api/programs-status', ProgramStatusController::class)->only(['store', 'edit', 'update', 'destroy']);
     Route::post('/api/programs', [ProgramController::class, 'index']);
     Route::get('/api/programs/select2', [ProgramController::class, 'select2']);
     Route::resource('/api/program', ProgramController::class)->only(['store', 'edit', 'update', 'destroy']);
     Route::post('/api/donors', [DonorController::class, 'index']);
     Route::get('/api/donors/select2', [DonorController::class, 'select2']);
     Route::resource('/api/donor', DonorController::class)->only(['store', 'edit', 'update', 'destroy']);
-    Route::resource('/api/projects-status', ProjectStatusController::class)->only(['index','store', 'update']);
+    Route::post('/api/projects-statuses', [ProjectStatusController::class, 'index']);
+    Route::get('/api/projects-statuses/select2', [ProjectStatusController::class, 'select2']);
+    Route::resource('/api/projects-status', ProjectStatusController::class)->only(['store', 'edit', 'update', 'destroy']);
     Route::post('/api/projects', [ProjectController::class, 'index']);
     Route::resource('/api/project', ProjectController::class)->only(['store', 'edit', 'update', 'destroy']);
 
