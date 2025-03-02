@@ -3,6 +3,7 @@
 use Modules\Projects\Http\Controllers\ProgramStatusController;
  use Modules\Projects\Http\Controllers\ProjectController;
  use Modules\Projects\Http\Controllers\ProjectStatusController;
+ use Modules\Projects\Http\Controllers\StaffStatusController;
  use Modules\Projects\Http\Controllers\ProgramController;
  use Modules\Projects\Http\Controllers\DonorController;
  use Modules\Projects\Http\Controllers\DocumentController;
@@ -25,6 +26,9 @@ Route::middleware(['auth:sanctum', 'twofactor'])->group(function () {
     Route::resource('/api/projects-status', ProjectStatusController::class)->only(['store', 'edit', 'update', 'destroy']);
     Route::post('/api/projects', [ProjectController::class, 'index']);
     Route::resource('/api/project', ProjectController::class)->only(['store', 'edit', 'update', 'destroy']);
+    Route::post('/api/staffs-statuses', [StaffStatusController::class, 'index']);
+    Route::get('/api/staffs-statuses/select2', [StaffStatusController::class, 'select2']);
+    Route::resource('/api/staffs-status', StaffStatusController::class)->only(['store', 'edit', 'update', 'destroy']);
 
     // FILEPOND START
     Route::post('/api/document/upload', [DocumentController::class, 'process']);
