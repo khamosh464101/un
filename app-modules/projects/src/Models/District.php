@@ -4,10 +4,11 @@ namespace Modules\Projects\Models;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Distirct extends Model
+class District extends Model
 {
     use LogsActivity;
 
@@ -25,5 +26,10 @@ class Distirct extends Model
     public function province(): BelongsTo
     {
         return $this->belongsTo(Province::class);
+    }
+
+    public function gozars(): HasMany
+    {
+        return $this->hasMany(Gozar::class);
     }
 }

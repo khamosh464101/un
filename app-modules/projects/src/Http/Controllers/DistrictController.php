@@ -17,13 +17,17 @@ class DistrictController
  
         $search = $request->search;
         $sortBy = $request->sortBy;
-        $field = ($sortBy == 'Oldest' || $sortBy == 'Newest') ? 'id' : 'title';
+        $provinceId = $request->provinceId;
+        $field = ($sortBy == 'Oldest' || $sortBy == 'Newest') ? 'id' : 'name';
         $sortType = ($sortBy == 'Z - A' || $sortBy == 'Newest') ? 'DESC' : 'ASC';
-        $programs = District::with('gozars')->withCount('gozars')->when($search, function($query) use ($search) {
+        $programs = District::with('province')->with('gozars')->withCount('gozars')->when($search, function($query) use ($search) {
             $query->where('name', 'like', '%'.$search.'%')
             ->orWhere('name_fa', 'like', '%'.$search.'%')
             ->orWhere('name_pa', 'like', '%'.$search.'%')
             ->orWhere('code', 'like', '%'.$search.'%');
+        })
+        ->when($provinceId, function($query) use ($provinceId){
+            $query->where('province_id', $provinceId);
         })->orderBy($field, $sortType)->paginate(8);
         return response()->json($programs, 201);
     }
@@ -55,7 +59,7 @@ class DistrictController
 
         if ($district->gozars->count() > 0) {
             return response()->json([
-                'message' => 'Cannot delete the district because it has associated projects.'
+                'message' => 'Cannot delete the district because it has associated gozars.'
             ], 400);  // Return a 400 Bad Request status
         }
         

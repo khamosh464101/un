@@ -17,14 +17,14 @@ class ProvinceController
  
         $search = $request->search;
         $sortBy = $request->sortBy;
-        $field = ($sortBy == 'Oldest' || $sortBy == 'Newest') ? 'id' : 'title';
+        $field = ($sortBy == 'Oldest' || $sortBy == 'Newest') ? 'id' : 'name';
         $sortType = ($sortBy == 'Z - A' || $sortBy == 'Newest') ? 'DESC' : 'ASC';
         $provinces = Province::with('districts')->withCount('districts')->when($search, function($query) use ($search) {
             $query->where('name', 'like', '%'.$search.'%')
             ->orWhere('name_fa', 'like', '%'.$search.'%')
             ->orWhere('name_pa', 'like', '%'.$search.'%')
             ->orWhere('code', 'like', '%'.$search.'%');
-        })->orderBy($field, $sortType)->paginate(8);
+        })->orderBy($field, $sortType)->paginate(10);
         return response()->json($provinces, 201);
     }
     public function store(ProvinceRequest $request) {
@@ -55,7 +55,7 @@ class ProvinceController
 
         if ($province->districts->count() > 0) {
             return response()->json([
-                'message' => 'Cannot delete the province because it has associated projects.'
+                'message' => 'Cannot delete the province because it has associated districts.'
             ], 400);  // Return a 400 Bad Request status
         }
         
