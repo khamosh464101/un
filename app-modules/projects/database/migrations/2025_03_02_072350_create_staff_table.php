@@ -13,6 +13,16 @@ return new class extends Migration
     {
         Schema::create('staff', function (Blueprint $table) {
             $table->id();
+            $table->string('name');
+            $table->string('position_title');
+            $table->string('personal_email')->unique()->nullable();
+            $table->string('offcial_email')->unique();
+            $table->string('phone1');
+            $table->string('phone2')->nullable();
+            $table->string('photo');
+            $table->string('duty_station');
+            $table->date('date_of_joining')->nullable();
+            $table->text('about')->nullable();
             $table->foreignId('staff_status_id');
             $table->timestamps();
         });

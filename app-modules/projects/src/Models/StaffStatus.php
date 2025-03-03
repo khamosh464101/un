@@ -19,7 +19,8 @@ class StaffStatus extends Model
         return LogOptions::defaults()
         ->logOnly(['title'])
         ->useLogName('Staff Status')
-        ->logOnlyDirty();
+        ->logOnlyDirty()
+        ->setDescriptionForEvent(fn(string $eventName) => "This Staff Status has been {$eventName} by ". Auth::user()->name);;
         // Chain fluent methods for configuration options
     }
 
