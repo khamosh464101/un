@@ -6,9 +6,11 @@ use Spatie\Activitylog\LogOptions;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Spatie\Activitylog\Models\Activity as Actvty;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
-
+use Auth;
+use Storage;
 class Staff extends Model
 {
     use LogsActivity;
@@ -18,6 +20,7 @@ class Staff extends Model
         'position_title',
         'personal_email',
         'official_email',
+        'photo',
         'phone1',
         'phone2',
         'duty_station',
@@ -55,11 +58,14 @@ class Staff extends Model
     {
         return $value ? asset("storage/$value") : asset('import/assets/post-pic-dummy.png');
     }
+    public function getDateOfJoiningAttribute($value) {
+        return Carbon::parse($value)->format('M d, Y');
+    }
     public function getCreatedAtAttribute($value) {
-        return Carbon::parse($value)->format('d, M Y');
+        return Carbon::parse($value)->format('M d, Y');
     }
     public function getUpdatedAtAttribute($value) {
-        return Carbon::parse($value)->format('d, M Y');
+        return Carbon::parse($value)->format('M d, Y');
     }
 
 

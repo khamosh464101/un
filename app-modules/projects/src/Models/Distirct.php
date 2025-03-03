@@ -11,8 +11,8 @@ class Distirct extends Model
 {
     use LogsActivity;
 
-    protected $fillable = ['title', 'province'];
-
+    protected $fillable = ['name', 'name_fa', 'name_pa', 'latitude', 'longitude', 'code', 'province_id'];
+    
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()

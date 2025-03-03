@@ -59,10 +59,10 @@ class Program extends Model
         return $value ? asset("storage/$value") : asset('import/assets/post-pic-dummy.png');
     }
     public function getCreatedAtAttribute($value) {
-        return Carbon::parse($value)->format('d, M Y');
+        return Carbon::parse($value)->format('M d, Y');
     }
     public function getUpdatedAtAttribute($value) {
-        return Carbon::parse($value)->format('d, M Y');
+        return Carbon::parse($value)->format('M d, Y');
     }
 
 

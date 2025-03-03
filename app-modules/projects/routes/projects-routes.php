@@ -1,10 +1,12 @@
 <?php
-
+use Modules\Projects\Http\Controllers\ProvinceController;
+use Modules\Projects\Http\Controllers\DistrictController;
 use Modules\Projects\Http\Controllers\ProgramStatusController;
  use Modules\Projects\Http\Controllers\ProjectController;
  use Modules\Projects\Http\Controllers\ProjectStatusController;
  use Modules\Projects\Http\Controllers\StaffStatusController;
  use Modules\Projects\Http\Controllers\ProgramController;
+ use Modules\Projects\Http\Controllers\StaffController;
  use Modules\Projects\Http\Controllers\DonorController;
  use Modules\Projects\Http\Controllers\DocumentController;
 
@@ -12,6 +14,12 @@ use Modules\Projects\Http\Controllers\ProgramStatusController;
     return $request->user();
 });
 Route::middleware(['auth:sanctum', 'twofactor'])->group(function () {
+    Route::post('/api/provinces', [ProvinceController::class, 'index']);
+    Route::get('/api/provinces/select2', [ProvinceController::class, 'select2']);
+    Route::resource('/api/province', ProvinceController::class)->only(['store', 'edit', 'update', 'destroy']);
+    Route::post('/api/districts', [DistrictController::class, 'index']);
+    Route::get('/api/districts/select2', [DistrictController::class, 'select2']);
+    Route::resource('/api/district', DistrictController::class)->only(['store', 'edit', 'update', 'destroy']);
     Route::post('/api/programs-statuses', [ProgramStatusController::class, 'index']);
     Route::get('/api/programs-statuses/select2', [ProgramStatusController::class, 'select2']);
     Route::resource('/api/programs-status', ProgramStatusController::class)->only(['store', 'edit', 'update', 'destroy']);
@@ -29,6 +37,9 @@ Route::middleware(['auth:sanctum', 'twofactor'])->group(function () {
     Route::post('/api/staffs-statuses', [StaffStatusController::class, 'index']);
     Route::get('/api/staffs-statuses/select2', [StaffStatusController::class, 'select2']);
     Route::resource('/api/staffs-status', StaffStatusController::class)->only(['store', 'edit', 'update', 'destroy']);
+    Route::get('/api/staffs/select2', [StaffController::class, 'select2']);
+    Route::post('/api/staffs', [StaffController::class, 'index']);
+    Route::resource('/api/staff', StaffController::class)->only(['store', 'edit', 'update', 'destroy']);
 
     // FILEPOND START
     Route::post('/api/document/upload', [DocumentController::class, 'process']);

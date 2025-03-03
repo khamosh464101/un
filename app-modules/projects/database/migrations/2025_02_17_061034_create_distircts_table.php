@@ -14,6 +14,11 @@ return new class extends Migration
         Schema::create('distircts', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('name_fa');
+            $table->string('name_pa');
+            $table->string('latitude');
+            $table->string('longitude');
+            $table->string('code')->nullable();
             $table->foreignId('province_id');
             $table->timestamps();
         });

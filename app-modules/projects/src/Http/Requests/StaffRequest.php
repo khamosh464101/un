@@ -25,14 +25,15 @@ class StaffRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'position_title' => ['required', 'string', 'max:255'],
-            'personal_email' => ['nullable', 'email', Rule::unique('staffs')->ignore($this?->route('staff'))],
-            'official_email' => ['required', 'email', Rule::unique('staffs')->ignore($this?->route('staff'))],
-            'phone1' => ['required', 'string', Rule::unique('staffs')->ignore($this?->route('staff'))],
-            'phone2' => ['nullable', 'string', Rule::unique('staffs')->ignore($this?->route('staff'))],
+            'personal_email' => ['nullable', 'email', Rule::unique('staff')->ignore($this?->route('staff'))],
+            'official_email' => ['required', 'email', Rule::unique('staff')->ignore($this?->route('staff'))],
+            'photo' => ['image', 'mimes:jpeg,png,jpg', 'max:1002', Rule::requiredIf(!$this?->route('staff'))],
+            'phone1' => ['required', 'string', Rule::unique('staff')->ignore($this?->route('staff'))],
+            'phone2' => ['nullable', 'string', Rule::unique('staff')->ignore($this?->route('staff'))],
             'duty_station' => ['required', 'string'],
             'date_of_joining' => 'nullable|date',
             'about' => 'nullable',
-            'staff_status_id'
+            'staff_status_id' => 'required'
 
         ];
     }

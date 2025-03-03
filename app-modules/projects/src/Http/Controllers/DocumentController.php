@@ -7,6 +7,7 @@ use File;
 use Modules\Projects\Models\Document;
 use Modules\Projects\Models\Program;
 use Modules\Projects\Models\Project;
+use Modules\Projects\Models\Staff;
 use Modules\Projects\Http\Requests\DocumentRequest;
 use Storage;
 use DB;
@@ -40,6 +41,11 @@ class DocumentController
         if ($request->type == 'Project') {
             $project = Project::find($request->id);
             $document = $project->documents()->create($data);
+            return response()->json($document, 201);
+        }
+        if ($request->type == 'Staff') {
+            $staff = Staff::find($request->id);
+            $document = $staff->documents()->create($data);
             return response()->json($document, 201);
         }
     }

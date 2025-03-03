@@ -11,7 +11,7 @@ class Province extends Model
 {
     use LogsActivity;
 
-    protected $fillable = ['name'];
+    protected $fillable = ['name', 'name_fa', 'name_pa', 'latitude', 'longitude', 'code'];
 
     public function getActivitylogOptions(): LogOptions
     {
