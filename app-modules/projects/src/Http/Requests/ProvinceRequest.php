@@ -29,7 +29,6 @@ class ProvinceRequest extends FormRequest
             'latitude' => 'required',
             'longitude' => 'required',
             'code' => ['nullable', 'string', 'max:255', Rule::unique('provinces')->ignore($this?->route('province'))],
-            
         ];
     }
 }
