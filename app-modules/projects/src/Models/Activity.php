@@ -14,7 +14,6 @@ class Activity extends Model
         'project_id',
         'status_id',
         'type_id',
-        'gozar_id',
         'staff_id'
     ];
 

@@ -11,8 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('subproject_districts', function (Blueprint $table) {
+        Schema::create('gozar_projects', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('gozar_id');
+            $table->foreignId('project_id');
             $table->timestamps();
         });
     }
@@ -22,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('subproject_districts');
+        Schema::dropIfExists('gozar_projects');
     }
 };

@@ -3,8 +3,34 @@
 namespace Modules\Projects\Models;
 
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
+use Auth;
 class Gozar extends Model
 {
-    protected $fillable = ['district_id'];
+    use LogsActivity;
+    
+    protected $fillable = ['name', 'name_fa', 'name_pa', 'latitude', 'longintude', 'district_id'];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+        ->logFillable()
+        ->useLogName('Gozar')
+        ->logOnlyDirty()
+        ->setDescriptionForEvent(fn(string $eventName) => "This Gozar has been {$eventName} by ". Auth::user()->name);
+        // Chain fluent methods for configuration options
+    }
+
+    public function district(): BelongsTo
+    {
+        return $this->belongsTo(District::class);
+    }
+
+    public function projects(): BelongsToMany
+    {
+        return $this->belongsToMany(Project::class);
+    }
 }

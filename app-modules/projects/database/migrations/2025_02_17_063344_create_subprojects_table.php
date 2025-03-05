@@ -21,7 +21,7 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->foreignId('partner_id');
             $table->foreignId('project_id');
-            $table->foreignId('type_id');
+            $table->foreignId('sub_project_type_id');
             $table->timestamps();
         });
     }

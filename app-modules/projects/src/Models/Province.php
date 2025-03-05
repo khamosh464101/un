@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-
+use Auth;
 class Province extends Model
 {
     use LogsActivity;
@@ -16,9 +16,10 @@ class Province extends Model
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-        ->logOnly(['name'])
+        ->logFillable()
         ->useLogName('Province')
-        ->logOnlyDirty();
+        ->logOnlyDirty()
+        ->setDescriptionForEvent(fn(string $eventName) => "This Province has been {$eventName} by ". Auth::user()->name);;
         // Chain fluent methods for configuration options
     }
 

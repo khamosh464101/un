@@ -14,6 +14,8 @@ return new class extends Migration
         Schema::create('subproject_types', function (Blueprint $table) {
             $table->id();
             $table->string('title');
+            $table->string('color')->default('#cecece');
+            $table->boolean('is_default')->default(false);
             $table->timestamps();
         });
     }

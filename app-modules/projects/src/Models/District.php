@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 use Illuminate\Database\Eloquent\Model;
-
+use Auth;
 class District extends Model
 {
     use LogsActivity;
@@ -19,7 +19,8 @@ class District extends Model
         return LogOptions::defaults()
         ->logFillable()
         ->useLogName('Dsitrict')
-        ->logOnlyDirty();
+        ->logOnlyDirty()
+        ->setDescriptionForEvent(fn(string $eventName) => "This District has been {$eventName} by ". Auth::user()->name);
         // Chain fluent methods for configuration options
     }
 
