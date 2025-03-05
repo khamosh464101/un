@@ -5,7 +5,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Carbon\Carbon;
-
+use Auth;
 use Illuminate\Database\Eloquent\Model;
 
 class StaffStatus extends Model

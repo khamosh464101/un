@@ -18,9 +18,8 @@ return new class extends Migration
             $table->dateTime('end_date')->nullable();
             $table->text('description')->nullable();
             $table->foreignId('project_id');
-            $table->foreignId('status_id');
-            $table->foreignId('type_id');
-            $table->foreignId('gozar_id')->nullable();
+            $table->foreignId('activity_status_id');
+            $table->foreignId('activity_type_id');
             $table->foreignId('staff_id');
             $table->timestamps();
         });
