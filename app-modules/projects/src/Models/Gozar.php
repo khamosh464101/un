@@ -10,19 +10,19 @@ use Spatie\Activitylog\LogOptions;
 use Auth;
 class Gozar extends Model
 {
-    use LogsActivity;
+    // use LogsActivity;
     
     protected $fillable = ['name', 'name_fa', 'name_pa', 'latitude', 'longitude', 'district_id'];
 
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-        ->logFillable()
-        ->useLogName('Gozar')
-        ->logOnlyDirty()
-        ->setDescriptionForEvent(fn(string $eventName) => "This Gozar has been {$eventName} by ". Auth::user()->name);
-        // Chain fluent methods for configuration options
-    }
+    // public function getActivitylogOptions(): LogOptions
+    // {
+    //     return LogOptions::defaults()
+    //     ->logFillable()
+    //     ->useLogName('Gozar')
+    //     ->logOnlyDirty()
+    //     ->setDescriptionForEvent(fn(string $eventName) => "This Gozar has been {$eventName} by ". Auth::user()->name);
+    //     // Chain fluent methods for configuration options
+    // }
 
     public function district(): BelongsTo
     {

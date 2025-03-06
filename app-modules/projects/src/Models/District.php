@@ -10,19 +10,19 @@ use Illuminate\Database\Eloquent\Model;
 use Auth;
 class District extends Model
 {
-    use LogsActivity;
+    // use LogsActivity;
 
     protected $fillable = ['name', 'name_fa', 'name_pa', 'latitude', 'longitude', 'code', 'province_id'];
     
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-        ->logFillable()
-        ->useLogName('Dsitrict')
-        ->logOnlyDirty()
-        ->setDescriptionForEvent(fn(string $eventName) => "This District has been {$eventName} by ". Auth::user()->name);
-        // Chain fluent methods for configuration options
-    }
+    // public function getActivitylogOptions(): LogOptions
+    // {
+    //     return LogOptions::defaults()
+    //     ->logFillable()
+    //     ->useLogName('Dsitrict')
+    //     ->logOnlyDirty()
+    //     ->setDescriptionForEvent(fn(string $eventName) => "This District has been {$eventName} by ". Auth::user()->name);
+    //     // Chain fluent methods for configuration options
+    // }
 
     public function province(): BelongsTo
     {

@@ -7,6 +7,8 @@ use App\Models\User;
 use Illuminate\Database\Seeder;
 use Modules\Projects\Database\Seeders\ProgramStatusSeeder;
 use Modules\Projects\Database\Seeders\ProjectStatusSeeder;
+use Modules\Projects\Database\Seeders\ProvinceSeeder;
+use Modules\Projects\Database\Seeders\GozarSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -15,14 +17,16 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        $this->call([GozarSeeder::class]);
+        // $this->call([ProvinceSeeder::class]);
         // $this->call([ProjectStatusSeeder::class]);
         // $this->call([ProgramStatusSeeder::class]);
         // User::factory(10)->create();
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'azim@momtaz.af',
-            'password' => bcrypt('azim12azim'),
-        ]);
+        // User::factory()->create([
+        //     'name' => 'Test User',
+        //     'email' => 'azim@momtaz.af',
+        //     'password' => bcrypt('azim12azim'),
+        // ]);
     }
 }

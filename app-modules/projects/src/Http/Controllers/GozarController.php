@@ -18,12 +18,17 @@ class GozarController
         $search = $request->search;
         $sortBy = $request->sortBy;
         $districtId = $request->districtId;
+        $provinceId = $request->provinceId;
         $field = ($sortBy == 'Oldest' || $sortBy == 'Newest') ? 'id' : 'name';
         $sortType = ($sortBy == 'Z - A' || $sortBy == 'Newest') ? 'DESC' : 'ASC';
-        $programs = Gozar::with('district')->when($search, function($query) use ($search) {
+        $programs = Gozar::with('district.province')->when($search, function($query) use ($search) {
             $query->where('name', 'like', '%'.$search.'%')
             ->orWhere('name_fa', 'like', '%'.$search.'%')
             ->orWhere('name_pa', 'like', '%'.$search.'%');
+        })->when($provinceId, function ($query) use ($provinceId) {
+            $query->whereHas('district', function ($q) use ($provinceId) {
+                $q->where('province_id', $provinceId);
+            });
         })
         ->when($districtId, function($query) use ($districtId){
             $query->where('district_id', $districtId);
