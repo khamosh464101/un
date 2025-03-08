@@ -11,19 +11,19 @@ use Auth;
 
 class TicketType extends Model
 {
-    use LogsActivity;
+    // use LogsActivity;
 
     protected $fillable = ['title', 'color', 'is_default'];
 
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-        ->logOnly(['title'])
-        ->useLogName('Ticket Type')
-        ->logOnlyDirty()
-        ->setDescriptionForEvent(fn(string $eventName) => "This Ticket Type has been {$eventName} by ". Auth::user()->name);;
-        // Chain fluent methods for configuration options
-    }
+    // public function getActivitylogOptions(): LogOptions
+    // {
+    //     return LogOptions::defaults()
+    //     ->logOnly(['title'])
+    //     ->useLogName('Ticket Type')
+    //     ->logOnlyDirty()
+    //     ->setDescriptionForEvent(fn(string $eventName) => "This Ticket Type has been {$eventName} by ". Auth::user()->name);;
+    //     // Chain fluent methods for configuration options
+    // }
 
     public function tickets(): HasMany
     {

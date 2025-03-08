@@ -4,9 +4,8 @@ namespace Modules\Projects\Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Modules\Projects\Models\ProjectStatus;
-
-class ProjectStatusSeeder extends Seeder
+use Modules\Projects\Models\TicketStatus;
+class TicketStatusSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -14,16 +13,15 @@ class ProjectStatusSeeder extends Seeder
     public function run(): void
     {
         $statuses = [
-            ['title' => 'Proposed'],
-            ['title' => 'Approved', 'is_default' => true],
+            ['title' => 'Open', 'is_default' => true],
             ['title' => 'In progress'],
-            ['title' => 'On hold'],
-            ['title' => 'Completed'],
-            ['title' => 'Canceled'],
+            ['title' => 'Resolved'],
+            ['title' => 'Closed'],
+            ['title' => 'Rejected'],
         ];
 
         foreach ($statuses as $key => $value) {
-            ProjectStatus::create($value);
+            TicketStatus::create($value);
         }
     }
 }

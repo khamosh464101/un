@@ -12,19 +12,19 @@ use Auth;
 
 class ActivityType extends Model
 {
-    use LogsActivity;
+    // use LogsActivity;
 
     protected $fillable = ['title', 'color', 'is_default'];
 
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-        ->logOnly(['title'])
-        ->useLogName('Activity Type')
-        ->logOnlyDirty()
-        ->setDescriptionForEvent(fn(string $eventName) => "This Activity Type has been {$eventName} by ". Auth::user()->name);;
-        // Chain fluent methods for configuration options
-    }
+    // public function getActivitylogOptions(): LogOptions
+    // {
+    //     return LogOptions::defaults()
+    //     ->logOnly(['title'])
+    //     ->useLogName('Activity Type')
+    //     ->logOnlyDirty()
+    //     ->setDescriptionForEvent(fn(string $eventName) => "This Activity Type has been {$eventName} by ". Auth::user()->name);;
+    //     // Chain fluent methods for configuration options
+    // }
 
     public function activities(): HasMany
     {

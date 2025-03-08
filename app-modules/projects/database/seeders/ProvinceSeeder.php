@@ -29,11 +29,11 @@ class ProvinceSeeder extends Seeder
            ]);
            foreach ($p['districts'] as $key => $d) {
             $district = District::create([
-                'name' => $p['name'],
-                'name_fa' => $p['nameFa'],
-                'name_pa' => $p['namePa'],
-                'latitude' => $p['latitude'],
-                'longitude' => $p['longitude'],
+                'name' => $d['name'],
+                'name_fa' => $d['nameFa'],
+                'name_pa' => $d['namePa'],
+                'latitude' => $d['latitude'],
+                'longitude' => $d['longitude'],
                 'province_id' => $province->id,
               
            ]);
