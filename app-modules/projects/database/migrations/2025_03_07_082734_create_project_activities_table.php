@@ -11,10 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('activity_gozars', function (Blueprint $table) {
+        Schema::create('project_activities', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('gozar_id');
-            $table->foreignId('activity_id');
+            $table->foreignId('project_id');
+            $table->foreignId('old_status_id');
+            $table->foreignId('new_status_id');
+            $table->foreignId('user_id');
             $table->timestamps();
         });
     }
@@ -24,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('activity_gozars');
+        Schema::dropIfExists('project_activities');
     }
 };

@@ -17,16 +17,16 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->call([GozarSeeder::class]);
+        // $this->call([GozarSeeder::class]);
         // $this->call([ProvinceSeeder::class]);
         // $this->call([ProjectStatusSeeder::class]);
         // $this->call([ProgramStatusSeeder::class]);
         // User::factory(10)->create();
 
-        // User::factory()->create([
-        //     'name' => 'Test User',
-        //     'email' => 'azim@momtaz.af',
-        //     'password' => bcrypt('azim12azim'),
-        // ]);
+        User::factory()->create([
+            'name' => 'Test User',
+            'email' => 'azim@momtaz.af',
+            'password' => bcrypt('azim12azim'),
+        ]);
     }
 }

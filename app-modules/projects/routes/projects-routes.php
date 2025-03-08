@@ -11,6 +11,9 @@ use Modules\Projects\Http\Controllers\ProgramStatusController;
  use Modules\Projects\Http\Controllers\DonorController;
  use Modules\Projects\Http\Controllers\ActivityStatusController;
  use Modules\Projects\Http\Controllers\ActivityTypeController;
+ use Modules\Projects\Http\Controllers\TicketStatusController;
+ use Modules\Projects\Http\Controllers\TicketTypeController;
+ use Modules\Projects\Http\Controllers\TicketPriorityController;
  use Modules\Projects\Http\Controllers\DocumentController;
 
  Route::middleware(['auth:sanctum', 'twofactor'])->get('/user', function (Request $request) {
@@ -52,6 +55,15 @@ Route::middleware(['auth:sanctum', 'twofactor'])->group(function () {
     Route::post('/api/activity-types', [ActivityTypeController::class, 'index']);
     Route::get('/api/activity-types/select2', [ActivityTypeController::class, 'select2']);
     Route::resource('/api/activity-type', ActivityTypeController::class)->only(['store', 'edit', 'update', 'destroy']);
+    Route::post('/api/ticket-statuses', [TicketStatusController::class, 'index']);
+    Route::get('/api/ticket-statuses/select2', [TicketStatusController::class, 'select2']);
+    Route::resource('/api/ticket-status', TicketStatusController::class)->only(['store', 'edit', 'update', 'destroy']);
+    Route::post('/api/ticket-types', [TicketTypeController::class, 'index']);
+    Route::get('/api/ticket-types/select2', [TicketTypeController::class, 'select2']);
+    Route::resource('/api/ticket-type', TicketTypeController::class)->only(['store', 'edit', 'update', 'destroy']);
+    Route::post('/api/ticket-priorities', [TicketPriorityController::class, 'index']);
+    Route::get('/api/ticket-priorities/select2', [TicketPriorityController::class, 'select2']);
+    Route::resource('/api/ticket-priority', TicketPriorityController::class)->only(['store', 'edit', 'update', 'destroy']);
     
 
     // FILEPOND START

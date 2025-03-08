@@ -76,6 +76,11 @@ class Project extends Model
         return $this->belongsToMany(Gozar::class);
     }
 
+    public function staff(): BelongsToMany
+    {
+        return $this->belongsToMany(Staff::class);
+    }
+
     public function getLogoAttribute($value)
     {
         return $value ? asset("storage/$value") : asset('import/assets/post-pic-dummy.png');
@@ -91,6 +96,11 @@ class Project extends Model
     }
     public function getEndDateAttribute($value) {
         return Carbon::parse($value)->format('M d, Y');
+    }
+
+    public function statusActivities(): HasMany
+    {
+        return $this->hasMany(ProjectActivity::class, 'project_id', 'id');
     }
 
 

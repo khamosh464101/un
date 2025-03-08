@@ -11,16 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('activities', function (Blueprint $table) {
+        Schema::create('ticket_statuses', function (Blueprint $table) {
             $table->id();
             $table->string('title');
-            $table->dateTime('starts_at');
-            $table->dateTime('ends_at')->nullable();
-            $table->text('description')->nullable();
-            $table->foreignId('project_id');
-            $table->foreignId('activity_status_id');
-            $table->foreignId('activity_type_id');
-            $table->foreignId('responsibile_id');
+            $table->string('color')->default('#cecece');
+            $table->boolean('is_default')->default(false);
             $table->timestamps();
         });
     }
@@ -30,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('activities');
+        Schema::dropIfExists('ticket_statuses');
     }
 };

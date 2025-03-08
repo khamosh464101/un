@@ -33,4 +33,9 @@ class Gozar extends Model
     {
         return $this->belongsToMany(Project::class);
     }
+
+    public function activities(): BelongsToMany
+    {
+        return $this->belongsToMany(Activity::class);
+    }
 }
