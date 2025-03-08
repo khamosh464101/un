@@ -24,10 +24,10 @@ Route::middleware(['auth:sanctum', 'twofactor'])->group(function () {
     Route::get('/api/provinces/select2', [ProvinceController::class, 'select2']);
     Route::resource('/api/province', ProvinceController::class)->only(['store', 'edit', 'update', 'destroy']);
     Route::post('/api/districts', [DistrictController::class, 'index']);
-    Route::get('/api/districts/select2', [DistrictController::class, 'select2']);
+    Route::get('/api/districts/select2/{id?}', [DistrictController::class, 'select2']);
     Route::resource('/api/district', DistrictController::class)->only(['store', 'edit', 'update', 'destroy']);
     Route::post('/api/gozars', [GozarController::class, 'index']);
-    Route::get('/api/gozars/select2', [GozarController::class, 'select2']);
+    Route::get('/api/gozars/select2/{id?}', [GozarController::class, 'select2']);
     Route::resource('/api/gozar', GozarController::class)->only(['store', 'edit', 'update', 'destroy']);
     Route::post('/api/programs-statuses', [ProgramStatusController::class, 'index']);
     Route::get('/api/programs-statuses/select2', [ProgramStatusController::class, 'select2']);
@@ -42,6 +42,10 @@ Route::middleware(['auth:sanctum', 'twofactor'])->group(function () {
     Route::get('/api/projects-statuses/select2', [ProjectStatusController::class, 'select2']);
     Route::resource('/api/projects-status', ProjectStatusController::class)->only(['store', 'edit', 'update', 'destroy']);
     Route::post('/api/projects', [ProjectController::class, 'index']);
+    Route::post('/api/project/add/member', [ProjectController::class, 'addMember']);
+    Route::post('/api/project/remove/member', [ProjectController::class, 'removeMember']);
+    Route::post('/api/project/add/gozar', [ProjectController::class, 'addGozar']);
+    Route::post('/api/project/remove/gozar', [ProjectController::class, 'removeGozar']);
     Route::resource('/api/project', ProjectController::class)->only(['store', 'edit', 'update', 'destroy']);
     Route::post('/api/staffs-statuses', [StaffStatusController::class, 'index']);
     Route::get('/api/staffs-statuses/select2', [StaffStatusController::class, 'select2']);

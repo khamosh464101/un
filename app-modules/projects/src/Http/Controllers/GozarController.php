@@ -10,8 +10,9 @@ use Illuminate\Support\Str;
 
 class GozarController
 {
-    public function select2() {
-        return response()->json(Gozar::all(), 201);
+    public function select2($id = null) {
+        $gozars = $id? Gozar::where('district_id', $id)->get() : Gozar::all();
+        return response()->json($gozars, 201);
     }
     public function index(Request $request) {
  

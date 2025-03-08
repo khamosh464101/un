@@ -10,8 +10,9 @@ use Illuminate\Support\Str;
 
 class DistrictController
 {
-    public function select2() {
-        return response()->json(District::all(), 201);
+    public function select2($id = null) {
+        $districts = $id ? District::where('province_id', $id)->get() : District::all();
+        return response()->json($districts, 201);
     }
     public function index(Request $request) {
  

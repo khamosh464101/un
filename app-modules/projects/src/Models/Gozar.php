@@ -6,7 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Spatie\Activitylog\Traits\LogsActivity;
-use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\LogOptions;use Illuminate\Database\Eloquent\Casts\Attribute;
+
 use Auth;
 class Gozar extends Model
 {
@@ -38,4 +39,6 @@ class Gozar extends Model
     {
         return $this->belongsToMany(Activity::class);
     }
+
+    
 }

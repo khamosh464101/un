@@ -2,6 +2,8 @@
 
 namespace Modules\Projects\Http\Controllers;
 use Modules\Projects\Models\Project;
+use Modules\Projects\Models\Staff;
+use Modules\Projects\Models\Gozar;
 use Modules\Projects\Http\Requests\ProjectRequest;
 use Modules\Projects\Http\Controllers\ProgramController;
 use Carbon\Carbon;
@@ -34,12 +36,13 @@ class ProjectController
     }
 
     public function edit($id) {
-        $project = Project::find($id);
+        $project = Project::with('gozars.district.province')->find($id);
         $project->status;
         $project->activities;
         $project->program;
         $project->logs;
         $project->documents;
+        $project->staff;
         return response()->json($project, 201);
     }
 
@@ -74,5 +77,42 @@ class ProjectController
     
         $project->delete();
         return response()->json(['message' => 'Project deleted successfully'], 201);
+    }
+
+    public function addMember(Request $request) {
+        $project = Project::find($request->id);
+        $staff = Staff::find($request->staff_id);
+        if ($project->staff->contains($staff)) {
+            return response()->json(['message' => 'Already exist'], 500);
+        }
+        $project->staff()->attach($staff);
+        return response()->json($staff, 201);
+
+    }
+
+    public function removeMember(Request $request) {
+        $project = Project::find($request->id);
+        $project->staff()->detach($request->staff_id);
+        return response()->json(['message' => 'Successfully removed!'], 201);
+
+    }
+
+    public function addGozar(Request $request) {
+        $project = Project::find($request->id);
+        $gozar = Gozar::find($request->gozar_id);
+        if ($project->gozars->contains($gozar)) {
+            return response()->json(['message' => 'Already exist'], 500);
+        }
+       $project->gozars()->attach($gozar);
+        $gozar->district->province;
+        return response()->json($gozar, 201);
+
+    }
+
+    public function removeGozar(Request $request) {
+        $project = Project::find($request->id);
+        $project->gozars()->detach($request->gozar_id);
+        return response()->json(['message' => 'Successfully removed!'], 201);
+
     }
 }
