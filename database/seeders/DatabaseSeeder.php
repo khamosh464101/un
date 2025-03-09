@@ -15,6 +15,7 @@ use Modules\Projects\Database\Seeders\StaffStatusSeeder;
 use Modules\Projects\Database\Seeders\TicketPrioritySeeder;
 use Modules\Projects\Database\Seeders\TicketStatusSeeder;
 use Modules\Projects\Database\Seeders\TicketTypeSeeder;
+use Database\Seeders\PermissionSeeder;
 use DB;
 
 class DatabaseSeeder extends Seeder
@@ -24,11 +25,14 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        DB::table('provinces')->truncate();
-        DB::table('districts')->truncate();
-        $this->call([ProvinceSeeder::class]);
-        DB::table('gozars')->truncate();
-        $this->call([GozarSeeder::class]);
+        // DB::table('roles')->truncate();
+        // DB::table('permissions')->truncate();
+        $this->call([PermissionSeeder::class]);
+        // DB::table('provinces')->truncate();
+        // DB::table('districts')->truncate();
+        // $this->call([ProvinceSeeder::class]);
+        // DB::table('gozars')->truncate();
+        // $this->call([GozarSeeder::class]);
         // $this->call([ProgramStatusSeeder::class]);
         // $this->call([ProjectStatusSeeder::class]);
         // $this->call([ActivityStatusSeeder::class]);
