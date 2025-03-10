@@ -2,15 +2,25 @@
 
 namespace Modules\Projects\Http\Controllers;
 use Modules\Projects\Models\Staff;
+use Modules\Projects\Models\Project;
 use Modules\Projects\Http\Requests\StaffRequest;
 use Modules\Projects\Http\Controllers\ProgramController;
+
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class StaffController
 {
-    public function select2() {
-        return response()->json(Staff::select('id', 'name')->get(), 201);
+    public function select2($id = null) {
+        $staff;
+        if ($id) {
+           $project = Project::find($id);
+           $staff = $project->staff;
+
+        } else {
+            $staff = Staff::select('id', 'name')->get();
+        }
+        return response()->json($staff, 201);
     }
     public function index(Request $request) {
  

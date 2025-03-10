@@ -14,13 +14,13 @@ return new class extends Migration
         Schema::create('activities', function (Blueprint $table) {
             $table->id();
             $table->string('title');
-            $table->dateTime('starts_at');
-            $table->dateTime('ends_at')->nullable();
+            $table->date('starts_at');
+            $table->date('ends_at')->nullable();
             $table->text('description')->nullable();
             $table->foreignId('project_id');
             $table->foreignId('activity_status_id');
             $table->foreignId('activity_type_id');
-            $table->foreignId('responsibile_id');
+            $table->foreignId('responsible_id');
             $table->timestamps();
         });
     }

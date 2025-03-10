@@ -14,6 +14,7 @@ use Modules\Projects\Http\Controllers\ProgramStatusController;
  use Modules\Projects\Http\Controllers\TicketStatusController;
  use Modules\Projects\Http\Controllers\TicketTypeController;
  use Modules\Projects\Http\Controllers\TicketPriorityController;
+ use Modules\Projects\Http\Controllers\ActivityController;
  use Modules\Projects\Http\Controllers\DocumentController;
 
  Route::middleware(['auth:sanctum', 'twofactor'])->get('/user', function (Request $request) {
@@ -41,6 +42,7 @@ Route::middleware(['auth:sanctum', 'twofactor'])->group(function () {
     Route::post('/api/projects-statuses', [ProjectStatusController::class, 'index']);
     Route::get('/api/projects-statuses/select2', [ProjectStatusController::class, 'select2']);
     Route::resource('/api/projects-status', ProjectStatusController::class)->only(['store', 'edit', 'update', 'destroy']);
+    Route::get('/api/projects/select2', [ProjectController::class, 'select2']);
     Route::post('/api/projects', [ProjectController::class, 'index']);
     Route::post('/api/project/add/member', [ProjectController::class, 'addMember']);
     Route::post('/api/project/remove/member', [ProjectController::class, 'removeMember']);
@@ -50,7 +52,7 @@ Route::middleware(['auth:sanctum', 'twofactor'])->group(function () {
     Route::post('/api/staffs-statuses', [StaffStatusController::class, 'index']);
     Route::get('/api/staffs-statuses/select2', [StaffStatusController::class, 'select2']);
     Route::resource('/api/staffs-status', StaffStatusController::class)->only(['store', 'edit', 'update', 'destroy']);
-    Route::get('/api/staffs/select2', [StaffController::class, 'select2']);
+    Route::get('/api/staffs/select2/{id?}', [StaffController::class, 'select2']);
     Route::post('/api/staffs', [StaffController::class, 'index']);
     Route::resource('/api/staff', StaffController::class)->only(['store', 'edit', 'update', 'destroy']);
     Route::post('/api/activity-statuses', [ActivityStatusController::class, 'index']);
@@ -68,6 +70,9 @@ Route::middleware(['auth:sanctum', 'twofactor'])->group(function () {
     Route::post('/api/ticket-priorities', [TicketPriorityController::class, 'index']);
     Route::get('/api/ticket-priorities/select2', [TicketPriorityController::class, 'select2']);
     Route::resource('/api/ticket-priority', TicketPriorityController::class)->only(['store', 'edit', 'update', 'destroy']);
+    Route::post('/api/activities', [ActivityController::class, 'index']);
+    Route::get('/api/activities/select2', [ActivityController::class, 'select2']);
+    Route::resource('/api/activity', ActivityController::class)->only(['store', 'edit', 'update', 'destroy']);
     
 
     // FILEPOND START

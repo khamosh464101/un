@@ -11,6 +11,11 @@ use Illuminate\Http\Request;
 
 class ProjectController
 {
+    public function select2() {
+  
+        return response()->json(Project::select('id', 'title')->get(), 201);
+    }
+
     public function index(Request $request) {
  
         $search = $request->search;
