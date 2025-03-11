@@ -24,6 +24,7 @@ class ActivityRequest extends FormRequest
     {
         return [
             'title' => ['required', 'string', 'max:255', Rule::unique('activities')->ignore($this?->route('activity'))],
+            'activity_number' => ['nullable', 'string'],
             'starts_at' => ['required', 'date'],
             'ends_at' => ['nullable', 'date' ],
             'description' => 'nullable',

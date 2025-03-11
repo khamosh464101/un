@@ -12,6 +12,7 @@ use Carbon\Carbon;
 use Spatie\Activitylog\Models\Activity as Actvty;
 use Storage;
 use Auth;
+use DB;
 
 class Project extends Model
 {
@@ -22,7 +23,8 @@ class Project extends Model
         'start_date',
         'end_date',
         'code',
-        'budget',
+        'estimated_budget',
+        'spent_budget',
         'logo', 
         'description', 
         'kobo_toolbox_id',
@@ -110,6 +112,16 @@ class Project extends Model
         static::updating(function ($project) {
             if ($project->isDirty('logo') && !is_null($project->getRawOriginal('logo'))) {
                 Storage::delete($project->getRawOriginal('logo'));
+                
+            }
+            if ($project->isDirty('code')) {
+                $project->activities()->update([
+                    'activity_number' => DB::raw("CONCAT('{$project->code}', '-', id)")
+                ]);
+                // Activity::where('project_id', $project->id)
+                // ->update([
+                //     'activity_number' => DB::raw("CONCAT('{$project->code}', '-', id)")
+                // ]);
             }
 
         });

@@ -27,7 +27,8 @@ class ProjectRequest extends FormRequest
             'start_date' => ['required', 'date'],
             'end_date' => ['nullable', 'date' ],
             'code' => ['required', 'string'],
-            'budget' => ['required', 'numeric'],
+            'estimated_budget' => ['required', 'numeric'],
+            'spent_budget' => ['nullable', 'numeric'],
             'description' => 'nullable',
             'logo' => ['image', 'mimes:jpeg,png,jpg', 'max:1002', Rule::requiredIf(!$this?->route('project'))], // 10MB max, only certain file types
             'kobo_project_id' => ['nullable', 'string'],

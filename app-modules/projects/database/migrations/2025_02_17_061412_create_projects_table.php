@@ -17,7 +17,8 @@ return new class extends Migration
             $table->date('start_date');
             $table->date('end_date')->nullable();
             $table->string('code');
-            $table->decimal("budget", 15, 5);
+            $table->decimal("estimated_budget", 15, 5);
+            $table->decimal("spent_budget", 15, 5)->default(0);
             $table->string('logo')->nullable();
             $table->text('description')->nullable();
             $table->string('kobo_project_id')->nullable();
