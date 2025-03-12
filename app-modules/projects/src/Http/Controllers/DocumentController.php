@@ -8,6 +8,7 @@ use Modules\Projects\Models\Document;
 use Modules\Projects\Models\Program;
 use Modules\Projects\Models\Project;
 use Modules\Projects\Models\Staff;
+use Modules\Projects\Models\Activity;
 use Modules\Projects\Http\Requests\DocumentRequest;
 use Storage;
 use DB;
@@ -46,6 +47,12 @@ class DocumentController
         if ($request->type == 'Staff') {
             $staff = Staff::find($request->id);
             $document = $staff->documents()->create($data);
+            return response()->json($document, 201);
+        }
+
+        if ($request->type == 'Activity') {
+            $activity = Activity::find($request->id);
+            $document = $activity->documents()->create($data);
             return response()->json($document, 201);
         }
     }
@@ -116,5 +123,21 @@ class DocumentController
             }
     
             return response()->json(['message' => 'File not found'], 404);
+        }
+
+        public function download($id)
+        {
+            $document = Document::find($id);
+            $filePath = storage_path('app/public/' . $document->path);
+      
+    
+            if (File::exists($filePath)) {
+                return response()->download($filePath);
+            }
+            return response()->json(['message' => 'File not found'], 404);
+            
+            // return response()->download($filepath, $document->path, [
+            //     'Content-Type' => 'application/octet-stream'
+            // ]);
         }
 }

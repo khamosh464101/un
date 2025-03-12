@@ -36,4 +36,5 @@ class ActivityActivity extends Model
     {
         return $this->hasMany(ActivityActivity::class, 'activity_id', 'id');
     }
+    
 }

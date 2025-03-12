@@ -31,10 +31,10 @@ class Document extends Model
         return $this->morphTo();
     }
 
-    public function getPathAttribute($value)
-    {
-        return $value ? asset("storage/$value") : asset('import/assets/post-pic-dummy.png');
-    }
+    // public function getPathAttribute($value)
+    // {
+    //     return $value ? asset("storage/$value") : asset('import/assets/post-pic-dummy.png');
+    // }
 
     public static function boot()
     {

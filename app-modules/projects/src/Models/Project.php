@@ -130,6 +130,10 @@ class Project extends Model
                 Storage::delete($project->getRawOriginal('logo'));
             }
 
+            $project->documents()->delete(); // Delete all related documents in one query
+            $project->gozars()->detach();
+            $project->staff()->detach();
+
         });
     }
 }

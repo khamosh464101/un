@@ -10,12 +10,14 @@ use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Spatie\Activitylog\Models\Activity as Actvty;
 use Auth;
 use Storage;
 use Carbon\Carbon;
 
 class Activity extends Model
 {
+    use LogsActivity;
     protected $fillable = [
         "title",
         'activity_number',
@@ -30,16 +32,24 @@ class Activity extends Model
 
     public function getActivitylogOptions(): LogOptions
     {
+        $logable = $this->fillable;
+        $logable = array_diff($logable, ['activity_status_id']);
+
         return LogOptions::defaults()
-        ->logFillable()
+        ->logOnly($logable)
         ->useLogName('Activity')
         ->logOnlyDirty()
+        ->dontSubmitEmptyLogs()
         ->setDescriptionForEvent(fn(string $eventName) => "This Activity has been {$eventName} by ". Auth::user()->name);
       
         
         // Chain fluent methods for configuration options
     }
 
+    public function logs(): HasMany
+    {
+        return $this->hasMany(Actvty::class, 'subject_id')->where('log_name', 'Activity')->orderBy('id', 'desc');
+    }
 
     public function sprint(): HasOne
     {
@@ -100,9 +110,29 @@ class Activity extends Model
             $activity->save();
         });
 
+        static::updating(function ($activity) {
+            if ($activity->isDirty('activity_status_id')) {
+                $oldStatus = ActivityStatus::find($activity->getOriginal('activity_status_id'))->title ?? 'Unknown';
+                $newStatus = ActivityStatus::find($activity->activity_status_id)->title ?? 'Unknown';
+                activity()
+                ->useLog('Activity')
+                ->causedBy(auth()->user()) // Log who made the change
+                ->performedOn($activity)
+                ->withProperties([
+                    'old_status' => $oldStatus,
+                    'new_status' => $newStatus
+                ])
+                ->log("Project status changed from **$oldStatus** to **$newStatus** by " . auth()->user()->name);
+            }
+        });
+
         static::deleting(function ($activity) {
             $activity->documents()->delete(); // Delete all related documents in one query
+            $activity->gozars()->detach();
         });
+
+        
     }
+
 
 }

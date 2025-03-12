@@ -3,6 +3,8 @@
 namespace Modules\Projects\Http\Controllers;
 use Modules\Projects\Models\Project;
 use Modules\Projects\Models\Activity;
+use Modules\Projects\Models\Province;
+use Modules\Projects\Models\District;
 use Modules\Projects\Models\Gozar;
 use Modules\Projects\Http\Requests\ActivityRequest;
 use Modules\Projects\Http\Controllers\ProgramController;
@@ -87,5 +89,44 @@ class ActivityController
 
         $activity->delete();
         return response()->json(['message' => 'Activity deleted successfully'], 201);
+    }
+
+    public function getLocation($id) {
+        $gozars = Gozar::select('id as value', 'name as label', 'district_id')->whereHas('projects', function ($query) use ($id) {
+            $query->where('projects.id', $id);
+        })->get();
+        
+        // Get unique Districts from these Villages
+        $districts = District::select('id as value', 'name as label', 'province_id')->whereIn('id', $gozars->pluck('district_id')->unique())->get();
+        
+        // Get unique Provinces from these Districts
+        $provinces = Province::select('id as value', 'name as label')->whereIn('id', $districts->pluck('province_id')->unique())->get();
+        
+        return response()->json([
+            'gozars' => $gozars,
+            'districts' => $districts,
+            'provinces' => $provinces
+        ], 201);
+        
+    }
+
+    public function addGozar(Request $request) {
+        $activity = Activity::find($request->id);
+        $gozar = Gozar::find($request->gozar_id);
+        if ($activity->gozars->contains($gozar)) {
+            return response()->json(['message' => 'Already exist'], 500);
+        }
+       $activity->gozars()->attach($gozar);
+        $gozar->district->province;
+        return response()->json($gozar, 201);
+
+    }
+
+    public function removeGozar(Request $request) {
+      
+        $activity = Activity::find($request->id);
+        $activity->gozars()->detach($request->gozar_id);
+        return response()->json(['message' => 'Successfully removed!'], 201);
+
     }
 }

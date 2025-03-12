@@ -89,6 +89,7 @@ class Staff extends Model
             if (!is_null($staff->getRawOriginal('photo'))) {
                 Storage::delete($staff->getRawOriginal('photo'));
             }
+            $staff->documents()->delete(); // Delete all related documents in one query
 
         });
     }

@@ -79,6 +79,8 @@ class Program extends Model
             if (!is_null($program->getRawOriginal('logo'))) {
                 Storage::delete($program->getRawOriginal('logo'));
             }
+            $program->documents()->delete(); // Delete all related documents in one query
+
 
         });
     }

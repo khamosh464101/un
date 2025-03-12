@@ -55,6 +55,7 @@ Route::middleware(['auth:sanctum', 'twofactor'])->group(function () {
     Route::get('/api/staffs/select2/{id?}', [StaffController::class, 'select2']);
     Route::post('/api/staffs', [StaffController::class, 'index']);
     Route::resource('/api/staff', StaffController::class)->only(['store', 'edit', 'update', 'destroy']);
+   
     Route::post('/api/activity-statuses', [ActivityStatusController::class, 'index']);
     Route::get('/api/activity-statuses/select2', [ActivityStatusController::class, 'select2']);
     Route::resource('/api/activity-status', ActivityStatusController::class)->only(['store', 'edit', 'update', 'destroy']);
@@ -71,7 +72,10 @@ Route::middleware(['auth:sanctum', 'twofactor'])->group(function () {
     Route::get('/api/ticket-priorities/select2', [TicketPriorityController::class, 'select2']);
     Route::resource('/api/ticket-priority', TicketPriorityController::class)->only(['store', 'edit', 'update', 'destroy']);
     Route::post('/api/activities', [ActivityController::class, 'index']);
+    Route::get('/api/activities/locations/{id}', [ActivityController::class, 'getLocation']);
     Route::get('/api/activities/select2', [ActivityController::class, 'select2']);
+    Route::post('/api/activity/add/gozar', [ActivityController::class, 'addGozar']);
+    Route::post('/api/activity/remove/gozar', [ActivityController::class, 'removeGozar']);
     Route::resource('/api/activity', ActivityController::class)->only(['store', 'edit', 'update', 'destroy']);
     
 
@@ -83,6 +87,8 @@ Route::middleware(['auth:sanctum', 'twofactor'])->group(function () {
     // FILEPOND END
     Route::resource('/api/document', DocumentController::class);
 });
+
+Route::get('/api/document/download/{id}', [DocumentController::class, 'download']);
  
 
 // Route::get('/projects/create', [ProjectsController::class, 'create'])->name('projects.create');
