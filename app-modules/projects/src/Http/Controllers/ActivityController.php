@@ -52,7 +52,7 @@ class ActivityController
 
     public function store(ActivityRequest $request) {
         $data = $request->validated();
-        $activity = activity::create($data);
+        $activity = Activity::create($data);
         return response()->json(['message' => 'Sucessfully added!', 'data' => $activity], 201);
     }
 
