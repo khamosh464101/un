@@ -36,6 +36,15 @@ class TicketRequest extends FormRequest
             'ticket_priority_id' => ['required', 'integer'],
             'activity_id' => 'required|integer'
         ];
+
+
+    }
+
+    public function prepareForValidation()
+    {
+        $this->merge([
+            'owner_id' => auth()->id()
+        ]);
     }
 
 }

@@ -13,9 +13,17 @@ use Illuminate\Http\Request;
 
 class ActivityController
 {
-    public function select2() {
+    public function select2($id = null) {
+        $activities;
+        if ($id) {
+           $project = Project::find($id);
+           $activities = $project->activities;
+
+        } else {
+            $activities = Activities::select('id', 'name')->get();
+        }
+        return response()->json($activities, 201);
   
-        return response()->json(Activity::select('id', 'title')->get(), 201);
     }
 
     public function index(Request $request) {

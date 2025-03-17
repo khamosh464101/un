@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('tickets', function (Blueprint $table) {
             $table->id();
             $table->string('title');
+            $table->string('ticket_number')->nullable();
             $table->text('description')->nullable();
             $table->decimal('estimation', 6, 2);
             $table->datetime('deadline');

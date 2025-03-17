@@ -13,12 +13,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
+use Carbon\Carbon;
 
 class Ticket extends Model
 {
 
     protected $fillable = [
         'title',
+        'ticket_number',
         'description',
         'estimation',
         'deadline',
@@ -27,7 +29,7 @@ class Ticket extends Model
         'responsible_id',
         'ticket_status_id',
         'ticket_type_id',
-        'ticket_proiority_id',
+        'ticket_priority_id',
         'activity_id'
     ];
    
@@ -149,4 +151,27 @@ class Ticket extends Model
             get: fn() => $this->estimationProgress
         );
     }
+
+    public function getCreatedAtAttribute($value) {
+        return Carbon::parse($value)->format('M d, Y');
+    }
+
+    // public function getDeadlineAttribute($value) {
+    //     return $value;
+    //     return $date1 = Carbon::parse($value);
+    //    return $date2 = Carbon::parse($this->created_at);
+    //    return $date1->diffForHumans($date2);
+    // }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::created(function ($ticket) {
+            $ticket->ticket_number = '#' . $ticket->activity_number . '-' . $ticket->id;
+            $ticket->save();
+        });
+    }
+
+
 }
