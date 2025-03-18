@@ -79,6 +79,7 @@ Route::middleware(['auth:sanctum', 'twofactor'])->group(function () {
     Route::post('/api/activity/remove/gozar', [ActivityController::class, 'removeGozar']);
     Route::resource('/api/activity', ActivityController::class)->only(['store', 'edit', 'update', 'destroy']);
     Route::post('/api/tickets', [TicketController::class, 'index']);
+    Route::post('/api/tickets/reorder', [TicketController::class, 'reorder']);
     Route::get('/api/tickets/select2/{id?}', [TicketController::class, 'select2']);
     Route::post('/api/ticket/add/gozar', [TicketController::class, 'addGozar']);
     Route::post('/api/ticket/remove/gozar', [TicketController::class, 'removeGozar']);

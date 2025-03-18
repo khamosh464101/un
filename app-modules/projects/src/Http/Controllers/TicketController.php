@@ -15,7 +15,12 @@ use Carbon\Carbon;
 class TicketController
 {
     public function index(Request $request) {
-        $data = TicketStatus::with('tickets')->get();
+        $data = TicketStatus::with([
+            'tickets' => function ($query) use ($request) {
+                $query->where('activity_id', $request->activity_id)->orderBy('order', 'asc')
+                      ->with(['type', 'priority', 'responsible']);
+            }
+        ])->get();
         return response()->json($data, 201);
 
     }

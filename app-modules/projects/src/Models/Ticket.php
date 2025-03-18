@@ -42,12 +42,12 @@ class Ticket extends Model
 
     public function responsible(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'responsible_id', 'id');
+        return $this->belongsTo(Staff::class, 'responsible_id', 'id');
     }
 
     public function status(): BelongsTo
     {
-        return $this->belongsTo(TicketStatus::class, 'status_id', 'id');
+        return $this->belongsTo(TicketStatus::class, 'ticket_status_id', 'id');
     }
 
     public function activity(): BelongsTo
@@ -57,12 +57,12 @@ class Ticket extends Model
 
     public function type(): BelongsTo
     {
-        return $this->belongsTo(TicketType::class, 'type_id', 'id');
+        return $this->belongsTo(TicketType::class, 'ticket_type_id', 'id');
     }
 
     public function priority(): BelongsTo
     {
-        return $this->belongsTo(TicketPriority::class, 'priority_id', 'id');
+        return $this->belongsTo(TicketPriority::class, 'ticket_priority_id', 'id');
     }
 
     public function activities(): HasMany
@@ -156,19 +156,26 @@ class Ticket extends Model
         return Carbon::parse($value)->format('M d, Y');
     }
 
-    // public function getDeadlineAttribute($value) {
-    //     return $value;
-    //     return $date1 = Carbon::parse($value);
-    //    return $date2 = Carbon::parse($this->created_at);
-    //    return $date1->diffForHumans($date2);
-    // }
+    public function getDeadlineAttribute($value) {
+        $dueDate = Carbon::parse($value); // Replace with your due date
+        $today = Carbon::now();
+
+        $daysLeft = ceil($today->diffInDays($dueDate, false)); // false to return negative values
+
+        if ($daysLeft > 0) {
+            return "$daysLeft days left";
+        } else {
+            return  abs($daysLeft) . " days overdue";
+        }
+    }
 
     protected static function boot()
     {
         parent::boot();
 
         static::created(function ($ticket) {
-            $ticket->ticket_number = '#' . $ticket->activity_number . '-' . $ticket->id;
+            $ticket->ticket_number = '#' . $ticket->activity->activity_number . '-' . $ticket->id;
+            $ticket->order = $ticket->activity->tickets()->max('order') + 1;
             $ticket->save();
         });
     }
