@@ -32,13 +32,19 @@ class Staff extends Model
 
     public function getActivitylogOptions(): LogOptions
     {
+        $logable = $this->fillable;
+        $logable = array_diff($logable, ['staff_status_id']);
+
         return LogOptions::defaults()
-        ->logFillable()
+        ->logOnly($logable)
         ->useLogName('Staff')
         ->logOnlyDirty()
-        ->setDescriptionForEvent(fn(string $eventName) => "This Staff has been {$eventName} by ". Auth::user()->name);;
-        // Chain fluent methods for configuration options
+        ->dontSubmitEmptyLogs()
+        ->setDescriptionForEvent(fn(string $eventName) => "This Staff has been {$eventName} by ". Auth::user()->name);
+
     }
+
+
 
     public function logs(): HasMany
     {
@@ -82,6 +88,20 @@ class Staff extends Model
         static::updating(function ($staff) {
             if ($staff->isDirty('photo') && !is_null($staff->getRawOriginal('photo'))) {
                 Storage::delete($staff->getRawOriginal('photo'));
+            }
+
+            if ($staff->isDirty('staff_status_id')) {
+                $oldStatus = StaffStatus::find($staff->getOriginal('staff_status_id'))->title ?? 'Unknown';
+                $newStatus = StaffStatus::find($staff->staff_status_id)->title ?? 'Unknown';
+                activity()
+                ->useLog('Staff')
+                ->causedBy(auth()->user()) // Log who made the change
+                ->performedOn($staff)
+                ->withProperties([
+                    'old_status' => $oldStatus,
+                    'new_status' => $newStatus
+                ])
+                ->log("Staff status changed from **$oldStatus** to **$newStatus** by " . auth()->user()->name);
             }
 
         });

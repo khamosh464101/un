@@ -31,6 +31,18 @@ class TicketController
         return response()->json(['message' => 'Sucessfully added!', 'data' => $ticket], 201);
     }
 
+    public function edit($id) {
+        $ticket = Ticket::with('gozars.district.province')->with('comments.user')->find($id);
+        $ticket->status;
+        $ticket->type;
+        $ticket->priority;
+        $ticket->logs;
+        $ticket->documents;
+        $ticket->activity;
+        $ticket->responsible;
+        return response()->json($ticket, 201);
+    }
+
     public function reorder(Request $request) {
         $this->setOrder($request->items);
         return response()->json(['message' => 'Successfully reordered!'], 201);
@@ -53,5 +65,44 @@ class TicketController
             $ticket->save();
         }
         return response()->json(['message' => 'Successfully moved!'], 201);
+    }
+
+    public function getLocation($id) {
+        $gozars = Gozar::select('id as value', 'name as label', 'district_id')->whereHas('activities', function ($query) use ($id) {
+            $query->where('activities.id', $id);
+        })->get();
+        
+        // Get unique Districts from these Villages
+        $districts = District::select('id as value', 'name as label', 'province_id')->whereIn('id', $gozars->pluck('district_id')->unique())->get();
+        
+        // Get unique Provinces from these Districts
+        $provinces = Province::select('id as value', 'name as label')->whereIn('id', $districts->pluck('province_id')->unique())->get();
+        
+        return response()->json([
+            'gozars' => $gozars,
+            'districts' => $districts,
+            'provinces' => $provinces
+        ], 201);
+        
+    }
+
+    public function addGozar(Request $request) {
+        $ticket = Ticket::find($request->id);
+        $gozar = Gozar::find($request->gozar_id);
+        if ($ticket->gozars->contains($gozar)) {
+            return response()->json(['message' => 'Already exist'], 500);
+        }
+       $ticket->gozars()->attach($gozar);
+        $gozar->district->province;
+        return response()->json($gozar, 201);
+
+    }
+
+    public function removeGozar(Request $request) {
+      
+        $ticket = Ticket::find($request->id);
+        $ticket->gozars()->detach($request->gozar_id);
+        return response()->json(['message' => 'Successfully removed!'], 201);
+
     }
 }

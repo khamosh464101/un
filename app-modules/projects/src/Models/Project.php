@@ -37,13 +37,18 @@ class Project extends Model
 
     public function getActivitylogOptions(): LogOptions
     {
+        $logable = $this->fillable;
+        $logable = array_diff($logable, ['project_status_id']);
+
         return LogOptions::defaults()
-        ->logFillable()
+        ->logOnly($logable)
         ->useLogName('Project')
         ->logOnlyDirty()
+        ->dontSubmitEmptyLogs()
         ->setDescriptionForEvent(fn(string $eventName) => "This Project has been {$eventName} by ". Auth::user()->name);
-        // Chain fluent methods for configuration options
+
     }
+
 
     public function logs(): HasMany
     {
@@ -124,7 +129,22 @@ class Project extends Model
                 // ]);
             }
 
+            if ($project->isDirty('project_status_id')) {
+                $oldStatus = ProjectStatus::find($project->getOriginal('project_status_id'))->title ?? 'Unknown';
+                $newStatus = ProjectStatus::find($project->project_status_id)->title ?? 'Unknown';
+                activity()
+                ->useLog('Project')
+                ->causedBy(auth()->user()) // Log who made the change
+                ->performedOn($project)
+                ->withProperties([
+                    'old_status' => $oldStatus,
+                    'new_status' => $newStatus
+                ])
+                ->log("Project status changed from **$oldStatus** to **$newStatus** by " . auth()->user()->name);
+            }
+
         });
+
         static::deleting(function ($project) {
             if (!is_null($project->getRawOriginal('logo'))) {
                 Storage::delete($project->getRawOriginal('logo'));

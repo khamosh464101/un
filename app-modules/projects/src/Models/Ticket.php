@@ -11,12 +11,18 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\Activitylog\Models\Activity as Actvty;
 use Carbon\Carbon;
+use Auth;
 
 class Ticket extends Model
 {
+    use LogsActivity;
 
     protected $fillable = [
         'title',
@@ -33,8 +39,24 @@ class Ticket extends Model
         'activity_id'
     ];
    
-    
+    public function getActivitylogOptions(): LogOptions
+    {
+        $logable = $this->fillable;
+        $logable = array_diff($logable, ['ticket_status_id', 'owner_id']);
 
+        return LogOptions::defaults()
+        ->logOnly($logable)
+        ->useLogName('Ticket')
+        ->logOnlyDirty()
+        ->dontSubmitEmptyLogs()
+        ->setDescriptionForEvent(fn(string $eventName) => "This Ticket has been {$eventName} by ". Auth::user()->name);
+
+    }
+
+    public function logs(): HasMany
+    {
+        return $this->hasMany(Actvty::class, 'subject_id')->where('log_name', 'Ticket')->orderBy('id', 'desc');
+    }
     public function owner(): BelongsTo
     {
         return $this->belongsTo(User::class, 'owner_id', 'id');
@@ -64,6 +86,17 @@ class Ticket extends Model
     {
         return $this->belongsTo(TicketPriority::class, 'ticket_priority_id', 'id');
     }
+
+    public function gozars(): BelongsToMany
+    {
+        return $this->belongsToMany(Gozar::class);
+    }   
+    
+    public function documents(): MorphMany
+    {
+        return $this->morphMany(Document::class, 'documentable');
+    }
+
 
     public function activities(): HasMany
     {
@@ -177,6 +210,28 @@ class Ticket extends Model
             $ticket->ticket_number = '#' . $ticket->activity->activity_number . '-' . $ticket->id;
             $ticket->order = $ticket->activity->tickets()->max('order') + 1;
             $ticket->save();
+        });
+
+        static::updating(function ($ticket) {
+            if ($ticket->isDirty('ticket_status_id')) {
+                $oldStatus = TicketStatus::find($ticket->getOriginal('ticket_status_id'))->title ?? 'Unknown';
+                $newStatus = TicketStatus::find($ticket->ticket_status_id)->title ?? 'Unknown';
+                activity()
+                ->useLog('Ticket')
+                ->causedBy(auth()->user()) // Log who made the change
+                ->performedOn($ticket)
+                ->withProperties([
+                    'old_status' => $oldStatus,
+                    'new_status' => $newStatus
+                ])
+                ->log("Ticket status changed from **$oldStatus** to **$newStatus** by " . auth()->user()->name);
+            }
+        });
+
+        static::deleting(function ($ticket) {
+            $ticket->documents()->delete(); // Delete all related documents in one query
+            $ticket->comments()->delete();
+            $ticket->gozars()->detach();
         });
     }
 

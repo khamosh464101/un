@@ -17,6 +17,7 @@ use Modules\Projects\Http\Controllers\ProgramStatusController;
  use Modules\Projects\Http\Controllers\ActivityController;
  use Modules\Projects\Http\Controllers\TicketController;
  use Modules\Projects\Http\Controllers\DocumentController;
+ use Modules\Projects\Http\Controllers\TicketCommentController;
 
  Route::middleware(['auth:sanctum', 'twofactor'])->get('/user', function (Request $request) {
     return $request->user();
@@ -79,12 +80,15 @@ Route::middleware(['auth:sanctum', 'twofactor'])->group(function () {
     Route::post('/api/activity/remove/gozar', [ActivityController::class, 'removeGozar']);
     Route::resource('/api/activity', ActivityController::class)->only(['store', 'edit', 'update', 'destroy']);
     Route::post('/api/tickets', [TicketController::class, 'index']);
+    Route::get('/api/tickets/locations/{id}', [TicketController::class, 'getLocation']);
     Route::post('/api/tickets/move', [TicketController::class, 'move']);
     Route::post('/api/tickets/reorder', [TicketController::class, 'reorder']);
     Route::get('/api/tickets/select2/{id?}', [TicketController::class, 'select2']);
     Route::post('/api/ticket/add/gozar', [TicketController::class, 'addGozar']);
     Route::post('/api/ticket/remove/gozar', [TicketController::class, 'removeGozar']);
     Route::resource('/api/ticket', TicketController::class)->only(['store', 'edit', 'update', 'destroy']);
+
+    Route::resource('/api/ticket-comments', TicketCommentController::class)->only(['store', 'update', 'destroy']);
 
     // FILEPOND START
     Route::post('/api/document/upload', [DocumentController::class, 'process']);

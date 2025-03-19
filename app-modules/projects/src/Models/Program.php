@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Carbon\Carbon;
-use Spatie\Activitylog\Models\Activity;
+use Spatie\Activitylog\Models\Activity as Actvty;
 use Storage;
 use Auth;
 
@@ -21,17 +21,22 @@ class Program extends Model
 
     public function getActivitylogOptions(): LogOptions
     {
+        $logable = $this->fillable;
+        $logable = array_diff($logable, ['projgram_status_id']);
+
         return LogOptions::defaults()
-        ->logFillable()
+        ->logOnly($logable)
         ->useLogName('Program')
         ->logOnlyDirty()
+        ->dontSubmitEmptyLogs()
         ->setDescriptionForEvent(fn(string $eventName) => "This Program has been {$eventName} by ". Auth::user()->name);
-        // Chain fluent methods for configuration options
+
     }
+
 
     public function logs(): HasMany
     {
-        return $this->hasMany(Activity::class, 'subject_id')->where('log_name', 'Program')->orderBy('id', 'desc');
+        return $this->hasMany(Actvty::class, 'subject_id')->where('log_name', 'Program')->orderBy('id', 'desc');
     }
 
     public function activities(): HasMany
@@ -74,7 +79,22 @@ class Program extends Model
                 Storage::delete($program->getRawOriginal('logo'));
             }
 
+            if ($program->isDirty('program_status_id')) {
+                $oldStatus = ProgramStatus::find($program->getOriginal('program_status_id'))->title ?? 'Unknown';
+                $newStatus = ProgramStatus::find($program->program_status_id)->title ?? 'Unknown';
+                activity()
+                ->useLog('Program')
+                ->causedBy(auth()->user()) // Log who made the change
+                ->performedOn($program)
+                ->withProperties([
+                    'old_status' => $oldStatus,
+                    'new_status' => $newStatus
+                ])
+                ->log("Program status changed from **$oldStatus** to **$newStatus** by " . auth()->user()->name);
+            }
+
         });
+        
         static::deleting(function ($program) {
             if (!is_null($program->getRawOriginal('logo'))) {
                 Storage::delete($program->getRawOriginal('logo'));

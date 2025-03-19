@@ -9,6 +9,7 @@ use Modules\Projects\Models\Program;
 use Modules\Projects\Models\Project;
 use Modules\Projects\Models\Staff;
 use Modules\Projects\Models\Activity;
+use Modules\Projects\Models\Ticket;
 use Modules\Projects\Http\Requests\DocumentRequest;
 use Storage;
 use DB;
@@ -55,12 +56,18 @@ class DocumentController
             $document = $activity->documents()->create($data);
             return response()->json($document, 201);
         }
+
+        if ($request->type == 'Ticket') {
+            $ticket = Ticket::find($request->id);
+            $document = $ticket->documents()->create($data);
+            return response()->json($document, 201);
+        }
     }
 
     public function destroy($id) {
         $document = Document::find($id);
         $document->delete();
-        return response()->json(['message' => 'Program deleted successfully'], 201);
+        return response()->json(['message' => 'Document deleted successfully'], 201);
     }
 
     public static function getFileName($title, $filePath) {

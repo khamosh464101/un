@@ -122,7 +122,7 @@ class Activity extends Model
                     'old_status' => $oldStatus,
                     'new_status' => $newStatus
                 ])
-                ->log("Project status changed from **$oldStatus** to **$newStatus** by " . auth()->user()->name);
+                ->log("Ticket status changed from **$oldStatus** to **$newStatus** by " . auth()->user()->name);
             }
         });
 

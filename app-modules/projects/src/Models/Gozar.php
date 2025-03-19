@@ -39,6 +39,10 @@ class Gozar extends Model
     {
         return $this->belongsToMany(Activity::class);
     }
+    public function tickets(): BelongsToMany
+    {
+        return $this->belongsToMany(Ticket::class);
+    }
 
     
 }
