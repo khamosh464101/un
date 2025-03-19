@@ -30,4 +30,28 @@ class TicketController
         $ticket = Ticket::create($data);
         return response()->json(['message' => 'Sucessfully added!', 'data' => $ticket], 201);
     }
+
+    public function reorder(Request $request) {
+        $this->setOrder($request->items);
+        return response()->json(['message' => 'Successfully reordered!'], 201);
+    }
+
+    private function setOrder($items) {
+        foreach($items as $key => $item) {
+            $ticket = Ticket::find($item['id']);
+            $ticket->order = ++$key;
+            $ticket->save();
+        }
+    }
+
+    public function move(Request $request) {
+        $this->setOrder($request->sItems);
+        foreach($request->dItems as $key => $item) {
+            $ticket = Ticket::find($item['id']);
+            $ticket->order = ++$key;
+            $ticket->ticket_status_id = $item['ticket_status_id'];
+            $ticket->save();
+        }
+        return response()->json(['message' => 'Successfully moved!'], 201);
+    }
 }
