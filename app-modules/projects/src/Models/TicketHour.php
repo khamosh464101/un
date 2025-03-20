@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Carbon\CarbonInterval;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\User;
 
 
 class TicketHour extends Model
@@ -14,7 +15,7 @@ class TicketHour extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id', 'ticket_id', 'value', 'comment', 'activity_id'
+        'user_id', 'ticket_id', 'value', 'comment', 'title'
     ];
 
     public function user(): BelongsTo

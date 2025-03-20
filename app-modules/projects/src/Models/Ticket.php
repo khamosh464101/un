@@ -18,6 +18,7 @@ use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\Activitylog\Models\Activity as Actvty;
 use Carbon\Carbon;
+use App\Models\User;
 use Auth;
 
 class Ticket extends Model
@@ -38,6 +39,9 @@ class Ticket extends Model
         'ticket_priority_id',
         'activity_id'
     ];
+
+    protected $appends = ['created_at_formatted'];
+
    
     public function getActivitylogOptions(): LogOptions
     {
@@ -200,6 +204,31 @@ class Ticket extends Model
         } else {
             return  abs($daysLeft) . " days overdue";
         }
+    }
+
+
+    public function getCreatedAtFormattedAttribute($value)
+    {
+        // Format the 'created_at' value
+        $formattedDate = Carbon::parse($value)->format('Y-m-d h:i A');
+
+        // Get the human-readable relative time (e.g., "3 hours ago")
+        $relativeTime = Carbon::parse($value)->diffForHumans();
+
+        // Return the formatted string
+        return $formattedDate . ' (' . $relativeTime . ')';
+    }
+
+    public function getUpdatedAtAttribute($value)
+    {
+        // Format the 'created_at' value
+        $formattedDate = Carbon::parse($value)->format('Y-m-d h:i A');
+
+        // Get the human-readable relative time (e.g., "3 hours ago")
+        $relativeTime = Carbon::parse($value)->diffForHumans();
+
+        // Return the formatted string
+        return $formattedDate . ' (' . $relativeTime . ')';
     }
 
     protected static function boot()

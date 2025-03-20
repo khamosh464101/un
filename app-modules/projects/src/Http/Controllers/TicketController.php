@@ -32,13 +32,14 @@ class TicketController
     }
 
     public function edit($id) {
-        $ticket = Ticket::with('gozars.district.province')->with('comments.user')->find($id);
+        $ticket = Ticket::with('gozars.district.province')->with('comments.user')->with('hours.user')->withSum('hours', 'value')->find($id);
         $ticket->status;
         $ticket->type;
         $ticket->priority;
         $ticket->logs;
         $ticket->documents;
-        $ticket->activity;
+        $ticket->activity->project->program;
+        $ticket->owner;
         $ticket->responsible;
         return response()->json($ticket, 201);
     }

@@ -18,6 +18,7 @@ use Modules\Projects\Http\Controllers\ProgramStatusController;
  use Modules\Projects\Http\Controllers\TicketController;
  use Modules\Projects\Http\Controllers\DocumentController;
  use Modules\Projects\Http\Controllers\TicketCommentController;
+ use Modules\Projects\Http\Controllers\TicketHourController;
 
  Route::middleware(['auth:sanctum', 'twofactor'])->get('/user', function (Request $request) {
     return $request->user();
@@ -89,6 +90,7 @@ Route::middleware(['auth:sanctum', 'twofactor'])->group(function () {
     Route::resource('/api/ticket', TicketController::class)->only(['store', 'edit', 'update', 'destroy']);
 
     Route::resource('/api/ticket-comments', TicketCommentController::class)->only(['store', 'update', 'destroy']);
+    Route::resource('/api/ticket-hours', TicketHourController::class)->only(['store', 'update', 'destroy']);
 
     // FILEPOND START
     Route::post('/api/document/upload', [DocumentController::class, 'process']);
