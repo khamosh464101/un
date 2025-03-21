@@ -34,7 +34,8 @@ class TicketRequest extends FormRequest
             'ticket_status_id' => ['required', 'integer'],
             'ticket_type_id' => ['required', 'integer'],
             'ticket_priority_id' => ['required', 'integer'],
-            'activity_id' => 'required|integer'
+            'activity_id' => 'required|integer',
+            'parent_id' => 'nullable|integer'
         ];
 
 

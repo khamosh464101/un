@@ -37,10 +37,11 @@ class Ticket extends Model
         'ticket_status_id',
         'ticket_type_id',
         'ticket_priority_id',
-        'activity_id'
+        'activity_id',
+        'parent_id',
     ];
 
-    protected $appends = ['created_at_formatted'];
+    protected $appends = ['created_at_formatted', 'project_id', 'deadline_formatted'];
 
    
     public function getActivitylogOptions(): LogOptions
@@ -113,9 +114,14 @@ class Ticket extends Model
     }
 
 
-    public function relations(): HasMany
+    public function children(): HasMany
     {
-        return $this->hasMany(TicketRelation::class, 'ticket_id', 'id');
+        return $this->hasMany(Ticket::class, 'parent_id', 'id');
+    }
+
+    public function parent(): BelongsTo
+    {
+        return $this->belongsTo(Ticket::class, 'parent_id');
     }
 
     public function hours(): HasMany
@@ -161,40 +167,11 @@ class Ticket extends Model
         );
     }
 
-    public function estimationInSeconds(): Attribute
-    {
-        return new Attribute(
-            get: function () {
-                if (!$this->estimation) {
-                    return null;
-                }
-                return $this->estimation * 3600;
-            }
-        );
-    }
-
-    public function estimationProgress(): Attribute
-    {
-        return new Attribute(
-            get: function () {
-                return (($this->totalLoggedSeconds ?? 0) / ($this->estimationInSeconds ?? 1)) * 100;
-            }
-        );
-    }
-
-    public function completudePercentage(): Attribute
-    {
-        return new Attribute(
-            get: fn() => $this->estimationProgress
-        );
-    }
-
     public function getCreatedAtAttribute($value) {
         return Carbon::parse($value)->format('M d, Y');
     }
-
-    public function getDeadlineAttribute($value) {
-        $dueDate = Carbon::parse($value); // Replace with your due date
+    public function getDeadlineFormattedAttribute() {
+        $dueDate = Carbon::parse($this->deadline); // Replace with your due date
         $today = Carbon::now();
 
         $daysLeft = ceil($today->diffInDays($dueDate, false)); // false to return negative values
@@ -217,6 +194,10 @@ class Ticket extends Model
 
         // Return the formatted string
         return $formattedDate . ' (' . $relativeTime . ')';
+    }
+    public function getProjectIdAttribute()
+    {
+        return $this->activity->project_id;
     }
 
     public function getUpdatedAtAttribute($value)
@@ -258,10 +239,13 @@ class Ticket extends Model
         });
 
         static::deleting(function ($ticket) {
+            // $ticket->children()->update(['parent_id' => null]);
             $ticket->documents()->delete(); // Delete all related documents in one query
             $ticket->comments()->delete();
+            $ticket->hours()->delete();
             $ticket->gozars()->detach();
         });
+
     }
 
 

@@ -4,6 +4,7 @@ namespace Modules\Projects\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Modules\Projects\Models\Project;
+use Modules\Projects\Models\Activity;
 use Modules\Projects\Models\Ticket;
 use Modules\Projects\Models\TicketStatus;
 use Modules\Projects\Models\Province;
@@ -14,6 +15,19 @@ use Carbon\Carbon;
 
 class TicketController
 {
+    public function select2($id = null) {
+        $tickets;
+        if ($id) {
+           $activity = Activity::find($id);
+           $tickets = $activity->tickets;
+
+        } else {
+            $tickets = Ticket::select('id', 'title')->get();
+        }
+        return response()->json($tickets, 201);
+  
+    }
+
     public function index(Request $request) {
         $data = TicketStatus::with([
             'tickets' => function ($query) use ($request) {
@@ -28,8 +42,13 @@ class TicketController
     public function store(TicketRequest $request) {
         $data = $request->validated();
         $ticket = Ticket::create($data);
+        if ($request->parent_id) {
+            # code...
+        }
         return response()->json(['message' => 'Sucessfully added!', 'data' => $ticket], 201);
     }
+
+
 
     public function edit($id) {
         $ticket = Ticket::with('gozars.district.province')->with('comments.user')->with('hours.user')->withSum('hours', 'value')->find($id);
@@ -41,7 +60,26 @@ class TicketController
         $ticket->activity->project->program;
         $ticket->owner;
         $ticket->responsible;
+        $ticket->parent;
+        $ticket->children;
         return response()->json($ticket, 201);
+    }
+
+    public function update(TicketRequest $request, $id) {
+        $data = $request->validated();
+        $ticket = Ticket::find($id);
+        $ticket->update($data);
+        return response()->json(['message' => 'Sucessfully updated!', 'data' => $ticket], 201);
+    }
+
+    public function destroy($id) {
+        $ticket = Ticket::find($id);
+        if (!$ticket) {
+            return response()->json(['message' => 'Ticket not found'], 404);
+        }
+
+        $ticket->delete();
+        return response()->json(['message' => 'Ticket deleted successfully'], 201);
     }
 
     public function reorder(Request $request) {

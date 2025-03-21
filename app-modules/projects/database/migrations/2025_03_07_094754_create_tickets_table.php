@@ -25,6 +25,7 @@ return new class extends Migration
             $table->foreignId('ticket_type_id');
             $table->foreignId('ticket_priority_id');
             $table->foreignId('activity_id');
+            $table->foreignId('parent_id')->nullable();
             $table->timestamps();
         });
     }

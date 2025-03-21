@@ -20,7 +20,7 @@ class ActivityController
            $activities = $project->activities;
 
         } else {
-            $activities = Activities::select('id', 'name')->get();
+            $activities = Activity::select('id', 'title')->get();
         }
         return response()->json($activities, 201);
   
