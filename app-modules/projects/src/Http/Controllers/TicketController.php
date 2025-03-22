@@ -27,6 +27,47 @@ class TicketController
         return response()->json($tickets, 201);
   
     }
+    public function list(Request $request) {
+ 
+        $search = $request->search;
+        $sortBy = $request->sortBy;
+        $typeId = $request->typeId;
+        $priorityId = $request->priorityId;
+        $statusId = $request->statusId;
+        $projectId = $request->projectId;
+        $activityId = $request->activityId;
+        $field = ($sortBy == 'Oldest' || $sortBy == 'Newest') ? 'id' : 'title';
+        $sortType = ($sortBy == 'Z - A' || $sortBy == 'Newest') ? 'DESC' : 'ASC';
+        $tickets = Ticket::with('status')
+                    ->with('type')
+                    ->with('priority')
+                    ->with('responsible')
+                    ->with('activity')
+                    ->when($search, function($query) use ($search) {
+                        $query->where('title', 'like', '%'.$search.'%')
+                        ->orWhere('ticket_number', $search);
+                    })
+                    ->when($statusId, function($query) use ($statusId) {
+                        $query->where('ticket_status_id', $statusId);
+                    })
+                    ->when($typeId, function($query) use ($typeId) {
+                        $query->where('ticket_type_id', $typeId);
+                    })
+                    ->when($priorityId, function($query) use ($priorityId) {
+                        $query->where('ticket_priority_id', $priorityId);
+                    })
+                    ->when($projectId, function($query) use ($projectId) {
+                        $query->whereHas('activity', function ($q) use ($projectId) {
+                            $q->where('project_id', $projectId);
+                        });
+                    })
+                    ->when($activityId, function($query) use ($activityId) {
+                        $query->where('activity_id', $activityId);
+                    })
+                    ->orderBy($field, $sortType)
+                    ->paginate(8);
+        return response()->json($tickets, 201);
+    }
 
     public function index(Request $request) {
         $data = TicketStatus::with([

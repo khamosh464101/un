@@ -239,7 +239,7 @@ class Ticket extends Model
         });
 
         static::deleting(function ($ticket) {
-            // $ticket->children()->update(['parent_id' => null]);
+             $ticket->children()->update(['parent_id' => null]);
             $ticket->documents()->delete(); // Delete all related documents in one query
             $ticket->comments()->delete();
             $ticket->hours()->delete();
