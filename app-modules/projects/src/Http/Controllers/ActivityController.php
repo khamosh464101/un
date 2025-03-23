@@ -68,10 +68,10 @@ class ActivityController
         $activity = Activity::with('gozars.district.province')->find($id);
         $activity->status;
         $activity->tickets;
-        $activity->types;
+        $activity->type;
         $activity->logs;
         $activity->documents;
-        $activity->project;
+        $activity->project->program;
         $activity->responsible;
         return response()->json($activity, 201);
     }

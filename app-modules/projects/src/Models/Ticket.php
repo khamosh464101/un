@@ -184,13 +184,13 @@ class Ticket extends Model
     }
 
 
-    public function getCreatedAtFormattedAttribute($value)
+    public function getCreatedAtFormattedAttribute()
     {
         // Format the 'created_at' value
-        $formattedDate = Carbon::parse($value)->format('Y-m-d h:i A');
+        $formattedDate = Carbon::parse($this->created_at)->format('Y-m-d h:i A');
 
         // Get the human-readable relative time (e.g., "3 hours ago")
-        $relativeTime = Carbon::parse($value)->diffForHumans();
+        $relativeTime = Carbon::parse($this->created_at)->diffForHumans();
 
         // Return the formatted string
         return $formattedDate . ' (' . $relativeTime . ')';

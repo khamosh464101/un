@@ -30,6 +30,7 @@ class Activity extends Model
         'responsible_id'
     ];
 
+    protected $appends = ['created_at_formatted'];
     public function getActivitylogOptions(): LogOptions
     {
         $logable = $this->fillable;
@@ -99,6 +100,30 @@ class Activity extends Model
     }
     public function getEndsAtAttribute($value) {
         return Carbon::parse($value)->format('M d, Y');
+    }
+
+    public function getCreatedAtFormattedAttribute()
+    {
+        // Format the 'created_at' value
+        $formattedDate = Carbon::parse($this->created_at)->format('Y-m-d h:i A');
+
+        // Get the human-readable relative time (e.g., "3 hours ago")
+        $relativeTime = Carbon::parse($this->created_at)->diffForHumans();
+
+        // Return the formatted string
+        return $formattedDate . ' (' . $relativeTime . ')';
+    }
+
+    public function getUpdatedAtAttribute($value)
+    {
+        // Format the 'created_at' value
+        $formattedDate = Carbon::parse($value)->format('Y-m-d h:i A');
+
+        // Get the human-readable relative time (e.g., "3 hours ago")
+        $relativeTime = Carbon::parse($value)->diffForHumans();
+
+        // Return the formatted string
+        return $formattedDate . ' (' . $relativeTime . ')';
     }
 
     protected static function boot()
