@@ -73,6 +73,7 @@ class ActivityController
         $activity->documents;
         $activity->project->program;
         $activity->responsible;
+        $activity->progress = $activity->getProgress();
         return response()->json($activity, 201);
     }
 

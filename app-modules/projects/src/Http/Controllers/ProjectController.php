@@ -8,6 +8,7 @@ use Modules\Projects\Http\Requests\ProjectRequest;
 use Modules\Projects\Http\Controllers\ProgramController;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Modules\Projects\Http\Resources\Project\ProjectsResource;
 
 class ProjectController
 {
@@ -22,10 +23,11 @@ class ProjectController
         $sortBy = $request->sortBy;
         $field = ($sortBy == 'Oldest' || $sortBy == 'Newest') ? 'id' : 'title';
         $sortType = ($sortBy == 'Z - A' || $sortBy == 'Newest') ? 'DESC' : 'ASC';
-        $projects = Project::with('status')->withCount('activities')->when($search, function($query) use ($search) {
+        $projects = Project::with('status')->with('staff')->withCount('activities')->when($search, function($query) use ($search) {
             $query->where('title', 'like', '%'.$search.'%');
         })->orderBy($field, $sortType)->paginate(8);
-        return response()->json($projects, 201);
+        return ProjectsResource::collection($projects);
+        // return response()->json($projects, 201);
     }
     
     public function store(ProjectRequest $request) {
@@ -48,6 +50,7 @@ class ProjectController
         $project->logs;
         $project->documents;
         $project->staff;
+        $project->progress = $project->getProgress();
         return response()->json($project, 201);
     }
 

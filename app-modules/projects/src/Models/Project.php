@@ -35,6 +35,8 @@ class Project extends Model
 
     ];
 
+    protected $appends = ['created_at_formatted', 'updated_at_formatted'];
+
     public function getActivitylogOptions(): LogOptions
     {
         $logable = $this->fillable;
@@ -108,6 +110,43 @@ class Project extends Model
     public function statusActivities(): HasMany
     {
         return $this->hasMany(ProjectActivity::class, 'project_id', 'id');
+    }
+
+    public function getProgress()
+    {
+        $total = 0;
+        $total_logged_hours = 0;
+        foreach ($this->activities as $key => $activity) {
+            foreach ($activity->tickets as $key => $value) {
+                $total += $value->estimation;
+            $total_logged_hours += $value->hours->sum('value');
+            }
+        }
+        return ['total_hours' => $total > 0 ? $total : 100, 'total_logged_hours' => $total > 0 ? $total_logged_hours : 0];
+    }
+
+    public function getCreatedAtFormattedAttribute()
+    {
+        // Format the 'created_at' value
+        $formattedDate = Carbon::parse($this->created_at)->format('Y-m-d h:i A');
+
+        // Get the human-readable relative time (e.g., "3 hours ago")
+        $relativeTime = Carbon::parse($this->created_at)->diffForHumans();
+
+        // Return the formatted string
+        return $formattedDate . ' (' . $relativeTime . ')';
+    }
+
+    public function getUpdatedAtFormattedAttribute()
+    {
+       // Format the 'created_at' value
+       $formattedDate = Carbon::parse($this->updated_at)->format('Y-m-d h:i A');
+
+       // Get the human-readable relative time (e.g., "3 hours ago")
+       $relativeTime = Carbon::parse($this->updated_at)->diffForHumans();
+
+       // Return the formatted string
+       return $formattedDate . ' (' . $relativeTime . ')';
     }
 
 

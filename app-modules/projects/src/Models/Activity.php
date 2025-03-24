@@ -95,6 +95,17 @@ class Activity extends Model
         return $this->belongsToMany(Gozar::class);
     }
 
+    public function getProgress()
+    {
+        $total = 0;
+        $total_logged_hours = 0;
+        foreach ($this->tickets as $key => $value) {
+            $total += $value->estimation;
+            $total_logged_hours += $value->hours->sum('value');
+        }
+        return ['total_hours' => $total > 0 ? $total : 100, 'total_logged_hours' => $total > 0 ? $total_logged_hours : 0];
+    }
+
     public function getStartsAtAttribute($value) {
         return Carbon::parse($value)->format('M d, Y');
     }
