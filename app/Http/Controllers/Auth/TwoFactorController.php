@@ -29,9 +29,14 @@ class TwoFactorController extends Controller
 
         $request->validate([
             'idToken' => ['string', 'required'],
+            'phone' => ['string', 'required']
         ]);
         $user = auth()->user();
+        if ($user->phone !== $request->phone) {
+            return response()->json(['error' => 'Wrong phone number!'], 400);
+        }
         $defaultAuth = Firebase::auth();
+        $idToken = $request->idToken;
 
         try {
 

@@ -19,18 +19,18 @@ class TestController extends Controller
           // Validate credentials (e.g., email and password)
 
 
-            // Send OTP to user's registered phone number after successful login
-            $phoneNumber = '+93747566686';  // Assuming phone number is saved in your user table
-            $defaultAuth = Firebase::auth();
-            // Initialize Firebase phone authentication
-            try {
-                // Request OTP via Firebase Authentication
+            // // Send OTP to user's registered phone number after successful login
+            // $phoneNumber = '+93747566686';  // Assuming phone number is saved in your user table
+            // $defaultAuth = Firebase::auth();
+            // // Initialize Firebase phone authentication
+            // try {
+            //     // Request OTP via Firebase Authentication
 
-                $defaultAuth->sendOtpToPhone($phoneNumber);
-                return response()->json(['message' => 'OTP sent successfully']);
-            } catch (\Exception $e) {
-                return response()->json(['error' => 'Failed to send OTP'], 500);
-            }
+            //     $defaultAuth->sendOtpToPhone($phoneNumber);
+            //     return response()->json(['message' => 'OTP sent successfully']);
+            // } catch (\Exception $e) {
+            //     return response()->json(['error' => 'Failed to send OTP'], 500);
+            // }
       
 //         $factory = (new Factory)
 //     ->withServiceAccount('firebase-auth.json')
@@ -42,9 +42,9 @@ class TestController extends Controller
 // $remoteConfig = $factory->createRemoteConfig();
 // $cloudStorage = $factory->createStorage();
 // $firestore = $factory->createFirestore();
-        // $defaultAuth = Firebase::auth();
-        // // Return an instance of the Auth component for a specific Firebase project
-        // $appAuth = Firebase::project('app')->auth();
+        $defaultAuth = Firebase::auth();
+        // Return an instance of the Auth component for a specific Firebase project
+        $appAuth = Firebase::project('app')->auth();
         // $anotherAppAuth = Firebase::project('another-app')->auth();
     }
 
