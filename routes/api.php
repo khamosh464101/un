@@ -13,7 +13,7 @@ Route::middleware(['auth:sanctum', 'twofactor'])->get('/user', function (Request
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('verify/resend', [TwoFactorController::class, 'resend'])->name('verify.resend');
     Route::resource('verify', TwoFactorController::class)->only(['store']);
-
+    Route::post('phoneVerify', [TwoFactorController::class, 'phoneVerify']);
     Route::post('/roles', [RoleController::class, 'index']);
     Route::post('/role/create', [RoleController::class, 'create']);
     Route::get('/role/{id}', [RoleController::class, 'get']);
