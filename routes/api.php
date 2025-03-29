@@ -5,9 +5,10 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\TwoFactorController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\PermissionController;
+use App\Http\Controllers\Api\UserController;
 
-Route::middleware(['auth:sanctum', 'twofactor'])->get('/user', function (Request $request) {
-    return $request->user();
+Route::middleware(['auth:sanctum', 'twofactor'])->group(function () {
+    Route::resource('user', UserController::class)->only(['store']);
 });
 
 Route::middleware(['auth:sanctum'])->group(function () {
