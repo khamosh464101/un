@@ -15,6 +15,7 @@ use Modules\Projects\Database\Seeders\StaffStatusSeeder;
 use Modules\Projects\Database\Seeders\TicketPrioritySeeder;
 use Modules\Projects\Database\Seeders\TicketStatusSeeder;
 use Modules\Projects\Database\Seeders\TicketTypeSeeder;
+use Modules\Projects\Models\Staff;
 use Database\Seeders\PermissionSeeder;
 use DB;
 
@@ -25,9 +26,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // DB::table('roles')->truncate();
-        // DB::table('permissions')->truncate();
-        $this->call([PermissionSeeder::class]);
+        
         // DB::table('provinces')->truncate();
         // DB::table('districts')->truncate();
         // $this->call([ProvinceSeeder::class]);
@@ -42,12 +41,28 @@ class DatabaseSeeder extends Seeder
         // $this->call([TicketPrioritySeeder::class]);
         // $this->call([TicketTypeSeeder::class]);
         
-        // User::factory(10)->create();
 
-        // User::factory()->create([
-        //     'name' => 'Test User',
-        //     'email' => 'azim@momtaz.af',
-        //     'password' => bcrypt('azim12azim'),
-        // ]);
+
+       $staff = Staff::create(
+            [
+                'name' => 'Azim Khamosh',
+                'position_title' => 'Defult',
+                'official_email' => 'azim@momtaz.af',
+                'photo' => 'project-management/staff/photo/azim-khamosh-2025-03-09-16-52-22-149.jpg',
+                'phone1' => '+93704499000',
+                'duty_station' => 'Kabul',
+                'staff_status_id' => 1
+            ]
+            );
+        User::factory()->create([
+            'name' => $staff->name,
+            'email' => $staff->official_email,
+            'phone' => $staff->phone1,
+            'password' => bcrypt('azim12azim'),
+            'staff_id' => $staff->id,
+        ]);
+        // DB::table('roles')->truncate();
+        // DB::table('permissions')->truncate();
+        $this->call([PermissionSeeder::class]);
     }
 }

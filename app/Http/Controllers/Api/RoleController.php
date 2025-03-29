@@ -13,6 +13,9 @@ use Auth;
 
 class RoleController extends Controller
 {
+    public function select2() {
+        return response()->json(Role::select('id as value', 'name as label')->get(), 201);
+    }
     public function index(Request $request) {
         $search = $request->search;
         $roles = Role::when($search, function($query) use ($search) {

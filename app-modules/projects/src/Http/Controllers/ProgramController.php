@@ -47,10 +47,9 @@ class ProgramController
     }
 
     public function edit($id) {
-        $program = Program::find($id);
+        $program = Program::with('logs.causer')->find($id);
         $program->status;
         $program->projects;
-        $program->logs;
         $program->documents;
         return response()->json($program, 201);
     }

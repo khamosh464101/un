@@ -65,11 +65,10 @@ class ActivityController
     }
 
     public function edit($id) {
-        $activity = Activity::with('gozars.district.province')->find($id);
+        $activity = Activity::with('gozars.district.province')->with('logs.causer')->find($id);
         $activity->status;
         $activity->tickets;
         $activity->type;
-        $activity->logs;
         $activity->documents;
         $activity->project->program;
         $activity->responsible;

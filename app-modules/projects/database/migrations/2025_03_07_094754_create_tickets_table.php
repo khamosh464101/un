@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('ticket_number')->nullable();
             $table->text('description')->nullable();
             $table->decimal('estimation', 6, 2);
-            $table->datetime('deadline');
+            $table->date('deadline');
             $table->integer('order')->default(0);
             $table->foreignId('owner_id');
             $table->foreignId('responsible_id');

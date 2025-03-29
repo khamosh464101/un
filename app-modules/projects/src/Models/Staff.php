@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Spatie\Activitylog\Models\Activity as Actvty;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
@@ -34,13 +35,13 @@ class Staff extends Model
     {
         $logable = $this->fillable;
         $logable = array_diff($logable, ['staff_status_id']);
-
+        $name = Auth::user()->name ?? null;
         return LogOptions::defaults()
         ->logOnly($logable)
         ->useLogName('Staff')
         ->logOnlyDirty()
         ->dontSubmitEmptyLogs()
-        ->setDescriptionForEvent(fn(string $eventName) => "This Staff has been {$eventName} by ". Auth::user()->name);
+        ->setDescriptionForEvent(fn(string $eventName) => "This Staff has been {$eventName} by ". $name);
 
     }
 
@@ -78,6 +79,11 @@ class Staff extends Model
     }
     public function getUpdatedAtAttribute($value) {
         return Carbon::parse($value)->format('M d, Y');
+    }
+
+    public function user(): HasOne
+    {
+        return $this->hasOne(User::class, 'staff_id');
     }
 
 

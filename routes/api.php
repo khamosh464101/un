@@ -14,6 +14,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('verify/resend', [TwoFactorController::class, 'resend'])->name('verify.resend');
     Route::resource('verify', TwoFactorController::class)->only(['store']);
     Route::post('phoneVerify', [TwoFactorController::class, 'phoneVerify']);
+    Route::get('roles/select2', [RoleController::class, 'select2']);
     Route::post('/roles', [RoleController::class, 'index']);
     Route::post('/role/create', [RoleController::class, 'create']);
     Route::get('/role/{id}', [RoleController::class, 'get']);

@@ -20,6 +20,7 @@ return new class extends Migration
             $table->timestamp('phone_verified_at')->nullable();
             $table->string('two_factor_code')->nullable();
             $table->dateTime('two_factor_expires_at')->nullable();
+            $table->foreignId('staff_id');
             $table->string('password');
             $table->rememberToken();
             $table->timestamps();

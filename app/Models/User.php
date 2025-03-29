@@ -9,7 +9,10 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 use Spatie\Activitylog\Traits\LogsActivity;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Spatie\Activitylog\LogOptions;
+use Modules\Projects\Models\Staff;
+
 
 class User extends Authenticatable
 {
@@ -28,7 +31,10 @@ class User extends Authenticatable
         'password',
         'two_factor_code', 
         'two_factor_expires_at',
+        'staff_id'
     ];
+
+    protected $appends = ['photo', 'position_title'];
 
     /**
      * The attributes that should be hidden for serialization.
@@ -52,6 +58,19 @@ class User extends Authenticatable
             'phone_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function staff(): BelongsTo
+    {
+        return $this->belongsTo(Staff::class, 'staff_id');
+    }
+
+    public function getPhotoAttribute() {
+        return $this->staff->photo;
+    }
+
+    public function getPositionTitleAttribute() {
+        return $this->staff->position_title;
     }
 
     public function generateTwoFactorCode(): void
