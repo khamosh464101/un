@@ -48,6 +48,7 @@ class ProjectController
         $project->activities;
         $project->program;
         $project->documents;
+        $project->donor;
         $project->staff;
         $project->progress = $project->getProgress();
         return response()->json($project, 201);

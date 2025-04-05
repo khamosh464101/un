@@ -10,6 +10,8 @@ use Modules\Projects\Models\Project;
 use Modules\Projects\Models\Staff;
 use Modules\Projects\Models\Activity;
 use Modules\Projects\Models\Ticket;
+use Modules\Projects\Models\Subproject;
+use Modules\Projects\Models\Partner;
 use Modules\Projects\Http\Requests\DocumentRequest;
 use Storage;
 use DB;
@@ -43,6 +45,16 @@ class DocumentController
         if ($request->type == 'Project') {
             $project = Project::find($request->id);
             $document = $project->documents()->create($data);
+            return response()->json($document, 201);
+        }
+        if ($request->type == 'Partner') {
+            $partner = Partner::find($request->id);
+            $document = $partner->documents()->create($data);
+            return response()->json($document, 201);
+        }
+        if ($request->type == 'Subproject') {
+            $subproject = Subproject::find($request->id);
+            $document = $subproject->documents()->create($data);
             return response()->json($document, 201);
         }
         if ($request->type == 'Staff') {

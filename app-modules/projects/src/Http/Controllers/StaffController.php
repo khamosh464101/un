@@ -51,7 +51,10 @@ class StaffController
     public function edit($id) {
         $staff = Staff::with('logs.causer')->find($id);
         $staff->status;
-        $staff->user->roles;
+        if ($staff->user) {
+            $staff->user->roles;
+        }
+       
         $staff->documents;
         return response()->json($staff, 201);
     }

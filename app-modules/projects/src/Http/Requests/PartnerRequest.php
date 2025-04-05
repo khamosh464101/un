@@ -3,6 +3,7 @@
 namespace Modules\Projects\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class PartnerRequest extends FormRequest
 {
@@ -11,7 +12,7 @@ class PartnerRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +23,15 @@ class PartnerRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'business_name' => ['required', 'string', 'max:255', Rule::unique('partners')->ignore($this?->route('partner'))],
+            'address' => ['required', 'string', 'max:255'],
+            'website' => ['nullable', 'string', Rule::unique('partners')->ignore($this?->route('partner'))],
+            'representative_name' => ['required', 'string', 'max:255'],
+            'representative_phone1' => ['required', 'string', 'max:255', Rule::unique('partners')->ignore($this?->route('partner'))],
+            'representative_phone2' => ['nullable', 'string', 'max:255', Rule::unique('partners')->ignore($this?->route('partner'))],
+            'representative_email' => ['nullable', 'string', 'max:255', Rule::unique('partners')->ignore($this?->route('partner'))],
+            'description' => 'nullable',
         ];
+
     }
 }

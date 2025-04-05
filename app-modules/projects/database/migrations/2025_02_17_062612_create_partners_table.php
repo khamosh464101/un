@@ -16,9 +16,14 @@ return new class extends Migration
             $table->string('business_name');
             $table->text('address');
             $table->string('website')->nullable();
+            $table->string('representative_name');
+            $table->string("representative_phone1");
+            $table->string('representative_phone2')->nullable();
+            $table->string('representative_email')->nullable();
             $table->text('description')->nullable();
             $table->timestamps();
         });
+        
     }
 
     /**

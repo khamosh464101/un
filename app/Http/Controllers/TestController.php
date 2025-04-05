@@ -9,6 +9,7 @@ use Kreait\Firebase\Auth;
 use Kreait\Firebase\Contract\Messaging;
 use Kreait\Firebase\Messaging\Notification;
 use Kreait\Firebase\Messaging\CloudMessage;
+use Kreait\Firebase\Messaging\WebPushConfig;
 
 class TestController extends Controller
 {
@@ -23,17 +24,39 @@ class TestController extends Controller
      */
     public function index()
     {
-        $deviceToken = 'e8QrzP6AOpr7Xe5L-K8y7E:APA91bFtgpbgSjGqJ7Fuf7PIdVwwjywJagfCQMvlCagickWYJL-ycVQbrX_r6iCcOR3FclALyiF5whyKiG7HJruSPBOsQ-OmWsYH_8AwgCTcV36820cYEhs';
+        $deviceToken = 'ffZIOXzY8tLbn-uZu7LXlt:APA91bHUA3p1BvIFqrCJXdgKkP-ujtC0Uxz5Hyy6ihbgNbp8kCtJHWkdO_22PAmMNUrKkDB3cEHEgGdYN8iz6UbuWI5u-8smnWQtFNjxwZrXakQEMCUVSQ8';
         $notification = Notification::fromArray([
             'title' => 'Laravel notificaton',
             'body' => 'Laravel notification content',
+            'click_action' => 'https://caedo.org',
+            'icon' => 'https://www.gstatic.com/mobilesdk/240501_mobilesdk/firebase_28dp.png',
             'image' => 'https://www.gstatic.com/mobilesdk/240501_mobilesdk/firebase_28dp.png',
         ]);
 
+        // $config = WebPushConfig::fromArray([
+        //     'notification' => [
+        //         'title' => '$GOOG up 1.43% on the day',
+        //         'body' => '$GOOG gained 11.80 points to close at 835.67, up 1.43% on the day.',
+        //         'icon' => 'https://my-server.example/icon.png',
+        //     ],
+        //     'fcm_options' => [
+        //         'link' => 'https://my-server.example/some-page',
+        //     ],
+        // ]);
+        
+        // $message = $message->withWebPushConfig($config);
+        // $config = WebPushConfig::fromArray([
+        //     'fcm_options' => [
+        //         'link' => 'https://caedo.org',
+        //     ],
+        // ]);
+
         $message = CloudMessage::new()
-            ->withNotification($notification) // optional
+             ->withNotification($notification) // optional
             ->withData([]) // optional
             ->toToken($deviceToken);
+
+        // $message = $message->withWebPushConfig($config);
 
         $result = $this->messaging->send($message);
         return $result;

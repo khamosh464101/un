@@ -29,6 +29,7 @@ class UserController extends Controller
             ]);
         }
         $role = Role::find($request->role_id);
+        $user->roles()->detach();
         $user->assignRole($role);
         $user->roles;
         return response()->json(['message' => 'Sucessfully'. $request->id ? 'updated!' : 'added!', 'data' => $user], 201);
