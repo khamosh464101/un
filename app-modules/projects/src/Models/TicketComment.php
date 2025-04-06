@@ -70,7 +70,7 @@ class TicketComment extends Model
             } else {
                 $user = $comment->ticket->responsible->user;
             }
-            $user->notify(new CommentNotification($comment, auth()->user(), 'removed'));
+           $notification = $user->notify(new CommentNotification($comment, auth()->user(), 'removed'));
         });
 
     }
