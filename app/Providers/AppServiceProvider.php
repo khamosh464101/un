@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Event;
+use Modules\Projects\Events\NotificationSent;
 
 class AppServiceProvider extends ServiceProvider
 {

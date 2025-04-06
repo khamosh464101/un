@@ -12,6 +12,7 @@
         "php": "^8.2",
         "internachi/modular": "^2.2",
         "kreait/laravel-firebase": "^6.0",
+        "laravel-notification-channels/fcm": "^5.1",
         "laravel/breeze": "^2.3",
         "laravel/framework": "^11.31",
         "laravel/sanctum": "^4.0",

@@ -21,6 +21,8 @@ class TwoFactorController extends Controller
             return response()->json(['message' => 'Invalid 2FA code'], 401);
         }
         $user->resetTwoFactorCode();
+        $user->device_token = $request->deviceToken;
+        $user->save();
         return response()->json($user, 201);
     }
 
@@ -45,6 +47,8 @@ class TwoFactorController extends Controller
             return response()->json(['error' => 'Invalid token'], 400);
         }
         $user->resetTwoFactorCode();
+        $user->device_token = $request->deviceToken;
+        $user->save();
         return response()->json($user, 201);
     }
     public function resend(): JsonResponse

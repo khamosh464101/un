@@ -31,6 +31,7 @@ class User extends Authenticatable
         'password',
         'two_factor_code', 
         'two_factor_expires_at',
+        'device_token',
         'staff_id'
     ];
 
@@ -63,6 +64,11 @@ class User extends Authenticatable
     public function staff(): BelongsTo
     {
         return $this->belongsTo(Staff::class, 'staff_id');
+    }
+
+    public function routeNotificationForFcm()
+    {
+        return $this->device_token;
     }
 
     public function getPhotoAttribute() {

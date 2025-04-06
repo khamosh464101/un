@@ -4,8 +4,11 @@ namespace Modules\Projects\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Modules\Projects\Notifications\Comments\CommentNotification;
+
 use App\Models\User;
 use Carbon\Carbon;
+use Auth;
 
 class TicketComment extends Model
 {
@@ -35,5 +38,42 @@ class TicketComment extends Model
         // Return the formatted string
         return $formattedDate . ' (' . $relativeTime . ')';
     }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::created(function ($comment) {
+            $user;
+            if ($comment->user_id == $comment->ticket->responsible->user->id) {
+                $user = $comment->ticket->owner;
+            } else {
+                $user = $comment->ticket->responsible->user;
+            }
+            $user->notify(new CommentNotification($comment, auth()->user(), 'added'));
+        });
+
+        static::updating(function ($comment) {
+            $user;
+            if ($comment->user_id == $comment->ticket->responsible->user->id) {
+                $user = $comment->ticket->owner;
+            } else {
+                $user = $comment->ticket->responsible->user;
+            }
+            $user->notify(new CommentNotification($comment, auth()->user(), 'updated'));
+        });
+
+        static::deleting(function ($comment) {
+            $user;
+            if ($comment->user_id == $comment->ticket->responsible->user->id) {
+                $user = $comment->ticket->owner;
+            } else {
+                $user = $comment->ticket->responsible->user;
+            }
+            $user->notify(new CommentNotification($comment, auth()->user(), 'removed'));
+        });
+
+    }
+
 
 }

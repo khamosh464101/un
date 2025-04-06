@@ -24,13 +24,11 @@ class TestController extends Controller
      */
     public function index()
     {
-        $deviceToken = 'ffZIOXzY8tLbn-uZu7LXlt:APA91bHUA3p1BvIFqrCJXdgKkP-ujtC0Uxz5Hyy6ihbgNbp8kCtJHWkdO_22PAmMNUrKkDB3cEHEgGdYN8iz6UbuWI5u-8smnWQtFNjxwZrXakQEMCUVSQ8';
+        $deviceToken = 'cmBbWKAnXWkXJj0ecJe2Tv:APA91bH5jqFNEhVSVByFOWD-C8kOAgXvCxrXcyaITDqDnwgHMDNqn7Wi_PbpgTkf811l0RaQoq3i_kRB-sT1b40F6f6x_PIRo2m-i62qIf1vwK8RE5DD0-c';
         $notification = Notification::fromArray([
             'title' => 'Laravel notificaton',
             'body' => 'Laravel notification content',
-            'click_action' => 'https://caedo.org',
-            'icon' => 'https://www.gstatic.com/mobilesdk/240501_mobilesdk/firebase_28dp.png',
-            'image' => 'https://www.gstatic.com/mobilesdk/240501_mobilesdk/firebase_28dp.png',
+            'image' => 'https://www.gstatic.com/mobilesdk/240501_mobilesdk/firebase_28dp.png', 
         ]);
 
         // $config = WebPushConfig::fromArray([
@@ -45,18 +43,19 @@ class TestController extends Controller
         // ]);
         
         // $message = $message->withWebPushConfig($config);
-        // $config = WebPushConfig::fromArray([
-        //     'fcm_options' => [
-        //         'link' => 'https://caedo.org',
-        //     ],
-        // ]);
+        $config = WebPushConfig::fromArray([
+            'headers' => [
+                'TTL' => '3600',
+            ]
+        ]);
 
         $message = CloudMessage::new()
              ->withNotification($notification) // optional
-            ->withData([]) // optional
+            ->withData(['link' => 'https://caedo.org',
+            'icon' => 'https://www.gstatic.com/mobilesdk/240501_mobilesdk/firebase_28dp.png']) // optional
             ->toToken($deviceToken);
 
-        // $message = $message->withWebPushConfig($config);
+        $message = $message->withWebPushConfig($config);
 
         $result = $this->messaging->send($message);
         return $result;
