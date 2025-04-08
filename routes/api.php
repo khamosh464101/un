@@ -11,7 +11,7 @@ use App\Http\Controllers\Api\NotificationController;
 Route::middleware(['auth:sanctum', 'twofactor'])->group(function () {
     Route::resource('user', UserController::class)->only(['store']);
     
-    Route::get('/notifications/mark-as-read/{id}', [NotificationController::class, 'markAsRead']);
+    Route::get('/notifications/mark-as-read/{id}/{type}', [NotificationController::class, 'markAsRead']);
     Route::get('/notifications/unread', [NotificationController::class, 'getUnread']);
 });
 

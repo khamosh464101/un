@@ -6,7 +6,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
-use Modules\Projects\Models\TicketComment;
+use Modules\Projects\Models\Ticket;
 use Kreait\Laravel\Firebase\Facades\Firebase;
 use Kreait\Firebase\Contract\Messaging;
 use Kreait\Firebase\Messaging\Notification as FCMNNotification;
@@ -16,11 +16,15 @@ use Kreait\Firebase\Messaging\WebPushConfig;
 use NotificationChannels\Fcm\FcmChannel;
 use NotificationChannels\Fcm\FcmMessage;
 use NotificationChannels\Fcm\Resources\Notification as FcmNotification;
+use Ramsey\Uuid\Uuid;  
 
 class CommentNotification extends Notification implements ShouldQueue
 {
     use Queueable;
-    public $comment;
+    public $uuid;
+    public $commentId;
+    public $content;
+    public $ticket;
     public $user;
     public $action;
     
@@ -29,11 +33,20 @@ class CommentNotification extends Notification implements ShouldQueue
     /**
      * Create a new notification instance.
      */
-    public function __construct(TicketComment $comment, $user, $action)
+    public function __construct( $tmpComment, $user, $action)
     {
-        $this->comment = $comment;
+        $this->uuid = Uuid::uuid4()->toString();
+        $this->commentId = $tmpComment['id'];
+        $this->ticket = Ticket::find($tmpComment['ticket_id']);
+        $this->content = $tmpComment['content'];
         $this->user = $user;
         $this->action = $action;
+
+    }
+
+    public function getKey()
+    {
+        return $this->uuid;  // Use UUID as the key
     }
 
 
@@ -53,14 +66,13 @@ class CommentNotification extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {   
         $frontendUrl = config('frontend.url');
-        $url = $frontendUrl . '/project-management/tickets/' . $this->comment->ticket_id;
+        $url = $frontendUrl . '/project-management/tickets/' . $this->ticket->id;
 
         return (new MailMessage)
-        ->subject("[{$this->comment->ticket->activity->project->title}] {$this->user->name} has {$this->action} a comment on {$this->comment->ticket->title} ticket")
-        ->greeting("{$this->user->name} {$this->action} a comment on {$this->comment->ticket->title} ticket")
-        ->line($this->comment->content)
+        ->subject("[{$this->ticket->activity->project->title}] {$this->user->name} has {$this->action} a comment on {$this->ticket->title} ticket")
+        ->greeting("{$this->user->name} {$this->action} a comment on {$this->ticket->title} ticket")
+        ->line($this->content)
         ->action('Go to Ticket', $url);
-        // ->action('Open task', route('projects.tasks.open', ['project' => $this->comment->task->project_id, 'task' => $this->comment->task->id]));
     }
 
     /**
@@ -71,14 +83,15 @@ class CommentNotification extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         $frontendUrl = config('frontend.url');
-        $url = $frontendUrl . '/project-management/tickets/' . $this->comment->ticket_id;
+        $url = $frontendUrl . '/project-management/tickets/' . $this->ticket->id;
         return [
-            'ticket_id' => $this->comment->ticket->id,
-            'title' => "{$this->user->name} has {$this->action} a comment on \"{$this->comment->ticket->title}\" ticket",
-            'subtitle' => "On \"{$this->comment->ticket->activity->project->title}\" project",
+            'ticket_id' => $this->ticket->id,
+            'title' => "{$this->user->name} has {$this->action} a comment on \"{$this->ticket->title}\" ticket",
+            'subtitle' => "On \"{$this->ticket->activity->project->title}\" project",
             'link' => $url,
             'causer_id' => $this->user->id,
             'causer_photo' => $this->user->photo,
+            'uuid' => $this->uuid,
             'created_at' => $notifiable->created_at,
             'read_at' => $notifiable->read_at,
         ];
@@ -86,47 +99,17 @@ class CommentNotification extends Notification implements ShouldQueue
 
 
 
-        // Send via the Firebase Cloud Messaging (FCM) channel
-        public function toFirebase($notifiable)
-        {
-            $frontendUrl = config('frontend.url');
-            $url = $frontendUrl . '/project-management/tickets/' . $this->comment->ticket_id;
-            if ($this->user->device_token) {
-                $notification = Notification::fromArray([
-                    'title' => "Ticket Comment",
-                    'body' => "{$this->user->name} has {$this->action} a comment on \"{$this->comment->ticket->title}\" ticket",
-                    'image' => 'https://www.gstatic.com/mobilesdk/240501_mobilesdk/firebase_28dp.png', 
-                ]);
-
-                $message = CloudMessage::new()
-                ->withNotification($notification) // optional
-                ->withData(['link' => $url,
-                'icon' => $this->user->photo]) // optional
-                ->toToken($this->user->device_token);
-                $config = WebPushConfig::fromArray([
-                    'headers' => [
-                        'TTL' => '3600',
-                    ]
-                ]);
-                $message = $message->withWebPushConfig($config);
-                $result = $this->messaging->send($message);
-                return $result;
-            }
-            return [];
-        
-        }
-
         public function toFcm($notifiable): FcmMessage
     {
         $frontendUrl = config('frontend.url');
-            $url = $frontendUrl . '/project-management/tickets/' . $this->comment->ticket_id;
+            $url = $frontendUrl . '/project-management/tickets/' . $this->ticket->id;
         return (new FcmMessage(notification: new FcmNotification(
             title : "Ticket Comment",
-            body: "{$this->user->name} has {$this->action} a comment on \"{$this->comment->ticket->title}\" ticket",
+            body: "{$this->user->name} has {$this->action} a comment on \"{$this->ticket->title}\" ticket",
             image : 'https://www.gstatic.com/mobilesdk/240501_mobilesdk/firebase_28dp.png', 
             )))
             ->data(['link' => $url,
-            'icon' => $this->user->photo])
+            'icon' => $this->user->photo, 'uuid' => $this->uuid, 'test' => '123456789'])
             ->custom([
                 'android' => [
                     'notification' => [

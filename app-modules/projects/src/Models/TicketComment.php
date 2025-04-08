@@ -9,6 +9,7 @@ use Modules\Projects\Notifications\Comments\CommentNotification;
 use App\Models\User;
 use Carbon\Carbon;
 use Auth;
+use Illuminate\Support\Facades\Log;
 
 class TicketComment extends Model
 {
@@ -53,7 +54,7 @@ class TicketComment extends Model
             $user->notify(new CommentNotification($comment, auth()->user(), 'added'));
         });
 
-        static::updating(function ($comment) {
+        static::updated(function ($comment) {
             $user;
             if ($comment->user_id == $comment->ticket->responsible->user->id) {
                 $user = $comment->ticket->owner;
@@ -70,7 +71,12 @@ class TicketComment extends Model
             } else {
                 $user = $comment->ticket->responsible->user;
             }
-           $notification = $user->notify(new CommentNotification($comment, auth()->user(), 'removed'));
+            $tmpComment = [
+                'id' => $comment->id,
+                'ticket_id' => $comment->ticket_id,
+                'content' => $comment->content,
+            ];
+           $notification = $user->notify(new CommentNotification($tmpComment, auth()->user(), 'removed'));
         });
 
     }

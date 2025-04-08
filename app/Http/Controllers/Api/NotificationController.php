@@ -14,10 +14,21 @@ class NotificationController extends Controller
         return response()->json(['total_unread' => $unreadCount, 'data' => $notifications], 201);
     }
 
-    public function markAsRead($id) {
+    public function markAsRead($id, $type) {
         $user = Auth::user();
-        $notification = $user->notifications->find($id);
-        $notification->markAsRead();
-        return response()->json(['message' => 'Marked as Read!'], 201);
+        $notification;
+        if ($type == 'pk') {
+            $notification = $user->notifications->find($id);
+        } else {
+            $notification = $user->notifications->where('data.uuid', $id)->first();
+        }
+        
+            // Check if the notification was found
+        if ($notification) {
+            $notification->markAsRead();
+            return response()->json(['message' => 'Marked as Read!'], 200); // Changed status code to 200 (OK)
+        }
+
+        return response()->json(['message' => 'Notification not found!'], 404);
     }
 }

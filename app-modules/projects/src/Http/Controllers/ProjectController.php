@@ -50,6 +50,7 @@ class ProjectController
         $project->documents;
         $project->donor;
         $project->staff;
+        $project->manager;
         $project->progress = $project->getProgress();
         return response()->json($project, 201);
     }
