@@ -45,41 +45,54 @@ class TicketComment extends Model
         parent::boot();
 
         static::created(function ($comment) {
-            $user;
-            if ($comment->user_id == $comment->ticket->responsible->user->id) {
-                $user = $comment->ticket->owner;
-            } else {
-                $user = $comment->ticket->responsible->user;
-            }
-            $user->notify(new CommentNotification($comment, auth()->user(), 'added'));
+            if ($comment->ticket->owner->staff_id !== $comment->ticket->responsible_id) {
+                $user;
+                if ($comment->user_id == $comment->ticket->responsible->user->id) {
+                    $user = $comment->ticket->owner;
+                } else {
+                    $user = $comment->ticket->responsible->user;
+                }
+                $user->notify(new CommentNotification($comment->toArray(), auth()->user(), 'added'));
+                }
         });
 
         static::updated(function ($comment) {
-            $user;
-            if ($comment->user_id == $comment->ticket->responsible->user->id) {
-                $user = $comment->ticket->owner;
-            } else {
-                $user = $comment->ticket->responsible->user;
+            if ($comment->ticket->owner->staff_id !== $comment->ticket->responsible_id) {
+                $user;
+                if ($comment->user_id == $comment->ticket->responsible->user->id) {
+                    $user = $comment->ticket->owner;
+                } else {
+                    $user = $comment->ticket->responsible->user;
+                }
+               
+
+                $user->notify(new CommentNotification($comment->toArray(), auth()->user(), 'updated'));
             }
-            $user->notify(new CommentNotification($comment, auth()->user(), 'updated'));
+           
+            
         });
 
         static::deleting(function ($comment) {
-            $user;
-            if ($comment->user_id == $comment->ticket->responsible->user->id) {
-                $user = $comment->ticket->owner;
-            } else {
-                $user = $comment->ticket->responsible->user;
+            if ($comment->ticket->owner->staff_id !== $comment->ticket->responsible_id) {
+                $user;
+                if ($comment->user_id == $comment->ticket->responsible->user->id) {
+                    $user = $comment->ticket->owner;
+                } else {
+                    $user = $comment->ticket->responsible->user;
+                }
+                $tmpComment = [
+                    'id' => $comment->id,
+                    'ticket_id' => $comment->ticket_id,
+                    'content' => $comment->content,
+                ];
+               $notification = $user->notify(new CommentNotification($tmpComment, auth()->user(), 'removed'));
             }
-            $tmpComment = [
-                'id' => $comment->id,
-                'ticket_id' => $comment->ticket_id,
-                'content' => $comment->content,
-            ];
-           $notification = $user->notify(new CommentNotification($tmpComment, auth()->user(), 'removed'));
+           
         });
 
     }
+
+ 
 
 
 }

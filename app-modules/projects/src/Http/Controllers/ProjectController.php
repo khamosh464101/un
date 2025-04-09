@@ -88,9 +88,12 @@ class ProjectController
         return response()->json(['message' => 'Project deleted successfully'], 201);
     }
 
+    
+
     public function addMember(Request $request) {
         $project = Project::find($request->id);
         $staff = Staff::find($request->staff_id);
+        
         if ($project->staff->contains($staff)) {
             return response()->json(['message' => 'Already exist'], 500);
         }
@@ -101,6 +104,16 @@ class ProjectController
 
     public function removeMember(Request $request) {
         $project = Project::find($request->id);
+        $staff = Staff::find($request->staff_id);
+
+       $tickets = $staff->tickets()->whereHas('activity', function ($query) use ($project) {
+            $query->where('project_id', $project->id);
+        })->get();
+
+        if (!$tickets->isEmpty()) {
+            return response()->json(['message' => $staff->name . " has assigned ticket from this project you can't detach him/her."], 500);
+        }
+
         $project->staff()->detach($request->staff_id);
         return response()->json(['message' => 'Successfully removed!'], 201);
 
@@ -120,6 +133,12 @@ class ProjectController
 
     public function removeGozar(Request $request) {
         $project = Project::find($request->id);
+        $gozar = Gozar::find($request->gozar_id);
+        $activities = $gozar->activities()->where('project_id', $project->id)->get();
+
+        if (!$activities->isEmpty()) {
+            return response()->json(['message' => $gozar->name . " has attached activities from this project you can't detach it."], 500);
+        }
         $project->gozars()->detach($request->gozar_id);
         return response()->json(['message' => 'Successfully removed!'], 201);
 

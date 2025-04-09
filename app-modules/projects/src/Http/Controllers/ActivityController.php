@@ -133,6 +133,12 @@ class ActivityController
     public function removeGozar(Request $request) {
       
         $activity = Activity::find($request->id);
+        $gozar = Gozar::find($request->gozar_id);
+        $tickets = $gozar->tickets()->where('activity_id', $activity->id)->get();
+
+        if (!$tickets->isEmpty()) {
+            return response()->json(['message' => $gozar->name . " has attached tickets from this activity you can't detach it."], 500);
+        }
         $activity->gozars()->detach($request->gozar_id);
         return response()->json(['message' => 'Successfully removed!'], 201);
 

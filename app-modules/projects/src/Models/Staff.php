@@ -87,6 +87,11 @@ class Staff extends Model
         return $this->hasOne(User::class, 'staff_id');
     }
 
+    public function tickets (): HasMany
+    {
+        return $this->hasMany(Ticket::class, 'responsible_id');
+    }
+
 
 
     public static function boot()

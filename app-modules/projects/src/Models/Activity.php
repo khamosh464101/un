@@ -101,7 +101,7 @@ class Activity extends Model
         $total_logged_hours = 0;
         foreach ($this->tickets as $key => $value) {
             $total += $value->estimation;
-            $total_logged_hours += $value->hours->sum('value');
+            $total_logged_hours += in_array($value->ticket_status_id, [3, 4, 5]) ? $value->estimation : $value->hours->sum('value');
         }
         return ['total_hours' => $total > 0 ? $total : 100, 'total_logged_hours' => $total > 0 ? $total_logged_hours : 0];
     }

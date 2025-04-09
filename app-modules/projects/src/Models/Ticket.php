@@ -20,6 +20,7 @@ use Spatie\Activitylog\Models\Activity as Actvty;
 use Carbon\Carbon;
 use App\Models\User;
 use Auth;
+use Modules\Projects\Notifications\Ticket\TicketNotification;
 
 class Ticket extends Model
 {
@@ -217,9 +218,19 @@ class Ticket extends Model
         parent::boot();
 
         static::created(function ($ticket) {
-            $ticket->ticket_number = '#' . $ticket->activity->activity_number . '-' . $ticket->id;
+            $ticket->ticket_number = $ticket->activity->activity_number . '-' . $ticket->id;
             $ticket->order = $ticket->activity->tickets()->max('order') + 1;
             $ticket->save();
+
+            if ($ticket->owner->staff_id !== $ticket->responsible_id) {
+                $user;
+                if (Auth::user()->id == $ticket->responsible->user->id) {
+                    $user = $ticket->owner;
+                } else {
+                    $user = $ticket->responsible->user;
+                }
+                $user->notify(new TicketNotification($ticket->toArray(), auth()->user(), 'added'));
+                }
         });
 
         static::updating(function ($ticket) {
@@ -236,6 +247,16 @@ class Ticket extends Model
                 ])
                 ->log("Ticket status changed from **$oldStatus** to **$newStatus** by " . auth()->user()->name);
             }
+
+            if ($ticket->owner->staff_id !== $ticket->responsible_id) {
+                $user;
+                if (Auth::user()->id == $ticket->responsible->user->id) {
+                    $user = $ticket->owner;
+                } else {
+                    $user = $ticket->responsible->user;
+                }
+                $user->notify(new TicketNotification($ticket->toArray(), auth()->user(), 'updated'));
+                }
         });
 
         static::deleting(function ($ticket) {
@@ -244,6 +265,21 @@ class Ticket extends Model
             $ticket->comments()->delete();
             $ticket->hours()->delete();
             $ticket->gozars()->detach();
+
+            if ($ticket->owner->staff_id !== $ticket->responsible_id) {
+                $user;
+                if (Auth::user()->id == $ticket->responsible->user->id) {
+                    $user = $ticket->owner;
+                } else {
+                    $user = $ticket->responsible->user;
+                }
+                $ticket = [
+                    'id' => $ticket->id,
+                    'activity_id' => $ticket->activity_id,
+                    'title' => $ticket->title,
+                ];
+               $notification = $user->notify(new TicketNotification($ticket, auth()->user(), 'removed'));
+            }
         });
 
     }

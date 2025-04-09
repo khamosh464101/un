@@ -8,6 +8,7 @@ use Carbon\CarbonInterval;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\User;
+use Modules\Projects\Notifications\HourNotification;
 
 
 class TicketHour extends Model
@@ -36,5 +37,55 @@ class TicketHour extends Model
                 return CarbonInterval::seconds($seconds)->cascade()->forHumans();
             }
         );
+    }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::created(function ($hour) {
+            if ($hour->ticket->owner->staff_id !== $hour->ticket->responsible_id) {
+                $user;
+                if ($hour->user_id == $hour->ticket->responsible->user->id) {
+                    $user = $hour->ticket->owner;
+                } else {
+                    $user = $hour->ticket->responsible->user;
+                }
+                $user->notify(new HourNotification($hour, auth()->user(), 'added'));
+                }
+        });
+
+        static::updated(function ($hour) {
+            if ($hour->ticket->owner->staff_id !== $hour->ticket->responsible_id) {
+                $user;
+                if ($hour->user_id == $hour->ticket->responsible->user->id) {
+                    $user = $hour->ticket->owner;
+                } else {
+                    $user = $hour->ticket->responsible->user;
+                }
+                $user->notify(new HourNotification($hour, auth()->user(), 'updated'));
+            }
+           
+            
+        });
+
+        static::deleting(function ($hour) {
+            if ($hour->ticket->owner->staff_id !== $hour->ticket->responsible_id) {
+                $user;
+                if ($hour->user_id == $hour->ticket->responsible->user->id) {
+                    $user = $hour->ticket->owner;
+                } else {
+                    $user = $hour->ticket->responsible->user;
+                }
+                $tmpHour = [
+                    'id' => $hour->id,
+                    'ticket_id' => $hour->ticket_id,
+                    'title' => $hour->title,
+                ];
+               $notification = $user->notify(new HourNotification($tmpHour, auth()->user(), 'removed'));
+            }
+           
+        });
+
     }
 }

@@ -20,7 +20,7 @@ class NotificationController extends Controller
         if ($type == 'pk') {
             $notification = $user->notifications->find($id);
         } else {
-            $notification = $user->notifications->where('data.uuid', $id)->first();
+            $notification = $user->notifications()->whereJsonContains('data->uuid', $id)->first();
         }
         
             // Check if the notification was found
