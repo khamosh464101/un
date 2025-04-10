@@ -91,6 +91,7 @@ class HourNotification extends Notification implements ShouldQueue
             'link' => $url,
             'causer_id' => $this->user->id,
             'causer_photo' => $this->user->photo,
+            'causer_name' => $this->user->name,
             'uuid' => $this->uuid,
             'created_at' => $notifiable->created_at,
             'read_at' => $notifiable->read_at,
