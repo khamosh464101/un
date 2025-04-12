@@ -43,9 +43,8 @@ class ProjectController
     }
 
     public function edit($id) {
-        $project = Project::with('gozars.district.province')->with('logs.causer')->find($id);
+        $project = Project::with('gozars.district.province')->with('activities.status')->with('logs.causer')->find($id);
         $project->status;
-        $project->activities;
         $project->program;
         $project->documents;
         $project->donor;

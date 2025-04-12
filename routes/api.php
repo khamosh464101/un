@@ -9,7 +9,12 @@ use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\NotificationController;
 
 Route::middleware(['auth:sanctum', 'twofactor'])->group(function () {
-    Route::resource('user', UserController::class)->only(['store']);
+    Route::resource('/user', UserController::class)->only(['store']);
+    Route::get('/user/profile', [UserController::class, 'profile']);
+    Route::post('/user/profile', [UserController::class, 'updateProfile']);
+    Route::post('/user/tickets', [UserController::class, 'myTickets']);
+    Route::post('/user/tickets/move', [UserController::class, 'move']);
+    Route::post('/user/tickets/reorder', [UserController::class, 'reorder']);
     Route::post('/notifications', [NotificationController::class, 'index']);
     Route::get('/notifications/mark-as-read/{id}/{type}', [NotificationController::class, 'markAsRead']);
     Route::get('/notifications/unread', [NotificationController::class, 'getUnread']);

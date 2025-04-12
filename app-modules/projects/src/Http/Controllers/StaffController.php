@@ -49,7 +49,7 @@ class StaffController
     }
 
     public function edit($id) {
-        $staff = Staff::with('logs.causer')->find($id);
+        $staff = Staff::with('logs.causer')->withCount('projects')->withCount('tickets')->find($id);
         $staff->status;
         if ($staff->user) {
             $staff->user->roles;
@@ -69,6 +69,13 @@ class StaffController
         }
         $staff = Staff::find($id);
         $staff->update($data);
+        if ($staff->user) {
+            $staff->user->update([
+                'name' => $staff->name,
+                'email' => $staff->official_email,
+                'phone' => $staff->phone1,
+            ]);
+        }
         return response()->json(['message' => 'Sucessfully updated!', 'data' => $staff], 201);
     }
 
@@ -78,16 +85,23 @@ class StaffController
         if (!$staff) {
             return response()->json(['message' => 'Staff not found'], 404);
         }
-        return $staff;
+
+        if ($staff->manages->count() > 0) {
+            return response()->json([
+                'message' => 'Cannot delete this staff because he/she is responsible for project.'
+            ], 400);  // Return a 400 Bad Request status
+        }
 
         if ($staff->activities->count() > 0) {
             return response()->json([
-                'message' => 'Cannot delete this staff because it has associated activities.'
+                'message' => 'Cannot delete this staff because he/she has associated actihe/sheies.'
             ], 400);  // Return a 400 Bad Request status
         }
-        
-        foreach ($staff->documents as $key => $document) {
-            $document->delete();
+
+        if ($staff->tickets->count() > 0) {
+            return response()->json([
+                'message' => 'Cannot delete this staff because he/she has associated tickets.'
+            ], 400);  // Return a 400 Bad Request status
         }
     
         $staff->delete();

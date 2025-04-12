@@ -30,6 +30,8 @@ class Activity extends Model
         'responsible_id'
     ];
 
+   
+
     protected $appends = ['created_at_formatted'];
     public function getActivitylogOptions(): LogOptions
     {
@@ -56,6 +58,7 @@ class Activity extends Model
     {
         return $this->hasOne(ActivitySprint::class);
     }
+
 
     public function project (): BelongsTo
     {

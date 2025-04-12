@@ -19,6 +19,7 @@ return new class extends Migration
             $table->decimal('estimation', 6, 2);
             $table->date('deadline');
             $table->integer('order')->default(0);
+            $table->integer('order1')->default(0);
             $table->foreignId('owner_id');
             $table->foreignId('responsible_id');
             $table->foreignId('ticket_status_id');

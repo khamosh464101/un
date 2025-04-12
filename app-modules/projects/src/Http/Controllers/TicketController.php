@@ -77,7 +77,6 @@ class TicketController
             }
         ])->get();
         return response()->json($data, 201);
-
     }
 
     public function store(TicketRequest $request) {
@@ -141,6 +140,12 @@ class TicketController
         foreach($request->dItems as $key => $item) {
             $ticket = Ticket::find($item['id']);
             $ticket->order = ++$key;
+            $maxOrder = $ticket->activity->tickets()
+                ->where('ticket_status_id', $item['ticket_status_id'])
+                ->where('responsible_id', $ticket->responsible_id)
+                ->max('order1');
+
+            $ticket->order1 = ($maxOrder ?? 0) + 1;
             $ticket->ticket_status_id = $item['ticket_status_id'];
             $ticket->save();
         }

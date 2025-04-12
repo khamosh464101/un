@@ -33,6 +33,7 @@ class Ticket extends Model
         'estimation',
         'deadline',
         'order',
+        'order1',
         'owner_id',
         'responsible_id',
         'ticket_status_id',
@@ -220,6 +221,11 @@ class Ticket extends Model
         static::created(function ($ticket) {
             $ticket->ticket_number = $ticket->activity->activity_number . '-' . $ticket->id;
             $ticket->order = $ticket->activity->tickets()->max('order') + 1;
+            $maxOrder = $ticket->activity->tickets()
+                ->where('responsible_id', $ticket->responsible_id)
+                ->max('order1');
+
+            $ticket->order1 = ($maxOrder ?? 0) + 1;
             $ticket->save();
 
             if ($ticket->owner->staff_id !== $ticket->responsible_id) {

@@ -32,6 +32,8 @@ class Staff extends Model
         'staff_status_id'
     ];
 
+    protected $appends = ['created_at_formatted', 'updated_at_formatted'];
+
     public function getActivitylogOptions(): LogOptions
     {
         $logable = $this->fillable;
@@ -63,6 +65,10 @@ class Staff extends Model
         return $this->morphMany(Document::class, 'documentable');
     }
 
+    public function manages(): HasMany
+    {
+        return $this->hasMany(Project::class, 'manager_id');
+    }
     public function projects(): BelongsToMany
     {
         return $this->belongsToMany(Project::class);
@@ -82,11 +88,39 @@ class Staff extends Model
         return Carbon::parse($value)->format('M d, Y');
     }
 
+    public function getCreatedAtFormattedAttribute()
+    {
+        // Format the 'created_at' value
+        $formattedDate = Carbon::parse($this->created_at)->format('Y-m-d h:i A');
+
+        // Get the human-readable relative time (e.g., "3 hours ago")
+        $relativeTime = Carbon::parse($this->created_at)->diffForHumans();
+
+        // Return the formatted string
+        return $formattedDate . ' (' . $relativeTime . ')';
+    }
+
+    public function getUpdatedAtFormattedAttribute()
+    {
+        // Format the 'created_at' value
+        $formattedDate = Carbon::parse($this->updated_at)->format('Y-m-d h:i A');
+
+        // Get the human-readable relative time (e.g., "3 hours ago")
+        $relativeTime = Carbon::parse($this->updated_at)->diffForHumans();
+
+        // Return the formatted string
+        return $formattedDate . ' (' . $relativeTime . ')';
+    }
+
     public function user(): HasOne
     {
         return $this->hasOne(User::class, 'staff_id');
     }
-
+    
+    public function activities (): HasMany
+    {
+        return $this->hasMany(Activity::class, 'responsible_id');
+    }
     public function tickets (): HasMany
     {
         return $this->hasMany(Ticket::class, 'responsible_id');
@@ -121,6 +155,8 @@ class Staff extends Model
             if (!is_null($staff->getRawOriginal('photo'))) {
                 Storage::delete($staff->getRawOriginal('photo'));
             }
+            $staff->projects()->detach();
+            $staff->user()->delete();
             $staff->documents()->delete(); // Delete all related documents in one query
 
         });
