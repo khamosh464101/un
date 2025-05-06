@@ -16,17 +16,15 @@ return new class extends Migration
             $table->string('title');
             $table->string('ticket_number')->nullable();
             $table->text('description')->nullable();
-            $table->decimal('estimation', 6, 2);
+            $table->date('start_date');
             $table->date('deadline');
             $table->integer('order')->default(0);
             $table->integer('order1')->default(0);
             $table->foreignId('owner_id');
             $table->foreignId('responsible_id');
             $table->foreignId('ticket_status_id');
-            $table->foreignId('ticket_type_id');
             $table->foreignId('ticket_priority_id');
             $table->foreignId('activity_id');
-            $table->foreignId('parent_id')->nullable();
             $table->timestamps();
         });
     }

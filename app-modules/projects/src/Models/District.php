@@ -5,6 +5,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 use Illuminate\Database\Eloquent\Model;
 use Auth;
@@ -12,7 +13,7 @@ class District extends Model
 {
     // use LogsActivity;
 
-    protected $fillable = ['name', 'name_fa', 'name_pa', 'latitude', 'longitude', 'code', 'province_id'];
+    protected $fillable = ['name', 'is_urban', 'province_id'];
     
     // public function getActivitylogOptions(): LogOptions
     // {
@@ -32,5 +33,15 @@ class District extends Model
     public function gozars(): HasMany
     {
         return $this->hasMany(Gozar::class);
+    }
+
+    public function projects(): BelongsToMany
+    {
+        return $this->belongsToMany(Project::class);
+    }
+
+    public function subprojects(): BelongsToMany
+    {
+        return $this->belongsToMany(Subproject::class);
     }
 }

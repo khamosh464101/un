@@ -29,7 +29,6 @@ class Project extends Model
         'description', 
         'kobo_toolbox_id',
         'donor_id',
-        'program_id',
         'project_status_id',
         'manager_id'
 
@@ -65,10 +64,6 @@ class Project extends Model
     {
         return $this->belongsTo(Donor::class);
     }
-    public function program(): BelongsTo
-    {
-        return $this->belongsTo(Program::class);
-    }
 
     public function manager(): BelongsTo
     {
@@ -80,9 +75,19 @@ class Project extends Model
         return $this->hasMany(Activity::class, 'project_id');
     }
 
+    public function subprojects(): HasMany
+    {
+        return $this->hasMany(Subproject::class, 'project_id');
+    }
+
     public function documents(): MorphMany
     {
         return $this->morphMany(Document::class, 'documentable');
+    }
+
+    public function districts(): BelongsToMany
+    {
+        return $this->belongsToMany(District::class);
     }
 
     public function gozars(): BelongsToMany
@@ -119,15 +124,22 @@ class Project extends Model
 
     public function getProgress()
     {
-        $total = 0;
-        $total_logged_hours = 0;
-        foreach ($this->activities as $key => $activity) {
-            foreach ($activity->tickets as $key => $value) {
-                $total += $value->estimation;
-                $total_logged_hours += in_array($value->ticket_status_id, [3, 4, 5]) ? $value->estimation : $value->hours->sum('value');
-            }
+        // Get all tickets through activities
+        $tickets = $this->activities()->with('tickets')->get()
+        ->pluck('tickets') // Get ticket collections
+        ->flatten();       // Merge them into one collection
+
+        if ($tickets->isEmpty()) {
+            return 0; // Or null if you prefer
         }
-        return ['total_hours' => $total > 0 ? $total : 100, 'total_logged_hours' => $total > 0 ? $total_logged_hours : 0];
+        $totalProgress = $tickets->sum(function ($ticket) {
+            return $ticket->progress_percent ?? 0;
+        });
+
+
+        $averageProgress = $totalProgress / $tickets->count();
+
+        return round($averageProgress, 2);
     }
 
     public function getCreatedAtFormattedAttribute()

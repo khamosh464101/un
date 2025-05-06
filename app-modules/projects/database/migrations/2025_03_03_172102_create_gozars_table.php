@@ -14,10 +14,6 @@ return new class extends Migration
         Schema::create('gozars', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('name_fa')->nullable();
-            $table->string('name_pa')->nullable();
-            $table->string('latitude')->nullable();
-            $table->string('longitude')->nullable();
             $table->foreignId('district_id');
             $table->timestamps();
         });

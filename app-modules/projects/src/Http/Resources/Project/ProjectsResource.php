@@ -12,6 +12,7 @@ class ProjectsResource extends JsonResource
      *
      * @return array<string, mixed>
      */
+    public static $wrap = null;
     public function toArray($request)
     {
         // Merge all attributes and add the specific column `progress`

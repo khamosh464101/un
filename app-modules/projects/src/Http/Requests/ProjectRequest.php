@@ -33,7 +33,6 @@ class ProjectRequest extends FormRequest
             'logo' => ['image', 'mimes:jpeg,png,jpg', 'max:1002', Rule::requiredIf(!$this?->route('project'))], // 10MB max, only certain file types
             'kobo_project_id' => ['nullable', 'string'],
             'donor_id' => ['required', 'integer'],
-            'program_id' => ['required', 'integer'],
             'project_status_id' => ['required', 'integer'],
             'manager_id' => ['nullable', 'integer'],
         ];

@@ -22,6 +22,7 @@ use Modules\Projects\Http\Controllers\ProgramStatusController;
  use Modules\Projects\Http\Controllers\DocumentController;
  use Modules\Projects\Http\Controllers\TicketCommentController;
  use Modules\Projects\Http\Controllers\TicketHourController;
+ use Modules\Projects\Http\Controllers\StaffContractTypeController;
 
  Route::middleware(['auth:sanctum', 'twofactor'])->get('/user', function (Request $request) {
     return $request->user();
@@ -50,10 +51,12 @@ Route::middleware(['auth:sanctum', 'twofactor'])->group(function () {
     Route::resource('/api/projects-status', ProjectStatusController::class)->only(['store', 'edit', 'update', 'destroy']);
     Route::get('/api/projects/select2', [ProjectController::class, 'select2']);
     Route::post('/api/projects', [ProjectController::class, 'index']);
+    Route::post('/api/project/{project}', [ProjectController::class, 'update']);
     Route::post('/api/project/add/member', [ProjectController::class, 'addMember']);
     Route::post('/api/project/remove/member', [ProjectController::class, 'removeMember']);
     Route::post('/api/project/add/gozar', [ProjectController::class, 'addGozar']);
     Route::post('/api/project/remove/gozar', [ProjectController::class, 'removeGozar']);
+    Route::post('/api/project/remove/district', [ProjectController::class, 'removeDistrict']);
     Route::resource('/api/project', ProjectController::class)->only(['store', 'edit', 'update', 'destroy']);
     Route::get('/api/partners/select2', [PartnerController::class, 'select2']);
     Route::post('/api/partners', [PartnerController::class, 'index']);
@@ -63,14 +66,19 @@ Route::middleware(['auth:sanctum', 'twofactor'])->group(function () {
     Route::resource('/api/subproject-type', SubprojectTypeController::class)->only(['store', 'edit', 'update', 'destroy']);
     Route::get('/api/subprojects/select2', [SubprojectController::class, 'select2']);
     Route::post('/api/subprojects', [SubprojectController::class, 'index']);
+    Route::post('/api/subproject/remove/district', [SubprojectController::class, 'removeDistrict']);
     Route::resource('/api/subproject', SubprojectController::class)->only(['store', 'edit', 'update', 'destroy']);
     Route::post('/api/subproject/add/gozar', [SubprojectController::class, 'addGozar']);
     Route::post('/api/subproject/remove/gozar', [SubprojectController::class, 'removeGozar']);
     Route::post('/api/staffs-statuses', [StaffStatusController::class, 'index']);
     Route::get('/api/staffs-statuses/select2', [StaffStatusController::class, 'select2']);
     Route::resource('/api/staffs-status', StaffStatusController::class)->only(['store', 'edit', 'update', 'destroy']);
+    Route::post('/api/staff-contract-types', [StaffContractTypeController::class, 'index']);
+    Route::get('/api/staff-contract-types/select2', [StaffContractTypeController::class, 'select2']);
+    Route::resource('/api/staff-contract-type', StaffContractTypeController::class)->only(['store', 'edit', 'update', 'destroy']);
     Route::get('/api/staffs/select2/{id?}', [StaffController::class, 'select2']);
     Route::post('/api/staffs', [StaffController::class, 'index']);
+    Route::post('/api/staff/{staff}', [StaffController::class, 'update']);
     Route::resource('/api/staff', StaffController::class)->only(['store', 'edit', 'update', 'destroy']);
    
     Route::post('/api/activity-statuses', [ActivityStatusController::class, 'index']);
@@ -102,6 +110,7 @@ Route::middleware(['auth:sanctum', 'twofactor'])->group(function () {
     Route::get('/api/tickets/select2/{id?}', [TicketController::class, 'select2']);
     Route::post('/api/ticket/add/gozar', [TicketController::class, 'addGozar']);
     Route::post('/api/ticket/remove/gozar', [TicketController::class, 'removeGozar']);
+    
     Route::resource('/api/ticket', TicketController::class)->only(['store', 'edit', 'update', 'destroy']);
 
     Route::resource('/api/ticket-comments', TicketCommentController::class)->only(['store', 'update', 'destroy']);

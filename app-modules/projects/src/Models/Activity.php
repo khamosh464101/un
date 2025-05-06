@@ -27,7 +27,6 @@ class Activity extends Model
         'project_id',
         'activity_status_id',
         'activity_type_id',
-        'responsible_id'
     ];
 
    
@@ -65,9 +64,9 @@ class Activity extends Model
         return $this->belongsTo(Project::class);
     }
 
-    public function responsible(): BelongsTo
+    public function responsibles(): BelongsToMany
     {
-        return $this->belongsTo(Staff::class, 'responsible_id');
+        return $this->belongsToMany(Staff::class);
     }
     public function status(): BelongsTo
     {

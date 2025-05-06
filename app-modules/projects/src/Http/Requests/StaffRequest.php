@@ -27,13 +27,16 @@ class StaffRequest extends FormRequest
             'position_title' => ['required', 'string', 'max:255'],
             'personal_email' => ['nullable', 'email', Rule::unique('staff')->ignore($this?->route('staff'))],
             'official_email' => ['required', 'email', Rule::unique('staff')->ignore($this?->route('staff'))],
-            'photo' => ['image', 'mimes:jpeg,png,jpg', 'max:1002', Rule::requiredIf(!$this?->route('staff'))],
+            'photo' => ['image', 'mimes:jpeg,png,jpg', 'max:1002', 'nullable'],
             'phone1' => ['required', 'string', Rule::unique('staff')->ignore($this?->route('staff'))],
             'phone2' => ['nullable', 'string', Rule::unique('staff')->ignore($this?->route('staff'))],
             'duty_station' => ['required', 'string'],
             'date_of_joining' => 'nullable|date',
+            'end_of_contract' => 'nullable|date',
+            'gender' => 'required|string',
             'about' => 'nullable',
-            'staff_status_id' => 'required'
+            'staff_status_id' => 'required',
+            'staff_contract_type_id' => 'required'
 
         ];
     }

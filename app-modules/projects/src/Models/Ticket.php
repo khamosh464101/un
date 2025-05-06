@@ -30,20 +30,26 @@ class Ticket extends Model
         'title',
         'ticket_number',
         'description',
-        'estimation',
+        'start_date',
         'deadline',
         'order',
         'order1',
         'owner_id',
         'responsible_id',
         'ticket_status_id',
-        'ticket_type_id',
         'ticket_priority_id',
         'activity_id',
-        'parent_id',
+     
     ];
 
-    protected $appends = ['created_at_formatted', 'project_id', 'deadline_formatted'];
+    protected $appends = [
+        'created_at_formatted', 
+        'start_date_formatted', 
+        'project_id', 
+        'deadline_formatted', 
+        'progress_percent',
+        'progress_label'
+    ];
 
    
     public function getActivitylogOptions(): LogOptions
@@ -56,7 +62,7 @@ class Ticket extends Model
         ->useLogName('Ticket')
         ->logOnlyDirty()
         ->dontSubmitEmptyLogs()
-        ->setDescriptionForEvent(fn(string $eventName) => "This Ticket has been {$eventName} by ". Auth::user()->name);
+        ->setDescriptionForEvent(fn(string $eventName) => "This Task has been {$eventName} by ". Auth::user()->name);
 
     }
 
@@ -115,63 +121,23 @@ class Ticket extends Model
         return $this->hasMany(TicketComment::class, 'ticket_id', 'id');
     }
 
-
-    public function children(): HasMany
-    {
-        return $this->hasMany(Ticket::class, 'parent_id', 'id');
-    }
-
-    public function parent(): BelongsTo
-    {
-        return $this->belongsTo(Ticket::class, 'parent_id');
-    }
-
     public function hours(): HasMany
     {
         return $this->hasMany(TicketHour::class, 'ticket_id', 'id');
     }
 
 
-    public function totalLoggedHours(): Attribute
-    {
-        return new Attribute(
-            get: function () {
-                $seconds = $this->hours->sum('value') * 3600;
-                return CarbonInterval::seconds($seconds)->cascade()->forHumans();
-            }
-        );
-    }
-
-    public function totalLoggedSeconds(): Attribute
-    {
-        return new Attribute(
-            get: function () {
-                return $this->hours->sum('value') * 3600;
-            }
-        );
-    }
-
-    public function totalLoggedInHours(): Attribute
-    {
-        return new Attribute(
-            get: function () {
-                return $this->hours->sum('value');
-            }
-        );
-    }
-
-    public function estimationForHumans(): Attribute
-    {
-        return new Attribute(
-            get: function () {
-                return CarbonInterval::seconds($this->estimationInSeconds)->cascade()->forHumans();
-            }
-        );
-    }
-
     public function getCreatedAtAttribute($value) {
         return Carbon::parse($value)->format('M d, Y');
     }
+    public function getStartDateFormattedAttribute() {
+         $formattedDate = Carbon::parse($this->start_date)->format('Y-m-d');
+         $relativeTime = Carbon::parse($this->start_date)->diffForHumans();
+ 
+         // Return the formatted string
+         return $formattedDate . ' (' . $relativeTime . ')';
+    }
+
     public function getDeadlineFormattedAttribute() {
         $dueDate = Carbon::parse($this->deadline); // Replace with your due date
         $today = Carbon::now();
@@ -182,6 +148,46 @@ class Ticket extends Model
             return "$daysLeft days left";
         } else {
             return  abs($daysLeft) . " days overdue";
+        }
+    }
+
+    public function getProgressPercentAttribute() {
+        $now = Carbon::now();
+        $start = Carbon::parse($this->start_date)->startOfDay();
+        $end = Carbon::parse($this->deadline)->endOfDay();
+        if ($start->equalTo($end)) {
+            return $now->greaterThanOrEqualTo($end) ? 100 : 0;
+        }
+
+        $totalDuration = $end->diffInSeconds($start);
+        $elapsed = $now->diffInSeconds($start);
+
+        $progress = ($elapsed / $totalDuration) * 100;
+        return min(max(round($progress), 0), 100);
+    }
+
+    public function getProgressLabelAttribute() {
+        $now = Carbon::now();
+        $start = Carbon::parse($this->start_date)->startOfDay();
+        $end = Carbon::parse($this->deadline)->endOfDay();
+
+        $formatTimeDiff = function (Carbon $from, Carbon $to) {
+            $diffInMinutes = $from->diffInMinutes($to);
+            if ($diffInMinutes >= 1440) {
+                return round($from->diffInDays($to)) . ' day' . ($from->diffInDays($to) > 1 ? 's' : '');
+            } elseif ($diffInMinutes >= 60) {
+                return round($from->diffInHours($to)) . ' hour' . ($from->diffInHours($to) > 1 ? 's' : '');
+            } else {
+                return round($diffInMinutes) . ' minute' . ($diffInMinutes > 1 ? 's' : '');
+            }
+        };
+
+        if ($now->lt($start)) {
+            return 'Starts in ' . $formatTimeDiff($now, $start);
+        } elseif ($now->between($start, $end)) {
+            return ($formatTimeDiff($now, $end) . ' left');
+        } else {
+            return 'Overdued';
         }
     }
 
@@ -251,7 +257,7 @@ class Ticket extends Model
                     'old_status' => $oldStatus,
                     'new_status' => $newStatus
                 ])
-                ->log("Ticket status changed from **$oldStatus** to **$newStatus** by " . auth()->user()->name);
+                ->log("Task status changed from **$oldStatus** to **$newStatus** by " . auth()->user()->name);
             }
 
             if ($ticket->owner->staff_id !== $ticket->responsible_id) {
@@ -266,8 +272,7 @@ class Ticket extends Model
         });
 
         static::deleting(function ($ticket) {
-             $ticket->children()->update(['parent_id' => null]);
-            $ticket->documents()->delete(); // Delete all related documents in one query
+            $ticket->documents()->delete();
             $ticket->comments()->delete();
             $ticket->hours()->delete();
             $ticket->gozars()->detach();

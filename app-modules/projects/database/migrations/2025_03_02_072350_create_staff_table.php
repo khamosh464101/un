@@ -19,11 +19,14 @@ return new class extends Migration
             $table->string('official_email')->unique();
             $table->string('phone1');
             $table->string('phone2')->nullable();
-            $table->string('photo');
+            $table->string('photo')->nullable();
             $table->string('duty_station');
             $table->date('date_of_joining')->nullable();
+            $table->date('end_of_contract')->nullable();
             $table->text('about')->nullable();
+            $table->string('gender');
             $table->foreignId('staff_status_id');
+            $table->foreignId('staff_contract_type_id');
             $table->timestamps();
         });
     }

@@ -5,6 +5,7 @@ namespace Modules\Projects\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
+
 class DistrictRequest extends FormRequest
 {
     /**
@@ -23,12 +24,15 @@ class DistrictRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255'],
-            'name_fa' => ['required', 'string', 'max:255'],
-            'name_pa' => ['required', 'string', 'max:255'],
-            'latitude' => 'required',
-            'longitude' => 'required',
-            'code' => ['nullable', 'string', 'max:255'],
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('districts')->where(function ($query) {
+                    return $query->where('province_id', $this->province_id);
+                })->ignore($this?->route('district')),
+            ],
+            'is_urban' => ['required', 'boolean', 'max:255'],
             'province_id' => 'required|integer'
         ];
     }

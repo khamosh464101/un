@@ -22,10 +22,9 @@ class GozarController
         $provinceId = $request->provinceId;
         $field = ($sortBy == 'Oldest' || $sortBy == 'Newest') ? 'id' : 'name';
         $sortType = ($sortBy == 'Z - A' || $sortBy == 'Newest') ? 'DESC' : 'ASC';
-        $programs = Gozar::with('district.province')->when($search, function($query) use ($search) {
-            $query->where('name', 'like', '%'.$search.'%')
-            ->orWhere('name_fa', 'like', '%'.$search.'%')
-            ->orWhere('name_pa', 'like', '%'.$search.'%');
+        $gozars = Gozar::with('district.province')->when($search, function($query) use ($search) {
+            $query->where('name', 'like', '%'.$search.'%');
+
         })->when($provinceId, function ($query) use ($provinceId) {
             $query->whereHas('district', function ($q) use ($provinceId) {
                 $q->where('province_id', $provinceId);
@@ -34,17 +33,18 @@ class GozarController
         ->when($districtId, function($query) use ($districtId){
             $query->where('district_id', $districtId);
         })->orderBy($field, $sortType)->paginate(8);
-        return response()->json($programs, 201);
+        return response()->json($gozars, 201);
     }
     public function store(GozarRequest $request) {
         $data = $request->validated();
         $gozar = Gozar::create($data);
-        return response()->json(['message' => 'Sucessfully added!', 'data' => $data], 201);
+        return response()->json(['message' => 'Sucessfully added!', 'data' => $gozar], 201);
     }
 
 
     public function edit($id) {
         $gozar = Gozar::find($id);
+        $gozar->district->province;
         return response()->json($gozar, 201);
     }
 

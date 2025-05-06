@@ -29,7 +29,7 @@ class ActivityRequest extends FormRequest
             'ends_at' => ['nullable', 'date' ],
             'description' => 'nullable',
             'project_id' => ['required', 'integer'],
-            'responsible_id' => ['required', 'integer'],
+            'responsibles_id' => ['required', 'array'],
             'activity_status_id' => ['required', 'integer'],
             'activity_type_id' => ['nullable', 'integer'],
         ];

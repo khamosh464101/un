@@ -3,6 +3,7 @@
 namespace Modules\Projects\Http\Controllers;
 use Modules\Projects\Models\Staff;
 use Modules\Projects\Models\Project;
+use Modules\Projects\Models\Activity;
 use Modules\Projects\Http\Requests\StaffRequest;
 use Modules\Projects\Http\Controllers\ProgramController;
 
@@ -12,15 +13,15 @@ use Illuminate\Http\Request;
 class StaffController
 {
     public function select2($id = null) {
-        $staff;
+        $responsibles;
         if ($id) {
-           $project = Project::find($id);
-           $staff = $project->staff;
+           $activity = Activity::find($id);
+           $responsibles = $activity->responsibles;
 
         } else {
-            $staff = Staff::select('id', 'name')->get();
+            $responsibles = Staff::select('id', 'name')->get();
         }
-        return response()->json($staff, 201);
+        return response()->json($responsibles, 201);
     }
     public function index(Request $request) {
  
@@ -51,6 +52,7 @@ class StaffController
     public function edit($id) {
         $staff = Staff::with('logs.causer')->withCount('projects')->withCount('tickets')->find($id);
         $staff->status;
+        $staff->contractType;
         if ($staff->user) {
             $staff->user->roles;
         }

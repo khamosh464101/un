@@ -69,6 +69,11 @@ class Subproject extends Model
         return $this->belongsToMany(Gozar::class);
     }
 
+    public function districts(): BelongsToMany
+    {
+        return $this->belongsToMany(District::class);
+    }
+
     public function getCreatedAtFormattedAttribute()
     {
         // Format the 'created_at' value
@@ -99,7 +104,8 @@ class Subproject extends Model
 
         static::deleting(function ($subproject) {
             $subproject->documents()->delete(); // Delete all related documents in one query
-            $project->gozars()->detach();
+            $subproject->gozars()->detach();
+            $subproject->districts()->detach();
         });
     }
 

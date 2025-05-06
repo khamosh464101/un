@@ -5,7 +5,7 @@ namespace Modules\Projects\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class GozarRequest extends FormRequest
+class StaffContractTypeRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -23,15 +23,9 @@ class GozarRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('gozars')->where(function ($query) {
-                    return $query->where('district_id', $this->district_id);
-                })->ignore($this?->route('gozar')),
-            ],
-            'district_id' => 'required|integer'
+            'title' => ['required', 'string', 'max:255', Rule::unique('staff_contract_types')->ignore($this?->route('staff_contract_type'))],
+            'color' => 'required',
+            'is_default' => 'boolean',
         ];
     }
 }

@@ -28,8 +28,11 @@ class Staff extends Model
         'phone2',
         'duty_station',
         'date_of_joining',
+        'end_of_contract',
+        'gender',
         'about',
-        'staff_status_id'
+        'staff_status_id',
+        'staff_contract_type_id'
     ];
 
     protected $appends = ['created_at_formatted', 'updated_at_formatted'];
@@ -60,6 +63,11 @@ class Staff extends Model
         return $this->belongsTo(StaffStatus::class, 'staff_status_id');
     }
 
+    public function contractType(): BelongsTo
+    {
+        return $this->belongsTo(StaffContractType::class, 'staff_contract_type_id');
+    }
+
     public function documents(): MorphMany
     {
         return $this->morphMany(Document::class, 'documentable');
@@ -76,7 +84,7 @@ class Staff extends Model
 
     public function getPhotoAttribute($value)
     {
-        return $value ? asset("storage/$value") : asset('import/assets/post-pic-dummy.png');
+        return $value ? asset("storage/$value") : ($this->gender === 'Female' ? asset('avatar/female.jpg') : asset('avatar/male.jpg'));
     }
     public function getDateOfJoiningAttribute($value) {
         return Carbon::parse($value)->format('M d, Y');
@@ -117,10 +125,11 @@ class Staff extends Model
         return $this->hasOne(User::class, 'staff_id');
     }
     
-    public function activities (): HasMany
+    public function activities(): BelongsToMany
     {
-        return $this->hasMany(Activity::class, 'responsible_id');
+        return $this->belongsToMany(Activity::class);
     }
+
     public function tickets (): HasMany
     {
         return $this->hasMany(Ticket::class, 'responsible_id');

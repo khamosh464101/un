@@ -5,6 +5,7 @@ namespace Modules\Projects\Http\Controllers;
 use Illuminate\Http\Request;
 use Modules\Projects\Models\Partner;
 use Modules\Projects\Models\Subproject;
+use Modules\Projects\Models\District;
 use Modules\Projects\Models\Gozar;
 use Modules\Projects\Http\Requests\SubprojectRequest;
 
@@ -54,11 +55,12 @@ class SubprojectController
     }
 
     public function edit($id) {
-        $subproject = Subproject::with('gozars.district.province')->with('logs.causer')->find($id);
+        $subproject = Subproject::with('districts.province')->with('logs.causer')->find($id);
         $subproject->partner;
         $subproject->project;
         $subproject->type;
         $subproject->documents;
+        $subproject->gozars;
         return response()->json($subproject, 201);
     }
 
@@ -81,20 +83,41 @@ class SubprojectController
 
     public function addGozar(Request $request) {
         $subproject = Subproject::find($request->id);
-        $gozar = Gozar::find($request->gozar_id);
-        if ($subproject->gozars->contains($gozar)) {
-            return response()->json(['message' => 'Already exist'], 500);
-        }
-       $subproject->gozars()->attach($gozar);
-        $gozar->district->province;
-        return response()->json($gozar, 201);
+        $district = District::find($request->district_id);
+        
+        $subproject->districts()->syncWithoutDetaching([$district]);
+        $subproject->gozars()->syncWithoutDetaching($request->gozars_id);
+        
+       
+    
+        return response()->json($subproject->load('gozars')->load('districts.province'), 201);
 
     }
 
+
     public function removeGozar(Request $request) {
         $subproject = Subproject::find($request->id);
+        $gozar = Gozar::find($request->gozar_id);
         $subproject->gozars()->detach($request->gozar_id);
         return response()->json(['message' => 'Successfully removed!'], 201);
 
     }
+
+    public function removeDistrict(Request $request) {
+        $subproject = Subproject::find($request->id);
+        $district = District::find($request->district_id);
+        foreach ($subproject->gozars as $key => $value) {
+            if ($value->district_id === $request->district_id ) {
+                $subproject->gozars()->detach($value->id);
+            }
+        }
+
+        $subproject->districts()->detach($request->district_id);
+        return response()->json(['message' => 'Successfully removed!'], 201);
+
+    }
+
+
+
+
 }

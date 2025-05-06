@@ -26,16 +26,14 @@ class TicketRequest extends FormRequest
             'title' => ['required', 'string', 'max:255', Rule::unique('tickets')->ignore($this?->route('ticket'))],
             'ticket_number' => ['nullable', 'string'],
             'description' => ['nullable'],
-            'estimation' => ['required', 'numeric' ],
+            'start_date' => 'required|date',
             'deadline' => 'required|date',
             'order' => ['nullable', 'integer'],
             'owner_id' => ['required', 'integer'],
             'responsible_id' => ['required', 'integer'],
             'ticket_status_id' => ['required', 'integer'],
-            'ticket_type_id' => ['required', 'integer'],
             'ticket_priority_id' => ['required', 'integer'],
             'activity_id' => 'required|integer',
-            'parent_id' => 'nullable|integer'
         ];
 
 

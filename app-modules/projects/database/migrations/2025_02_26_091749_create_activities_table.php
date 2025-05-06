@@ -21,7 +21,6 @@ return new class extends Migration
             $table->foreignId('project_id');
             $table->foreignId('activity_status_id');
             $table->foreignId('activity_type_id');
-            $table->foreignId('responsible_id');
             $table->timestamps();
         });
     }

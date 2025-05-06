@@ -28,7 +28,7 @@ class DonorController
     public function store(DonorRequest $request) {
         $data = $request->validated();
          $donor = Donor::create($data);
-        return response()->json(['message' => 'Sucessfully added!', 'data' => $data], 201);
+        return response()->json(['message' => 'Sucessfully added!', 'data' => $donor], 201);
     }
 
     public function edit($id) {

@@ -10,6 +10,7 @@ use Modules\Projects\Http\Requests\ActivityRequest;
 use Modules\Projects\Http\Controllers\ProgramController;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 
 class ActivityController
 {
@@ -59,8 +60,12 @@ class ActivityController
     }
 
     public function store(ActivityRequest $request) {
-        $data = $request->validated();
+        $data = Arr::except($request->validated(), ['responsibles_id']);
         $activity = Activity::create($data);
+        $activity->responsibles()->syncWithoutDetaching($request->responsibles_id);
+        $activity->status;
+        $activity->type;
+        $activity->responsibles;
         return response()->json(['message' => 'Sucessfully added!', 'data' => $activity], 201);
     }
 
@@ -69,17 +74,22 @@ class ActivityController
         $activity->status;
         $activity->type;
         $activity->documents;
-        $activity->project->program;
-        $activity->responsible;
+        $activity->project;
+        $activity->responsibles;
         $activity->progress = $activity->getProgress();
         return response()->json($activity, 201);
     }
 
     public function update(ActivityRequest $request, $id) {
-        $data = $request->validated();
-        $activiry = Activity::find($id);
-        $activiry->update($data);
-        return response()->json(['message' => 'Sucessfully updated!', 'data' => $activiry], 201);
+        $data = Arr::except($request->validated(), ['responsibles_id']);
+        $activity = Activity::find($id);
+        $activity->update($data);
+        $activity->responsibles()->detach();
+        $activity->responsibles()->attach($request->responsibles_id);
+        $activity->status;
+        $activity->type;
+        $activity->responsibles;
+        return response()->json(['message' => 'Sucessfully updated!', 'data' => $activity], 201);
     }
 
     public function destroy($id) {

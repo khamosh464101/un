@@ -24,7 +24,6 @@ class ActivityTypeRequest extends FormRequest
     {
         return [
             'title' => ['required', 'string', 'max:255', Rule::unique('activity_types')->ignore($this?->route('activity_type'))],
-            'color' => 'required',
             'is_default' => 'boolean',
         ];
     }

@@ -31,7 +31,6 @@ class TicketController
  
         $search = $request->search;
         $sortBy = $request->sortBy;
-        $typeId = $request->typeId;
         $priorityId = $request->priorityId;
         $statusId = $request->statusId;
         $projectId = $request->projectId;
@@ -39,7 +38,6 @@ class TicketController
         $field = ($sortBy == 'Oldest' || $sortBy == 'Newest') ? 'id' : 'title';
         $sortType = ($sortBy == 'Z - A' || $sortBy == 'Newest') ? 'DESC' : 'ASC';
         $tickets = Ticket::with('status')
-                    ->with('type')
                     ->with('priority')
                     ->with('responsible')
                     ->with('activity')
@@ -50,9 +48,7 @@ class TicketController
                     ->when($statusId, function($query) use ($statusId) {
                         $query->where('ticket_status_id', $statusId);
                     })
-                    ->when($typeId, function($query) use ($typeId) {
-                        $query->where('ticket_type_id', $typeId);
-                    })
+                 
                     ->when($priorityId, function($query) use ($priorityId) {
                         $query->where('ticket_priority_id', $priorityId);
                     })
@@ -82,9 +78,6 @@ class TicketController
     public function store(TicketRequest $request) {
         $data = $request->validated();
         $ticket = Ticket::create($data);
-        if ($request->parent_id) {
-            # code...
-        }
         return response()->json(['message' => 'Sucessfully added!', 'data' => $ticket], 201);
     }
 
@@ -97,7 +90,7 @@ class TicketController
         $ticket->priority;
         $ticket->logs;
         $ticket->documents;
-        $ticket->activity->project->program;
+        $ticket->activity->project;
         $ticket->owner;
         $ticket->responsible;
         $ticket->parent;

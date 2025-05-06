@@ -22,10 +22,7 @@ class DistrictController
         $field = ($sortBy == 'Oldest' || $sortBy == 'Newest') ? 'id' : 'name';
         $sortType = ($sortBy == 'Z - A' || $sortBy == 'Newest') ? 'DESC' : 'ASC';
         $programs = District::with('province')->with('gozars')->withCount('gozars')->when($search, function($query) use ($search) {
-            $query->where('name', 'like', '%'.$search.'%')
-            ->orWhere('name_fa', 'like', '%'.$search.'%')
-            ->orWhere('name_pa', 'like', '%'.$search.'%')
-            ->orWhere('code', 'like', '%'.$search.'%');
+            $query->where('name', 'like', '%'.$search.'%');
         })
         ->when($provinceId, function($query) use ($provinceId){
             $query->where('province_id', $provinceId);
@@ -35,7 +32,7 @@ class DistrictController
     public function store(DistrictRequest $request) {
         $data = $request->validated();
         $district = District::create($data);
-        return response()->json(['message' => 'Sucessfully added!', 'data' => $data], 201);
+        return response()->json(['message' => 'Sucessfully added!', 'data' => $district], 201);
     }
 
 

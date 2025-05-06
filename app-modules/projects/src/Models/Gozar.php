@@ -13,7 +13,7 @@ class Gozar extends Model
 {
     // use LogsActivity;
     
-    protected $fillable = ['name', 'name_fa', 'name_pa', 'latitude', 'longitude', 'district_id'];
+    protected $fillable = ['name', 'district_id'];
 
     // public function getActivitylogOptions(): LogOptions
     // {

@@ -67,13 +67,13 @@ class TicketNotification extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {   
         $frontendUrl = config('frontend.url');
-        $url = $frontendUrl . '/project-management/tickets/' . $this->ticketId;
+        $url = $frontendUrl . '/project-management/tasks/' . $this->ticketId;
 
         return (new MailMessage)
-        ->subject("[{$this->activity->project->title}] {$this->user->name} has {$this->action} {$this->title} ticket")
-        ->greeting("{$this->user->name} {$this->action} {$this->title} ticket")
+        ->subject("[{$this->activity->project->title}] {$this->user->name} has {$this->action} {$this->title} task")
+        ->greeting("{$this->user->name} {$this->action} {$this->title} task")
         ->line($this->title)
-        ->action('Go to Ticket', $url);
+        ->action('Go to Task', $url);
     }
 
     /**
@@ -84,10 +84,10 @@ class TicketNotification extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         $frontendUrl = config('frontend.url');
-        $url = $frontendUrl . '/project-management/tickets/' . $this->ticketId;
+        $url = $frontendUrl . '/project-management/tasks/' . $this->ticketId;
         return [
             'ticket_id' => $this->ticketId,
-            'title' => "{$this->user->name} has {$this->action} \"{$this->title}\" ticket",
+            'title' => "{$this->user->name} has {$this->action} \"{$this->title}\" task",
             'subtitle' => "On \"{$this->activity->project->title}\" project",
             'link' => $url,
             'causer_id' => $this->user->id,
@@ -104,10 +104,10 @@ class TicketNotification extends Notification implements ShouldQueue
         public function toFcm($notifiable): FcmMessage
     {
         $frontendUrl = config('frontend.url');
-            $url = $frontendUrl . '/project-management/tickets/' . $this->ticketId;
+            $url = $frontendUrl . '/project-management/tasks/' . $this->ticketId;
         return (new FcmMessage(notification: new FcmNotification(
-            title : "Ticket Log Time",
-            body: "{$this->user->name} has {$this->action} \"{$this->title}\" ticket",
+            title : "Task Log Time",
+            body: "{$this->user->name} has {$this->action} \"{$this->title}\" task",
             image : 'https://www.gstatic.com/mobilesdk/240501_mobilesdk/firebase_28dp.png', 
             )))
             ->data(['link' => $url,
