@@ -24,9 +24,9 @@ return new class extends Migration
             $table->date('date_of_joining')->nullable();
             $table->date('end_of_contract')->nullable();
             $table->text('about')->nullable();
-            $table->string('gender');
+            $table->string('gender')->default('Female');
             $table->foreignId('staff_status_id');
-            $table->foreignId('staff_contract_type_id');
+            $table->foreignId('staff_contract_type_id')->default(1);
             $table->timestamps();
         });
     }

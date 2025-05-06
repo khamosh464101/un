@@ -27,17 +27,17 @@ class ProvinceSeeder extends Seeder
                 'longitude' => $p['longitude'],
               
            ]);
-           foreach ($p['districts'] as $key => $d) {
-            $district = District::create([
-                'name' => $d['name'],
-                'name_fa' => $d['nameFa'],
-                'name_pa' => $d['namePa'],
-                'latitude' => $d['latitude'],
-                'longitude' => $d['longitude'],
-                'province_id' => $province->id,
+        //    foreach ($p['districts'] as $key => $d) {
+        //     $district = District::create([
+        //         'name' => $d['name'],
+        //         'name_fa' => $d['nameFa'],
+        //         'name_pa' => $d['namePa'],
+        //         'latitude' => $d['latitude'],
+        //         'longitude' => $d['longitude'],
+        //         'province_id' => $province->id,
               
-           ]);
-           }
+        //    ]);
+        //    }
 
         }
     }
