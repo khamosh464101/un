@@ -37,5 +37,10 @@ return [
     'firebase' => [
         'credentials' => env('FIREBASE_CREDENTIALS'),
     ],
+    'kobo' => [
+        'base_url' => env('KOBO_BASE_URL'),
+        'token' => env('KOBO_TOKEN'),
+        'form_id' => env('KOBO_FORM_ID'),
+    ]
 
 ];

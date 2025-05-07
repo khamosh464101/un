@@ -1,0 +1,12 @@
+<?php
+
+// use Modules\DataManagement\Http\Controllers\DataManagementController;
+use Modules\DataManagement\Http\Controllers\SyncKoboController;
+
+Route::get('/data-managements', [SyncKoboController::class, 'listForms'])->name('data-managements.index');
+// Route::get('/data-managements/create', [DataManagementController::class, 'create'])->name('data-managements.create');
+// Route::post('/data-managements', [DataManagementController::class, 'store'])->name('data-managements.store');
+// Route::get('/data-managements/{data-management}', [DataManagementController::class, 'show'])->name('data-managements.show');
+// Route::get('/data-managements/{data-management}/edit', [DataManagementController::class, 'edit'])->name('data-managements.edit');
+// Route::put('/data-managements/{data-management}', [DataManagementController::class, 'update'])->name('data-managements.update');
+// Route::delete('/data-managements/{data-management}', [DataManagementController::class, 'destroy'])->name('data-managements.destroy');
