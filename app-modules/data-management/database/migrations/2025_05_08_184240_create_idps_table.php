@@ -11,16 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('submissions', function (Blueprint $table) {
+        Schema::create('idps', function (Blueprint $table) {
             $table->id();
-            $table->integer('_id')->nullable();
-            $table->string('_uuid')->nullable();
-            $table->date('date');
-            // itor_agreement
-            $table->string('consent');
-            // 4 displacement
-            $table->string('status');
-            $table->foreignId('form_id');
+            $table->string('year_idp');
+            $table->string('idp_reason');
+            $table->string('idp_securtiy_reason');
+            $table->string('natural_disaster_reason');
+            $table->string('other_reason');
             $table->timestamps();
         });
     }
@@ -30,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('submissions');
+        Schema::dropIfExists('idps');
     }
 };

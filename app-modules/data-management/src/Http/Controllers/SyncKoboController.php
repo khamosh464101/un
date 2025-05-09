@@ -3,6 +3,7 @@
 namespace Modules\DataManagement\Http\Controllers;
 use App\Services\KoboService;
 use Illuminate\Http\Request;
+use Modules\DataManagement\Models\Form;
 
 class SyncKoboController
 {
@@ -17,7 +18,9 @@ class SyncKoboController
     {
         // $forms = $this->kobo->getForms();
         // return $forms;
-        $forms = $this->kobo->getFormDetails();
+        //  $forms = $this->kobo->getFormDetails();
+        // Form::create(['raw_schema' => $forms]);
+        return response()->json(Form::first());
         return $forms['asset'];
     }
     

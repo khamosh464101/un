@@ -17,14 +17,9 @@ return new class extends Migration
             $table->integer('household_size');
             $table->string('hoh_disable');
             $table->string('hof_or_interviewee');
-            $table->integer('number_families');
-            $table->integer('number_families');
-            $table->integer('number_families');
-            $table->integer('number_families');
-            $table->integer('number_families');
-            $table->integer('number_families');
-            $table->integer('number_families');
-            $table->integer('number_families');
+            $table->string('hof_ethnicity');
+            $table->string('province_origin');
+            $table->string('district_origin');
             $table->timestamps();
         });
     }
