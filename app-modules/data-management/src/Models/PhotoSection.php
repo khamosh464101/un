@@ -4,19 +4,21 @@ namespace Modules\DataManagement\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 
-class FamilyInformation extends Model
+class PhotoSection extends Model
 {
-    
     protected $fillable = [
-        'number_families',
-        'household_size',
-        'hoh_disable',
-        'hof_or_interviewee',
-        'hof_ethnicity',
-        'province_origin',
-        'district_origin',
+        'field_name',
+        'latitude',
+        'longitude',
+        'altitude',
+        'accuracy',
+        'photo_interviewee',
+        'photo_house_building',
+        'photo_house_door',
+        'photo_enovirment',
+        'photo_other',
+        'remarks',
         'submission_id',
     ];
 
@@ -24,6 +26,4 @@ class FamilyInformation extends Model
     {
         return $this->belongsTo(Submission::class);
     }
-
-    
 }

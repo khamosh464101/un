@@ -5,25 +5,15 @@ namespace Modules\DataManagement\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class HeadFamily extends Model
+class HouseDocumentPhoto extends Model
 {
     protected $fillable = [
-        'hoh_name',
-        'hoh_father_name',
-        'hoh_grandfather_name',
-        'hoh_phone_number',
-        'does_hoh_have_nic',
-        'hoh_nic_number',
-        'hoh_nic_photo',
-        'hoh_sex',
-        'hoh_age',
-        'submission_id',
+        'path',
+        'returnee_id',
     ];
 
     public function submission(): BelongsTo
     {
         return $this->belongsTo(Submission::class);
     }
-
-
 }

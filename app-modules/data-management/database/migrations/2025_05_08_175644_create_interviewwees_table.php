@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('inter_nic_photo');
             $table->string('inter_sex');
             $table->string('inter_age');
+            $table->foreignId('submission_id');
             $table->timestamps();
         });
     }

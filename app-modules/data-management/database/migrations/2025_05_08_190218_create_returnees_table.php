@@ -21,9 +21,21 @@ return new class extends Migration
             $table->string('migration_reason_security');
             $table->string('migration_reason_natural_disaster');
             $table->string('migration_reason_other');
-
-            
-            
+            $table->string('duration_Household_living_there');
+            $table->date("date_return_home_country");
+            $table->string('entry_borders');
+            $table->string('return_document_have');
+            $table->string('type_return_document');
+            $table->string('type_return_document_number');
+            $table->date("type_return_document_date");
+            $table->text("household_get_support_no");
+            $table->string('household_get_support');
+            $table->string('household_get_support_yes');
+            $table->string('organization_support');
+            $table->string('reason_return');
+            $table->string('return_reason_force');
+            $table->string('return_reason_voluntair');
+            $table->foreignId('submission_id');
             $table->timestamps();
         });
     }

@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('hoh_nic_photo');
             $table->string('hoh_sex');
             $table->string('hoh_age');
+            $table->foreignId('submission_id');
             $table->timestamps();
         });
     }

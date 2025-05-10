@@ -11,15 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('family_information', function (Blueprint $table) {
+        Schema::create('resettlements', function (Blueprint $table) {
             $table->id();
-            $table->integer('number_families');
-            $table->integer('household_size');
-            $table->string('hoh_disable');
-            $table->string('hof_or_interviewee');
-            $table->string('hof_ethnicity');
-            $table->string('province_origin');
-            $table->string('district_origin');
+            $table->string('relocate_another_place_by_government');
+            $table->string('reason_notwantto_relocate');
+            $table->string('relocate_minimum_condition');
+            $table->string('relocate_another_place_by_government');
+            $table->string('relocate_another_place_by_government');
             $table->foreignId('submission_id');
             $table->timestamps();
         });
@@ -30,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('family_information');
+        Schema::dropIfExists('resettlements');
     }
 };

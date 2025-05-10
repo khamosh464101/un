@@ -30,6 +30,7 @@ return new class extends Migration
             $table->tinyInteger('f_female');
             $table->tinyInteger('f_male');
             $table->tinyInteger('f_total');
+            $table->foreignId('submission_id');
             $table->timestamps();
         });
     }

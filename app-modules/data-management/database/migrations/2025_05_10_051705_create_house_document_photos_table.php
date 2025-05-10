@@ -11,14 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('idps', function (Blueprint $table) {
+        Schema::create('house_document_photos', function (Blueprint $table) {
             $table->id();
-            $table->string('year_idp');
-            $table->string('idp_reason');
-            $table->string('idp_securtiy_reason');
-            $table->string('natural_disaster_reason');
-            $table->string('other_reason');
-            $table->foreignId('submission_id');
+            $table->string('path');
+            $table->foreignId('returnee_id');
             $table->timestamps();
         });
     }
@@ -28,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('idps');
+        Schema::dropIfExists('house_document_photos');
     }
 };

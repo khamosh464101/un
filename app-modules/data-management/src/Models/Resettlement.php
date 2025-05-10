@@ -4,19 +4,15 @@ namespace Modules\DataManagement\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 
-class FamilyInformation extends Model
+class Resettlement extends Model
 {
-    
     protected $fillable = [
-        'number_families',
-        'household_size',
-        'hoh_disable',
-        'hof_or_interviewee',
-        'hof_ethnicity',
-        'province_origin',
-        'district_origin',
+        'relocate_another_place_by_government',
+        'reason_notwantto_relocate',
+        'relocate_minimum_condition',
+        'relocate_another_place_by_government',
+        'relocate_another_place_by_government',
         'submission_id',
     ];
 
@@ -24,6 +20,4 @@ class FamilyInformation extends Model
     {
         return $this->belongsTo(Submission::class);
     }
-
-    
 }

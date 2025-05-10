@@ -4,19 +4,17 @@ namespace Modules\DataManagement\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 
-class FamilyInformation extends Model
+class Livelihood extends Model
 {
-    
     protected $fillable = [
-        'number_families',
-        'household_size',
-        'hoh_disable',
-        'hof_or_interviewee',
-        'hof_ethnicity',
-        'province_origin',
-        'district_origin',
+        'Household_main_source_income',
+        'women_engagement_income',
+        'average_household_monthly_income',
+        'improve_livelihoods',
+        'improve_livelihoods_other',
+        'debt',
+        'repaying_load_yes',
         'submission_id',
     ];
 
@@ -24,6 +22,4 @@ class FamilyInformation extends Model
     {
         return $this->belongsTo(Submission::class);
     }
-
-    
 }

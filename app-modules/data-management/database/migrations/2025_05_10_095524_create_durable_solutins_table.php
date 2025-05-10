@@ -11,15 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('family_information', function (Blueprint $table) {
+        Schema::create('durable_solutins', function (Blueprint $table) {
             $table->id();
-            $table->integer('number_families');
-            $table->integer('household_size');
-            $table->string('hoh_disable');
-            $table->string('hof_or_interviewee');
-            $table->string('hof_ethnicity');
-            $table->string('province_origin');
-            $table->string('district_origin');
+            $table->string('future_families_preference');
+            $table->string('local_integration_details');
+            $table->string('local_integration_other');
+            $table->string('do_you_have_land');
+            $table->integer('do_you_have_land_yes');
             $table->foreignId('submission_id');
             $table->timestamps();
         });
@@ -30,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('family_information');
+        Schema::dropIfExists('durable_solutins');
     }
 };
