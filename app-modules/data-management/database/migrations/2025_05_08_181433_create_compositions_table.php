@@ -27,9 +27,9 @@ return new class extends Migration
             $table->tinyInteger('male_30_60');
             $table->tinyInteger('female_60_above');
             $table->tinyInteger('male_60_above');
-            $table->tinyInteger('f_female');
-            $table->tinyInteger('f_male');
-            $table->tinyInteger('f_total');
+            $table->tinyInteger('f_female')->virtualAs('female_0_1 + female_1_5 + female_6_12 + female_13_17 + female_18_30 + female_30_60 + female_60_above');
+            $table->tinyInteger('f_male')->virtualAs('male_0_1 + male_1_5 + male_6_12 + male_13_17 + male_18_30 + male_30_60 + male_60_above');
+            $table->tinyInteger('f_total')->virtualAs('f_female + f_male');
             $table->foreignId('submission_id');
             $table->timestamps();
         });

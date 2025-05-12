@@ -1,7 +1,7 @@
 <?php
 
 namespace Modules\DataManagement\Http\Controllers;
-use App\Services\KoboService;
+use Modules\DataManagement\Services\KoboService;
 use Illuminate\Http\Request;
 use Modules\DataManagement\Models\Form;
 
