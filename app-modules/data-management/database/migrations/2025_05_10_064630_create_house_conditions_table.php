@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('materials_house_constructed');
             $table->string('issues_current_house');
+            $table->string('issues_current_house_other');
             $table->string('house_adequate_family_size');
             $table->string('house_adequate_family_size_no');
             $table->text('house_adequate_family_size_no_other');
@@ -28,7 +29,6 @@ return new class extends Migration
             $table->string('shelter_support_received_yes_other');
             $table->string('rate_need_shelter_repair');
             $table->text('surveyor_observation_current_house');
-            $table->string('received_humanitarian_assistance_org');
             $table->foreignId('submission_id');
             $table->timestamps();
         });

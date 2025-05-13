@@ -10,6 +10,7 @@ class HouseCondition extends Model
     protected $fillable = [
         'materials_house_constructed',
         'issues_current_house',
+        'issues_current_house_other',
         'house_adequate_family_size',
         'house_adequate_family_size_no',
         'house_adequate_family_size_no_other',
