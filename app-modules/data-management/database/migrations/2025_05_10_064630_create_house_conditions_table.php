@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('house_conditions', function (Blueprint $table) {
             $table->id();
             $table->string('materials_house_constructed');
-            $table->string('issues_current_house');
+            $table->json('issues_current_house');
             $table->string('issues_current_house_other');
             $table->string('house_adequate_family_size');
             $table->string('house_adequate_family_size_no');

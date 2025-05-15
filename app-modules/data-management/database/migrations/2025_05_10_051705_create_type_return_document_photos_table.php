@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('house_document_photos', function (Blueprint $table) {
+        Schema::create('type_return_document_photos', function (Blueprint $table) {
             $table->id();
             $table->string('path');
             $table->foreignId('returnee_id');
@@ -24,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('house_document_photos');
+        Schema::dropIfExists('type_return_document_photos');
     }
 };

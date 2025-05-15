@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('recent_assistances', function (Blueprint $table) {
             $table->id();
             $table->string('receive_assistance');
-            $table->string('type_assistance');
-            $table->string('assistance_provided_by');
+            $table->string('type_assistance')->nullable();
+            $table->string('assistance_provided_by')->nullable();
             $table->foreignId('submission_id');
             $table->timestamps();
         });

@@ -17,9 +17,9 @@ return new class extends Migration
             $table->string('women_engagement_income');
             $table->string('average_household_monthly_income');
             $table->string('improve_livelihoods');
-            $table->string('improve_livelihoods_other');
+            $table->string('improve_livelihoods_other')->nullable();
             $table->string('debt');
-            $table->string('repaying_load_yes');
+            $table->string('repaying_load_yes')->nullable();
             $table->foreignId('submission_id');
             $table->timestamps();
         });

@@ -15,9 +15,9 @@ return new class extends Migration
             $table->id();
             $table->string('year_idp');
             $table->string('idp_reason');
-            $table->string('idp_securtiy_reason');
-            $table->string('natural_disaster_reason');
-            $table->string('other_reason');
+            $table->string('idp_securtiy_reason')->nullable();
+            $table->string('natural_disaster_reason')->nullable();
+            $table->string('other_reason')->nullable();
             $table->foreignId('submission_id');
             $table->timestamps();
         });

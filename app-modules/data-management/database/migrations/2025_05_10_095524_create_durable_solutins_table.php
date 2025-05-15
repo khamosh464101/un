@@ -14,10 +14,10 @@ return new class extends Migration
         Schema::create('durable_solutins', function (Blueprint $table) {
             $table->id();
             $table->string('future_families_preference');
-            $table->string('local_integration_details');
-            $table->string('local_integration_other');
+            $table->string('local_integration_details')->nullable();
+            $table->string('local_integration_other')->nullable();
             $table->string('do_you_have_land');
-            $table->integer('do_you_have_land_yes');
+            $table->integer('do_you_have_land_yes')->nullable();
             $table->foreignId('submission_id');
             $table->timestamps();
         });

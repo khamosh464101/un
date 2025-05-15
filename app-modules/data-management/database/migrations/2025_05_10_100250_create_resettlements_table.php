@@ -14,10 +14,8 @@ return new class extends Migration
         Schema::create('resettlements', function (Blueprint $table) {
             $table->id();
             $table->string('relocate_another_place_by_government');
-            $table->string('reason_notwantto_relocate');
-            $table->string('relocate_minimum_condition');
-            $table->string('relocate_another_place_by_government');
-            $table->string('relocate_another_place_by_government');
+            $table->string('reason_notwantto_relocate')->nullable();
+            $table->string('relocate_minimum_condition')->nullable();
             $table->foreignId('submission_id');
             $table->timestamps();
         });

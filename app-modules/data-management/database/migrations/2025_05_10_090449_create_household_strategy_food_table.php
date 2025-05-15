@@ -20,7 +20,7 @@ return new class extends Migration
             $table->integer('number_days_nothave_enough_food_reduce_meals');
             $table->string('household_stocks_cereals');
             $table->string('market_place');
-            $table->string('marketplace_distance');    
+            $table->string('marketplace_distance')->nullable();    
             $table->foreignId('submission_id');
             $table->timestamps();
         });

@@ -14,11 +14,11 @@ return new class extends Migration
         Schema::create('community_availabilties', function (Blueprint $table) {
             $table->id();
             $table->string('community_avalibility');
-            $table->string('community_center_photo'); 
-            $table->string('community_org_female'); 
-            $table->string('community_org_male'); 
-            $table->string('Household_member_participate');  
-            $table->string('Household_member_participate_yes');     
+            $table->string('community_center_photo')->nullable(); 
+            $table->string('community_org_female')->nullable(); 
+            $table->string('community_org_male')->nullable(); 
+            $table->string('Household_member_participate')->nullable();  
+            $table->string('Household_member_participate_yes')->nullable();     
             $table->foreignId('submission_id');
             $table->timestamps();
         });

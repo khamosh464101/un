@@ -18,8 +18,8 @@ return new class extends Migration
             $table->string('hoh_grandfather_name');
             $table->string('hoh_phone_number');
             $table->string('does_hoh_have_nic');
-            $table->string('hoh_nic_number');
-            $table->string('hoh_nic_photo');
+            $table->string('hoh_nic_number')->nullable();
+            $table->string('hoh_nic_photo')->nullable();
             $table->string('hoh_sex');
             $table->string('hoh_age');
             $table->foreignId('submission_id');
