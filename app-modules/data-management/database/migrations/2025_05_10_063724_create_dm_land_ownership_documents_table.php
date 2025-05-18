@@ -11,12 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('resettlements', function (Blueprint $table) {
+        Schema::create('dm_land_ownership_documents', function (Blueprint $table) {
             $table->id();
-            $table->string('relocate_another_place_by_government');
-            $table->string('reason_notwantto_relocate')->nullable();
-            $table->string('relocate_minimum_condition')->nullable();
-            $table->foreignId('submission_id');
+            $table->string('house_document_photo');
+            $table->foreignId('dm_house_land_ownership_id');
             $table->timestamps();
         });
     }
@@ -26,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('resettlements');
+        Schema::dropIfExists('dm_land_ownership_documents');
     }
 };

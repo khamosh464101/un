@@ -5,8 +5,9 @@ namespace Modules\DataManagement\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class CommunityAvailabilty extends Model
+class CommunityAvailability extends Model
 {
+    protected $table = "dm_community_availabilties";
     protected $fillable = [
         'community_avalibility',
         'community_center_photo', 

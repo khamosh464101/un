@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Returnee extends Model
 {
+    protected $table = "dm_returnees";
     protected $fillable = [
         'year_returnee',
         'migrate_country',
@@ -35,5 +36,10 @@ class Returnee extends Model
     public function submission(): BelongsTo
     {
         return $this->belongsTo(Submission::class);
+    }
+
+    public function typeReturnDocumentPhoto(): HasMany
+    {
+        return $this->hasMany(TypeReturnDocomentPhoto::class, 'dm_returnee_id');
     }
 }

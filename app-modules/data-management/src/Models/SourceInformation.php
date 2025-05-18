@@ -7,7 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class SourceInformation extends Model
 {
-    protected $table = 'source_information';
+    
+    protected $table = 'dm_source_information';
     protected $fillable = [
         'survey_province',
         'district_name',

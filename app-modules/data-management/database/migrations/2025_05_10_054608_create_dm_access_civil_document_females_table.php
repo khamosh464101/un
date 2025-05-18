@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('access_civil_document_females', function (Blueprint $table) {
+        Schema::create('dm_access_civil_document_females', function (Blueprint $table) {
             $table->id();
             $table->integer('access_civil_documentation_female_tazkira');
             $table->integer('access_civil_documentation_female_birthcertificate');
@@ -28,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('access_civil_document_females');
+        Schema::dropIfExists('dm_access_civil_document_females');
     }
 };

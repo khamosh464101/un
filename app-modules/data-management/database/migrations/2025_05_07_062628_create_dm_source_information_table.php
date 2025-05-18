@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('source_information', function (Blueprint $table) {
+        Schema::create('dm_source_information', function (Blueprint $table) {
             $table->id();
             $table->string('survey_province');
             $table->string('district_name');
@@ -34,6 +34,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('source_information');
+        Schema::dropIfExists('dm_source_information');
     }
 };

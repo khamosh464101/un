@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('extremely_vulnerable_members', function (Blueprint $table) {
+        Schema::create('dm_extremely_vulnerable_members', function (Blueprint $table) {
             $table->id();
             $table->string('large_Household');
             $table->string('disable_member');
@@ -33,6 +33,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('extremely_vulnerable_members');
+        Schema::dropIfExists('dm_extremely_vulnerable_members');
     }
 };

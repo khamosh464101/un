@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Idp extends Model
 {
+    protected $table = "dm_idps";
     protected $fillable = [
         'year_idp',
         'idp_reason',

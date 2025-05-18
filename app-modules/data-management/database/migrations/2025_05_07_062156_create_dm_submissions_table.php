@@ -11,18 +11,23 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('submissions', function (Blueprint $table) {
+        Schema::create('dm_submissions', function (Blueprint $table) {
             $table->id();
             $table->integer('_id')->nullable();
             $table->string('_uuid')->nullable();
-            $table->date('date');
+            $table->date('today');
+            $table->dateTime('start')->nullable();
+            $table->dateTime('end')->nullable();
+            $table->string('__version__')->nullable();
+            $table->dateTime('_submission_time')->nullable();
             // itor_agreement
             $table->string('consent');
             // 4 displacement
             $table->string('status');
-            $table->foreignId('form_id');
+            $table->foreignId('dm_form_id');
             $table->timestamps();
         });
+       
     }
 
     /**
@@ -30,6 +35,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('submissions');
+        Schema::dropIfExists('dm_submissions');
     }
 };

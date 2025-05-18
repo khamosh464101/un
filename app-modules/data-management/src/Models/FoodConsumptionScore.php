@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class FoodConsumptionScore extends Model
 {
+    protected $table = "dm_food_consumption_scores";
     protected $fillable = [
         'days_inweek_eaten_cereal',
         'days_inweek_eaten_pulse',

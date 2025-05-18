@@ -11,16 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('interviewwees', function (Blueprint $table) {
+        Schema::create('dm_interviewwees', function (Blueprint $table) {
             $table->id();
-            $table->string('interviewee_hof_relation');
+            $table->string('interviewee_hof_relation')->nullable();
             $table->string('inter_name');
             $table->string('inter_father_name');
             $table->string('inter_grandfather_name');
             $table->string('inter_phone_number');
             $table->string('does_inter_have_nic');
-            $table->string('inter_nic_number');
-            $table->string('inter_nic_photo');
+            $table->string('inter_nic_number')->nullable();
+            $table->string('inter_nic_photo')->nullable();
             $table->string('inter_sex');
             $table->string('inter_age');
             $table->foreignId('submission_id');
@@ -33,6 +33,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('interviewwees');
+        Schema::dropIfExists('dm_interviewwees');
     }
 };

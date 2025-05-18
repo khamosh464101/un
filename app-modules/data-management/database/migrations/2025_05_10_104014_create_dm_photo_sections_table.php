@@ -11,19 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('photo_sections', function (Blueprint $table) {
+        Schema::create('dm_photo_sections', function (Blueprint $table) {
             $table->id();
-            $table->string('field_name');
-            $table->decimal('latitude', 10, 8)->nullable();
-            $table->decimal('longitude', 11, 8)->nullable();
-            $table->decimal('altitude', 8, 2)->nullable();
-            $table->decimal('accuracy', 8, 2)->nullable();
+            $table->string('field_name')->nullable();
+            $table->decimal('latitude', 12, 10)->nullable();
+            $table->decimal('longitude', 12, 10)->nullable();
+            $table->decimal('altitude', 15, 10)->nullable();
+            $table->float('accuracy')->nullable();
             $table->string('photo_interviewee');
             $table->string('photo_house_building');
             $table->string('photo_house_door');
             $table->string('photo_enovirment');
-            $table->string('photo_other');
-            $table->text('remarks');
+            $table->string('photo_other')->nullable();
+            $table->text('remarks')->nullable();
             $table->foreignId('submission_id');
             $table->timestamps();
         });
@@ -34,6 +34,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('photo_sections');
+        Schema::dropIfExists('dm_photo_sections');
     }
 };

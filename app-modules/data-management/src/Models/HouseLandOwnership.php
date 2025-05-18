@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class HouseLandOwnership extends Model
 {
+    protected $table = "dm_house_land_ownerships";
     protected $fillable = [
         'house_owner',
         'inter_name_owner',
@@ -31,6 +32,6 @@ class HouseLandOwnership extends Model
 
     public function landOwnershipDocument(): HasMany
     {
-        return $this->belongsTo(LandOwnershipDocument::class);
+        return $this->belongsTo(LandOwnershipDocument::class, 'dm_house_land_ownership_id');
     }
 }

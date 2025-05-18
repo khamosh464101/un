@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class HouseholdStrategyFood extends Model
 {
+    protected $table = "dm_household_strategy_food";
     protected $fillable = [
         'number_days_nothave_enough_food_less_expensive',
         'number_days_nothave_enough_food_barrow',

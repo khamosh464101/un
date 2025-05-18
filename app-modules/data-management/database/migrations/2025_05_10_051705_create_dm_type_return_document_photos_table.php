@@ -11,10 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('land_ownership_documents', function (Blueprint $table) {
+        Schema::create('dm_type_return_document_photos', function (Blueprint $table) {
             $table->id();
-            $table->string('house_document_photo');
-            $table->foreignId('house_land_ownership_id');
+            $table->string('type_return_document_photo');
+            $table->foreignId('dm_returnee_id');
             $table->timestamps();
         });
     }
@@ -24,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('land_ownership_documents');
+        Schema::dropIfExists('dm_type_return_document_photos');
     }
 };

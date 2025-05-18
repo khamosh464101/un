@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AccessCivilDocumentMale extends Model
 {
+    protected $table = "dm_access_civil_document_males";
     protected $fillable = [
         'access_civil_documentation_male_tazkira',
         'access_civil_documentation_male_birthcertificate',

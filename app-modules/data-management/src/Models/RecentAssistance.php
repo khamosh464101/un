@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class RecentAssistance extends Model
 {
+    protected $table = "dm_recent_assistances";
     protected $fillable = [
         'receive_assistance',
         'type_assistance',

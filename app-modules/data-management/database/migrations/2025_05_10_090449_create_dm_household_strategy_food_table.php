@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('household_strategy_food', function (Blueprint $table) {
+        Schema::create('dm_household_strategy_food', function (Blueprint $table) {
             $table->id();
             $table->integer('number_days_nothave_enough_food_less_expensive');
             $table->integer('number_days_nothave_enough_food_barrow');
@@ -31,6 +31,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('household_strategy_food');
+        Schema::dropIfExists('dm_household_strategy_food');
     }
 };

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Resettlement extends Model
 {
+    protected $table = "dm_resettlements";
     protected $fillable = [
         'relocate_another_place_by_government',
         'reason_notwantto_relocate',

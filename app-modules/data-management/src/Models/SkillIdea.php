@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class SkillIdea extends Model
 {
+    protected $table = "dm_skill_ideas";
     protected $fillable = [
         'members_have_skills',
         'type_skills',

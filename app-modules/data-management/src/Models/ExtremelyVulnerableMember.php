@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ExtremelyVulnerableMember extends Model
 {
+    protected $table = "dm_extremely_vulnerable_members";
     protected $fillable = [
         'large_Household',
         'disable_member',

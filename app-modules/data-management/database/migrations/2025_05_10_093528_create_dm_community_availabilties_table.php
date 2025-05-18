@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('community_availabilties', function (Blueprint $table) {
+        Schema::create('dm_community_availabilties', function (Blueprint $table) {
             $table->id();
             $table->string('community_avalibility');
             $table->string('community_center_photo')->nullable(); 
@@ -29,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('community_availabilties');
+        Schema::dropIfExists('dm_community_availabilties');
     }
 };

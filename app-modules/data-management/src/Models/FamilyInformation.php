@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class FamilyInformation extends Model
 {
+    protected $table = "dm_family_information";
     
     protected $fillable = [
         'number_families',

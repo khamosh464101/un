@@ -3,6 +3,9 @@ namespace Modules\DataManagement\Services;
 
 use Illuminate\Support\Facades\Http;
 
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+
 class KoboService
 {
     protected $baseUrl;
@@ -43,12 +46,43 @@ class KoboService
         return $response;
     }
 
-    public function getFormSubmissions($formId = null)
+    public function getFormSubmissions($url = null)
     {
+        $formId = $this->formId;
+
         $response = Http::withHeaders([
             'Authorization' => 'Token ' . $this->token,
             'Accept' => 'application/json',
-        ])->get("{$this->baseUrl}/assets/{$this->formId}/data/");
+        ])->get($url ? $url :"{$this->baseUrl}/assets/{$formId}/data?limit=10&offset=0");
+
         return $response;
+    }
+
+        
+
+    public function downloadAttachment(array $attachment, string $directory = 'kobo-attachments'): ?string
+    {
+        $url = $attachment['download_url'];
+        $filename = basename($attachment['filename']); // Extract filename from full path
+        $uuidPrefix = $attachment['instance']; //Str::uuid();
+        $finalName = "$uuidPrefix-$filename"; // avoid name collisions
+
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => 'Token ' . $this->token,
+                'Accept' => 'application/json',
+            ])->get($url); // Add auth if needed
+
+            if ($response->successful()) {
+                Storage::disk('public')->put("$directory/$finalName", $response->body());
+                return "$directory/$finalName"; // return relative path to use later
+            } else {
+                logger()->warning("Failed to download attachment from: $url");
+            }
+        } catch (\Exception $e) {
+            logger()->error("Attachment download failed: " . $e->getMessage());
+        }
+
+        return null;
     }
 }

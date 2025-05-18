@@ -11,11 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('livelihoods', function (Blueprint $table) {
+        Schema::create('dm_livelihoods', function (Blueprint $table) {
             $table->id();
             $table->string('Household_main_source_income');
             $table->string('women_engagement_income');
-            $table->string('average_household_monthly_income');
+            $table->string('average_Household_monthly_income');
             $table->string('improve_livelihoods');
             $table->string('improve_livelihoods_other')->nullable();
             $table->string('debt');
@@ -23,6 +23,8 @@ return new class extends Migration
             $table->foreignId('submission_id');
             $table->timestamps();
         });
+
+
     }
 
     /**
@@ -30,6 +32,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('livelihoods');
+        Schema::dropIfExists('dm_livelihoods');
     }
 };

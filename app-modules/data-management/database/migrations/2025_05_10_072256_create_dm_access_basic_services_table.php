@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('access_basic_services', function (Blueprint $table) {
+        Schema::create('dm_access_basic_services', function (Blueprint $table) {
             $table->id();
             $table->string('drinkingwater_main_source');
             $table->string('type_water_source');
@@ -68,6 +68,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('access_basic_services');
+        Schema::dropIfExists('dm_access_basic_services');
     }
 };

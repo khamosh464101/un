@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class HeadFamily extends Model
 {
+    protected $table = "dm_head_families";
     protected $fillable = [
         'hoh_name',
         'hoh_father_name',

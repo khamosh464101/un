@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Composition extends Model
 {
+    protected $table = "dm_compositions";
     protected $fillable = [
         'female_0_1',
         'male_0_1',
@@ -22,9 +23,6 @@ class Composition extends Model
         'male_30_60',
         'female_60_above',
         'male_60_above',
-        'f_female',
-        'f_male',
-        'f_total',
         'submission_id',
     ];
 

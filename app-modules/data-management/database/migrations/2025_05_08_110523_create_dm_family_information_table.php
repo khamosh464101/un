@@ -11,13 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('idps', function (Blueprint $table) {
+        Schema::create('dm_family_information', function (Blueprint $table) {
             $table->id();
-            $table->string('year_idp');
-            $table->string('idp_reason');
-            $table->string('idp_securtiy_reason')->nullable();
-            $table->string('natural_disaster_reason')->nullable();
-            $table->string('other_reason')->nullable();
+            $table->integer('number_families')->nullable();
+            $table->integer('household_size');
+            $table->string('hoh_disable');
+            $table->string('hof_or_interviewee');
+            $table->string('hof_ethnicity');
+            $table->string('province_origin');
+            $table->string('district_origin');
             $table->foreignId('submission_id');
             $table->timestamps();
         });
@@ -28,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('idps');
+        Schema::dropIfExists('dm_family_information');
     }
 };

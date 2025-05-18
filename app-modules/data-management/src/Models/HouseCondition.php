@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 class HouseCondition extends Model
 {
+    protected $table = "dm_house_conditions";
     protected $fillable = [
         'materials_house_constructed',
         'issues_current_house',
@@ -28,6 +29,10 @@ class HouseCondition extends Model
         'submission_id',
     ];
 
+    protected $casts = [
+        'issues_current_house' => 'array', // or 'json'
+    ];
+
     public function submission(): BelongsTo
     {
         return $this->belongsTo(Submission::class);
@@ -35,6 +40,6 @@ class HouseCondition extends Model
 
     public function HouseProblemAreaPhoto(): HasMany
     {
-        return $this->hasMany(HouseProblemAreaPhoto::class);
+        return $this->hasMany(HouseProblemAreaPhoto::class, 'dm_house_condition_id');
     }
 }

@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('house_land_ownerships', function (Blueprint $table) {
+        Schema::create('dm_house_land_ownerships', function (Blueprint $table) {
             $table->id();
             $table->string('house_owner');
             $table->string('inter_name_owner')->nullable();
@@ -22,9 +22,9 @@ return new class extends Migration
             $table->string('inter_nic_photo_owner')->nullable();
             $table->string('type_tenure_document');
             $table->string('house_owner_myself')->nullable();
-            $table->string('house_document_number');
-            $table->date('house_document_date');
-            $table->string('duration_lived_thishouse');
+            $table->string('house_document_number')->nullable();
+            $table->date('house_document_date')->nullable();
+            $table->string('duration_lived_thishouse')->nullable();
             $table->foreignId('submission_id');
             $table->timestamps();
         });
@@ -35,6 +35,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('house_land_ownerships');
+        Schema::dropIfExists('dm_house_land_ownerships');
     }
 };

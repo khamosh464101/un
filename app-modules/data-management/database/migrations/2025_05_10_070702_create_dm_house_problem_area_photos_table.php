@@ -11,11 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('forms', function (Blueprint $table) {
+        Schema::create('dm_house_problem_area_photos', function (Blueprint $table) {
             $table->id();
-            $table->string('form_id')->nullable();
-            $table->string('title')->nullable();
-            $table->json('raw_schema');
+            $table->string('current_house_problem_title');
+            $table->string('current_house_problem_photo');
+            $table->foreignId('dm_house_condition_id');
             $table->timestamps();
         });
     }
@@ -25,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('forms');
+        Schema::dropIfExists('dm_house_problem_area_photos');
     }
 };

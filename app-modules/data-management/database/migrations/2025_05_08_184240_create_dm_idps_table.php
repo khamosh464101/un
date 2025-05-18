@@ -11,11 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('house_problem_area_photos', function (Blueprint $table) {
+        Schema::create('dm_idps', function (Blueprint $table) {
             $table->id();
-            $table->string('current_house_problem_title');
-            $table->string('current_house_problem_photo');
-            $table->foreignId('house_condition_id');
+            $table->string('year_idp');
+            $table->string('idp_reason');
+            $table->string('idp_securtiy_reason')->nullable();
+            $table->string('natural_disaster_reason')->nullable();
+            $table->string('other_reason')->nullable();
+            $table->foreignId('submission_id');
             $table->timestamps();
         });
     }
@@ -25,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('house_problem_area_photos');
+        Schema::dropIfExists('dm_idps');
     }
 };

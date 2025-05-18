@@ -2,8 +2,11 @@
 
 // use Modules\DataManagement\Http\Controllers\DataManagementController;
 use Modules\DataManagement\Http\Controllers\SyncKoboController;
+use Modules\DataManagement\Http\Controllers\SubmissionController;
 
+Route::get('/data-management/get-form', [SubmissionController::class, 'getForm']);
 Route::get('/data-managements', [SyncKoboController::class, 'listForms'])->name('data-managements.index');
+
 // Route::get('/data-managements/create', [DataManagementController::class, 'create'])->name('data-managements.create');
 // Route::post('/data-managements', [DataManagementController::class, 'store'])->name('data-managements.store');
 // Route::get('/data-managements/{data-management}', [DataManagementController::class, 'show'])->name('data-managements.show');

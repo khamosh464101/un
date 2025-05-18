@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AccessBasicService extends Model
 {
+    protected $table = "dm_access_basic_services";
     protected $fillable = [
         'drinkingwater_main_source',
         'type_water_source',

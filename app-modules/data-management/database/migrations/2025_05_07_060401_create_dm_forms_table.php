@@ -11,10 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('type_return_document_photos', function (Blueprint $table) {
+        Schema::create('dm_forms', function (Blueprint $table) {
             $table->id();
-            $table->string('path');
-            $table->foreignId('returnee_id');
+            $table->string('form_id')->nullable();
+            $table->string('title')->nullable();
+            $table->json('raw_schema');
             $table->timestamps();
         });
     }
@@ -24,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('type_return_document_photos');
+        Schema::dropIfExists('dm_forms');
     }
 };

@@ -11,9 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('infrasttructure_services', function (Blueprint $table) {
+        Schema::create('dm_skill_ideas', function (Blueprint $table) {
             $table->id();
-            $table->json('infrastructure_services_settlement');
+            $table->string('members_have_skills');
+            $table->string('type_skills')->nullable();
+            $table->string('type_skills_other')->nullable();
+            $table->string('skills_want_learn')->nullable();
             $table->foreignId('submission_id');
             $table->timestamps();
         });
@@ -24,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('infrasttructure_services');
+        Schema::dropIfExists('dm_skill_ideas');
     }
 };

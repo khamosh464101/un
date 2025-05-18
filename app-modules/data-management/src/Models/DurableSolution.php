@@ -5,8 +5,9 @@ namespace Modules\DataManagement\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class DurableSolutin extends Model
+class DurableSolution extends Model
 {
+    protected $table = "dm_durable_solutions";
     protected $fillable = [
         'future_families_preference',
         'local_integration_details',

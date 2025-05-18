@@ -11,13 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('durable_solutins', function (Blueprint $table) {
+        Schema::create('dm_infrasttructure_services', function (Blueprint $table) {
             $table->id();
-            $table->string('future_families_preference');
-            $table->string('local_integration_details')->nullable();
-            $table->string('local_integration_other')->nullable();
-            $table->string('do_you_have_land');
-            $table->integer('do_you_have_land_yes')->nullable();
+            $table->json('infrastructure_services_settlement');
             $table->foreignId('submission_id');
             $table->timestamps();
         });
@@ -28,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('durable_solutins');
+        Schema::dropIfExists('dm_infrasttructure_services');
     }
 };
