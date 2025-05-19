@@ -20,6 +20,7 @@
         "laravel/tinker": "^2.9",
         "modules/data-management": "*",
         "modules/projects": "*",
+        "mpdf/mpdf": "^8.2",
         "spatie/laravel-activitylog": "^4.10",
         "spatie/laravel-backup": "^9.2",
         "spatie/laravel-permission": "^6.14"

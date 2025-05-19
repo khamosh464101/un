@@ -23,6 +23,14 @@ class Submission extends Model
         'dm_form_id'
     ];
 
+    protected $appends = ['map_image'];
+
+    public function getMapImageAttribute()
+    {
+        $tmpName = $this->_id . '.jpg';
+        return $tmpName ? asset("storage/gis/$tmpName") : asset('import/assets/post-pic-dummy.png');
+    }
+
     public function form(): BelongsTo
     {
         return $this->belongsTo(Form::class);
@@ -93,9 +101,9 @@ class Submission extends Model
         return $this->hasOne(HouseHoldStrategyFood::class);
     }
 
-    public function houseLandOwnerShip() : HasOne
+    public function houseLandOwnership() : HasOne
     {
-        return $this->hasOne(HouseLandOwnerShip::class);
+        return $this->hasOne(HouseLandOwnership::class);
     }
 
     public function idp() : HasOne
@@ -121,7 +129,7 @@ class Submission extends Model
 
      public function photoSection() : HasOne
     {
-        return $this->hasOne(PhotoSection::class);
+        return $this->hasOne(PhotoSection::class, 'submission_id');
     }
 
     public function recentAssistance() : HasOne

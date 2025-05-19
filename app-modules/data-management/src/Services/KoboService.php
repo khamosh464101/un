@@ -53,7 +53,7 @@ class KoboService
         $response = Http::withHeaders([
             'Authorization' => 'Token ' . $this->token,
             'Accept' => 'application/json',
-        ])->get($url ? $url :"{$this->baseUrl}/assets/{$formId}/data?limit=10&offset=0");
+        ])->get("{$this->baseUrl}/assets/{$formId}/data?limit=10&offset=0");
 
         return $response;
     }

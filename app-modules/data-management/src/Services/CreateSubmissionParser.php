@@ -33,7 +33,7 @@ use Illuminate\Support\Str;
 
 use DB;
 
-class KoboSubmissionParser
+class CreateSubmissionParser
 {
      protected KoboService $koboService;
 
@@ -83,11 +83,11 @@ class KoboSubmissionParser
            $this->createInfrasttructureService($submission, $sub);
           $this->createPhotoSection($submission, $sub);
 
-           foreach ($submission['_attachments'] as $attachment) {
-                if (Str::startsWith($attachment['mimetype'], 'image/')) {
-                    $this->koboService->downloadAttachment($attachment);
-                }
-            }  
+        //    foreach ($submission['_attachments'] as $attachment) {
+        //         if (Str::startsWith($attachment['mimetype'], 'image/')) {
+        //             $this->koboService->downloadAttachment($attachment);
+        //         }
+        //     }  
 
             
             });
@@ -97,7 +97,7 @@ class KoboSubmissionParser
             'data' => $savedSubmission
         ];
         } catch (\Exception $e) {
-             logger()->error("Error occured: ". $submission['_id'] . $e->getMessage());
+             logger()->error("Error occured: ". $e->getMessage());
             return [
                 'success' => false,
                 'message' => 'Error occurred.',
@@ -108,17 +108,17 @@ class KoboSubmissionParser
     }
 
     function createSubmission($submission) {
-        $submission['start'] = $this->convertToMySQLDateTime($submission['start']);
-        $submission['end'] = $this->convertToMySQLDateTime($submission['end']);
-        $submission['_submission_time'] = $this->convertToMySQLDateTime($submission['_submission_time']);
-        $filteredData = array_intersect_key(
-            $submission,
-            array_flip((new Submission)->getFillable())
-        );
+        $fillable = (new Submission)->getFillable();
+        $filteredData = array_intersect_key($submission, array_flip($fillable));
+    
         $sub = Submission::create(
-            array_merge(['dm_form_id' => 1], $filteredData)
+            array_merge(
+                ['dm_form_id' => 1],
+                ['today' => \Carbon\Carbon::today()->toDateString()],
+                $filteredData
+            )
         );
-
+    
         return $sub;
     }
 
@@ -365,22 +365,4 @@ class KoboSubmissionParser
         }
     }
 
-
-
-
-
-
-
-
-       
-        // $mainData = [
-        //     '_id' => $submission['_id'] ?? null,
-        //     '_uuid' => $submission['_uuid'] ?? null,
-        //     'start' => $submission['start'] ?? null,
-        //     'end' => $submission['end'] ?? null,
-        //     '__version__' => $submission['__version__'] ?? null,
-        //     '_submission_time' => $submission['_submission_time'] ?? null,
-        //     'consent' => $submission['consent'],
-        //     'status' => $submission['status'],
-        // ];
 }

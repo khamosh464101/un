@@ -6,6 +6,11 @@ use Modules\DataManagement\Http\Controllers\SubmissionController;
 
 Route::get('/data-management/get-form', [SubmissionController::class, 'getForm']);
 Route::get('/data-managements', [SyncKoboController::class, 'listForms'])->name('data-managements.index');
+Route::get('/data-managements/add-form-to-db', [SyncKoboController::class, 'addFormToDb']);
+Route::post('/data-managements/submissions/index', [SubmissionController::class, 'index']);
+Route::post('/data-managements/submissions/store', [SubmissionController::class, 'store']);
+Route::get('/data-managements/submissions/{id}/download-profile', [SubmissionController::class, 'downloadProfile']);
+
 
 // Route::get('/data-managements/create', [DataManagementController::class, 'create'])->name('data-managements.create');
 // Route::post('/data-managements', [DataManagementController::class, 'store'])->name('data-managements.store');
