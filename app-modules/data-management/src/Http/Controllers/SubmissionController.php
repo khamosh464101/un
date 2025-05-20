@@ -52,7 +52,7 @@ class SubmissionController
             }
         }
 
-        return $query->paginate(10);
+        return $query->paginate(8);
     }
     public function getForm() {
         
