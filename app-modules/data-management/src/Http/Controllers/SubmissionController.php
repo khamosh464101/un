@@ -5,38 +5,60 @@ namespace Modules\DataManagement\Http\Controllers;
 use Illuminate\Http\Request;
 use Modules\DataManagement\Services\KoboService;
 use Modules\DataManagement\Services\CreateSubmissionParser;
+use Modules\DataManagement\Services\FilterableService;
 use Modules\DataManagement\Models\Form;
 use Modules\DataManagement\Models\Submission;
+use Modules\Projects\Models\Project;
 use Illuminate\Support\Str;
 use Mpdf\Mpdf;
 use Illuminate\Support\Facades\View;
+use App\Exports\SubmissionsExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 
 class SubmissionController
 {
     protected $parser;
+    protected $filterable;
 
-    public function __construct(CreateSubmissionParser $submissionParser)
+    public function __construct(CreateSubmissionParser $submissionParser, FilterableService $filterable)
     {
         $this->parser = $submissionParser;
+        $this->filterable = $filterable->getFilterable();
     }
 
-   protected $filterable = [
-        'status',
-        'sourceInformation__survey_province',
-        'sourceInformation__district_name',
-        'sourceInformation__surveyors_name',
-        'sourceInformation__nahya_number',
-        'sourceInformation__kbl_guzar_number',
-        'sourceInformation__village_name',
-        'sourceInformation__block_number',
-        'sourceInformation__house_number',
-        'sourceInformation__area_representative_name',
-        'sourceInformation__area_representative_phone',
-
-    ];
     public function index(Request $request) {
-        $query = Submission::with(['sourceInformation', 'familyInformation', 'headFamily', 'photoSection']);
+
+        $query = Submission::with([
+            'sourceInformation', 
+            'familyInformation', 
+            'headFamily', 
+            'interviewwee', 
+            'composition',
+            'idp',
+            'returnee',
+            'extremelyVulnerableMember',
+            'accessCivilDocumentMale',
+            'accessCivilDocumentFemale',
+            'houseLandOwnership',
+            'houseCondition',
+            'houseCondition',
+            'accessBasicService',
+            'foodConsumptionScore',
+            'householdStrategyFood',
+            'communityAvailability',
+            'livelihood',
+            'durableSolution',
+            'skillIdea',
+            'resettlement',
+            'recentAssistance',
+            'photoSection',
+        ]);
+        if ($request->project_id) {
+            $query->whereHas('projects', function ($q) use ($request) {
+                $q->where('projects.id', $request->project_id);
+            });
+        }
         foreach ($this->filterable as $field) {
             if ($request->filled($field) && $request->input($field)) {
                 
@@ -52,7 +74,7 @@ class SubmissionController
             }
         }
 
-        return $query->paginate(8);
+        return ["data" => $query->paginate(8), "filterable" => $this->filterable, "projects" => Project::select("id as value", "title as label")->get()];
     }
     public function getForm() {
         
@@ -260,6 +282,23 @@ class SubmissionController
         
         return $submission;
 
+    }
+
+    public function addAsBeneficairy(Request $request) {
+        $project = Project::find($request->project_id);
+        $project->submissions()->syncWithoutDetaching($request->submissions);
+        return response()->json(["message" => "Successfully added!", "data" => $project->load('submissions')], 201);
+    }
+
+    public function removeAsBeneficairy(Request $request) {
+        $project = Project::find($request->project_id);
+        $project->submissions()->detach($request->submissions);
+        return response()->json(["message" => "Successfully removed!", "data" => $project->load('submissions')], 201);
+    }
+
+    public function downloadExcel(Request $request) {
+        return Excel::download(new SubmissionsExport, 'sumbissions.xlsx');
+        return $request;
     }
 
 }

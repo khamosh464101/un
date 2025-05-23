@@ -9,7 +9,11 @@ Route::get('/data-managements', [SyncKoboController::class, 'listForms'])->name(
 Route::get('/data-managements/add-form-to-db', [SyncKoboController::class, 'addFormToDb']);
 Route::post('/data-managements/submissions/index', [SubmissionController::class, 'index']);
 Route::post('/data-managements/submissions/store', [SubmissionController::class, 'store']);
+Route::post('/data-managements/submissions/add-as-beneficiary', [SubmissionController::class, 'addAsBeneficairy']);
+Route::post('/data-managements/submissions/remove-as-beneficiary', [SubmissionController::class, 'removeAsBeneficairy']);
+Route::post('/data-managements/submissions/download-excel', [SubmissionController::class, 'downloadExcel']);
 Route::get('/data-managements/submissions/{id}/download-profile', [SubmissionController::class, 'downloadProfile']);
+
 
 
 // Route::get('/data-managements/create', [DataManagementController::class, 'create'])->name('data-managements.create');

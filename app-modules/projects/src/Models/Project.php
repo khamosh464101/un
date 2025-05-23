@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 use Spatie\Activitylog\Models\Activity as Actvty;
+use Modules\DataManagement\Models\Submission;
 use Storage;
 use Auth;
 use DB;
@@ -54,6 +55,11 @@ class Project extends Model
     public function logs(): HasMany
     {
         return $this->hasMany(Actvty::class, 'subject_id')->where('log_name', 'Project')->orderBy('id', 'desc');
+    }
+
+    public function submissions(): BelongsToMany
+    {
+        return $this->belongsToMany(Submission::class, 'project_submission');
     }
 
     public function status(): BelongsTo

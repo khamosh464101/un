@@ -4,7 +4,9 @@ namespace Modules\DataManagement\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Modules\Projects\Models\Project;
 
 class Submission extends Model
 {
@@ -29,6 +31,11 @@ class Submission extends Model
     {
         $tmpName = $this->_id . '.jpg';
         return $tmpName ? asset("storage/gis/$tmpName") : asset('import/assets/post-pic-dummy.png');
+    }
+
+    public function projects(): BelongsToMany
+    {
+        return $this->belongsToMany(Project::class, 'project_submission');
     }
 
     public function form(): BelongsTo
@@ -96,9 +103,9 @@ class Submission extends Model
         return $this->hasOne(HouseCondition::class);
     }
 
-    public function houseHoldStrategyFood() : HasOne
+    public function householdStrategyFood() : HasOne
     {
-        return $this->hasOne(HouseHoldStrategyFood::class);
+        return $this->hasOne(HouseholdStrategyFood::class);
     }
 
     public function houseLandOwnership() : HasOne
