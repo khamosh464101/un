@@ -71,7 +71,7 @@
                 @php
                     $path = str_replace('http://127.0.0.1:8000/', '', $submission->photoSection->photo_interviewee);
                 @endphp
-                <img src="{{ public_path($path) }}" alt="تصویر" style="margin: 0 auto; transform: rotate(90deg) scale(1.2);" width="200px" >
+                <img src="{{ public_path($path) }}" alt="تصویر" style="margin: 0 auto; transform:scale(1.2);" width="200px" >
                 </td>
             </tr>
             <tr>

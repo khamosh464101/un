@@ -10,8 +10,10 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "google/cloud-vision": "^2.0",
         "guzzlehttp/guzzle": "^7.9",
         "internachi/modular": "^2.2",
+        "intervention/image": "^3.11",
         "kreait/laravel-firebase": "^6.0",
         "laravel-notification-channels/fcm": "^5.1",
         "laravel/breeze": "^2.3",
@@ -19,6 +21,7 @@
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.9",
         "maatwebsite/excel": "^3.1",
+        "modules/archive-data": "*",
         "modules/data-management": "*",
         "modules/projects": "*",
         "mpdf/mpdf": "^8.2",

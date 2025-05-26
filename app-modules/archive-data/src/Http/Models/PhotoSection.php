@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\DataManagement\Models;
+namespace Modules\ArchiveData\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,7 +12,7 @@ use App\Helpers\ImageFixer;
 
 class PhotoSection extends Model
 {
-    protected $table = "dm_photo_sections";
+    protected $table = "archive_dm_photo_sections";
     protected $fillable = [
         'field_name',
         'latitude',

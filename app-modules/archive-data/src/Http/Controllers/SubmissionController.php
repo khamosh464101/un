@@ -82,102 +82,6 @@ class SubmissionController
         return response()->json(Form::first());
     }
 
-    public function store (Request $request) {
-        $files = [
-            'hoh_nic_photo',
-            'inter_nic_photo',
-            'inter_nic_photo_owner',
-            'water_point_photo',
-            'access_sanitation_photo',
-            'access_education_photo',
-            'access_health_photo',
-            'access_road_photo',
-            'community_center_photo',
-            'photo_interviewee',
-            'photo_house_building',
-            'photo_house_door',
-            'photo_enovirment',
-            'photo_other'
-
-        ];
-        // contains multiple files
-        $multipleFiles = [
-            'type_return_document_photos',
-            'house_document_photos',
-            'house_problems_area_photos',
-        ];
-        $data = $request->except(array_merge($files, $multipleFiles));
-        foreach ($files as $key => $value) {
-            
-            if ($request->hasFile($value) && $request->file($value)->isValid()) {
-                return 'has file and working';
-                $uuidPrefix = Str::uuid();
-                $get_file = $request->file($value)->storeAs('kobo-attachments', $this->getFileName($uuidPrefix, $request->file($value)));
-                $data[$value] = $get_file;
-            }
-        }
-
-        if ($request->hasFile('type_return_document_photos')) {
-        $data['type_return_document_photos'] = $this->storeArrayFile('type_return_document_photos', $request);
-        }
-        if ($request->hasFile('house_document_photos')) {
-        $data['house_document_photos'] =  $this->storeArrayFile('house_document_photos', $request);
-        }
-        if ($request->input('house_problems_area_photos')) {
-            $data['house_problems_area_photos'] =  $this->storeArrayFileWithTitle('house_problems_area_photos', $request);
-            }
-
-        $result = $this->parser->parseAndReturn($data);
-        if ($result['success'] === 'true') {
-            return response()->json(["message" => 'Successfully added!'], 201);
-        }
-        return response()->json(["message" => $result['error']], 500);
-
-    
-    }
-
-    public static function getFileName($prefix, $file) {
-        return  $prefix.'-'. \Carbon\Carbon::now()->format('Y-m-d-H-i-s-v') . '.' . $file->getClientOriginalExtension();
-    }
-
-    public function storeArrayFile(string $name, Request $request): array
-    {
-        $storedFiles = [];
-        foreach ($request->file($name) as $file) {
-                $uuidPrefix = Str::uuid();
-                $path = $file->storeAs(
-                    'kobo-attachments',
-                    $this->getFileName($uuidPrefix, $file)
-                );
-                $storedFiles[] = $path;
-            
-        }
-        return $storedFiles;
-    }
-
-    public function storeArrayFileWithTitle(string $name, Request $request): array
-    {
-        $groupItems = $request->input($name); // usually the text part
-        $files = $request->file($name); // uploaded files (if any)
-    
-        $storedFiles = [];
-    
-        foreach ($groupItems as $key => $row) {
-            $storedFiles[$key]['current_house_problem_title'] = $row['current_house_problem_title'];
-    
-            $file = $files[$key]['current_house_problem_photo'] ?? null;
-    
-                $uuidPrefix = Str::uuid();
-                $path = $file->storeAs(
-                    'kobo-attachments',
-                    $this->getFileName($uuidPrefix, $file)
-                );
-                $storedFiles[$key]['current_house_problem_photo'] = $path;
-        
-        }
-    
-        return $storedFiles;
-    }
 
     public function downloadProfile($id) {
          $submission = Submission::with(['sourceInformation', 'familyInformation', 'headFamily', 'idp', 'returnee', 'interviewwee', 'photoSection', 'houseLandOwnership'])->find($id);
@@ -289,17 +193,6 @@ class SubmissionController
 
     }
 
-    public function addAsBeneficairy(Request $request) {
-        $project = Project::find($request->project_id);
-        $project->submissions()->syncWithoutDetaching($request->submissions);
-        return response()->json(["message" => "Successfully added!", "data" => $project->load('submissions')], 201);
-    }
-
-    public function removeAsBeneficairy(Request $request) {
-        $project = Project::find($request->project_id);
-        $project->submissions()->detach($request->submissions);
-        return response()->json(["message" => "Successfully removed!", "data" => $project->load('submissions')], 201);
-    }
 
     public function downloadExcel(Request $request) {
         // return $request;
@@ -330,48 +223,48 @@ class SubmissionController
         }
 
             // Handle related table fields
-    foreach ($groupedFields as $relation => $columns) {
-        if ($relation === 'submission') continue;
+        foreach ($groupedFields as $relation => $columns) {
+            if ($relation === 'submission') continue;
 
-        $foreignKey = 'submission_id'; // change if your FK is different
-        $query->with([$relation => function ($q) use ($columns, $foreignKey) {
-            $q->select(array_merge([$foreignKey], array_unique($columns)));
-        }]);
-    }
-
-    $submissions = $query->whereIn('id', $request->selects)->get();
-    $form = Form::find(1);
-    $dataObject = json_decode($form->raw_schema);
-    $survey = $dataObject->asset->content->survey;
-    $choices = $dataObject->asset->content->choices;
-
-    $header = [];
-    $result = $submissions->map(function ($submission, $index) use ($fields, $survey, $choices, &$header) {
-        $flat = [];
-        
-
-        foreach ($fields as $key => $field) {
-            if (str_contains($field, '__')) {
-                [$relation, $column] = explode('__', $field, 2);
-
-                $flat[$column] = $this->getSurvey($survey, $choices, $column, ($submission->$relation->$column ?? null));
-                if ($index === 0) {
-                    array_push($header, $this->getHeader($survey, $column));
-                }
-
-            } else {
-                $flat[$field] = $this->getSurvey($survey, $choices,  $field, $submission->$field ?? null);
-                if ($index === 0) {
-                    array_push($header, $this->getHeader($survey, $field));
-                }
-
-            }
+            $foreignKey = 'submission_id'; // change if your FK is different
+            $query->with([$relation => function ($q) use ($columns, $foreignKey) {
+                $q->select(array_merge([$foreignKey], array_unique($columns)));
+            }]);
         }
 
-        return $flat;
-    });
+        $submissions = $query->whereIn('id', $request->selects)->get();
+        $form = Form::find(1);
+        $dataObject = json_decode($form->raw_schema);
+        $survey = $dataObject->asset->content->survey;
+        $choices = $dataObject->asset->content->choices;
 
-    return Excel::download(new SubmissionsExport($result, $request->project ? $request->project['label'] : now()->format('Y-m-d'), $header ), now()->format('Y-m-d') . 'submissions.xlsx');
+        $header = [];
+        $result = $submissions->map(function ($submission, $index) use ($fields, $survey, $choices, &$header) {
+            $flat = [];
+            
+
+            foreach ($fields as $key => $field) {
+                if (str_contains($field, '__')) {
+                    [$relation, $column] = explode('__', $field, 2);
+
+                    $flat[$column] = $this->getSurvey($survey, $choices, $column, ($submission->$relation->$column ?? null));
+                    if ($index === 0) {
+                        array_push($header, $this->getHeader($survey, $column));
+                    }
+
+                } else {
+                    $flat[$field] = $this->getSurvey($survey, $choices,  $field, $submission->$field ?? null);
+                    if ($index === 0) {
+                        array_push($header, $this->getHeader($survey, $field));
+                    }
+
+                }
+            }
+
+            return $flat;
+        });
+
+        return Excel::download(new SubmissionsExport($result, $request->project ? $request->project['label'] : now()->format('Y-m-d'), $header ), now()->format('Y-m-d') . 'submissions.xlsx');
     }
 
     function getSurvey( $survey, $choices, $name, $value) {
