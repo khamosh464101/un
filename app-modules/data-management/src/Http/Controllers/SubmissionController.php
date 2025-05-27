@@ -11,6 +11,7 @@ use Modules\DataManagement\Models\Form;
 use Modules\DataManagement\Models\Submission;
 use Modules\DataManagement\Services\CreateSubmissionParser;
 use Modules\DataManagement\Services\FilterableService;
+use Modules\DataManagement\Services\ArchiveService;
 use Modules\Projects\Models\Project;
 use Mpdf\Mpdf;
 
@@ -21,11 +22,17 @@ class SubmissionController
 {
     protected $parser;
     protected $filterable;
+    protected $arcive;
 
-    public function __construct(CreateSubmissionParser $submissionParser, FilterableService $filterable)
+    public function __construct(
+        CreateSubmissionParser $submissionParser, 
+        FilterableService $filterable,
+        ArchiveService $archive
+        )
     {
         $this->parser = $submissionParser;
         $this->filterable = $filterable->getFilterable();
+        $this->archive = $archive;
     }
 
     public function index(Request $request) {
@@ -413,6 +420,11 @@ class SubmissionController
             }
         }
         return $value;
+    }
+
+    public function moveToArchive(Request $request) {
+        return $this->archive->archiveSubmission(2, 1);
+        return $request;
     }
 
 }

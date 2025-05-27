@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "0ac481b03125dc523ef95f5efd3f7854",
+    "content-hash": "3e5d3e5408c5231ab70669fc5c1932ad",
     "packages": [
         {
             "name": "beste/clock",
@@ -4606,6 +4606,38 @@
                 "source": "https://github.com/MarkBaker/PHPMatrix/tree/3.0.1"
             },
             "time": "2022-12-02T22:17:43+00:00"
+        },
+        {
+            "name": "modules/archive-data",
+            "version": "1.0",
+            "dist": {
+                "type": "path",
+                "url": "app-modules/archive-data",
+                "reference": "a7e1280ce72ab11cdac6a2ad954a1417d119fc32"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Modules\\ArchiveData\\Providers\\ArchiveDataServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Modules\\ArchiveData\\": "src/",
+                    "Modules\\ArchiveData\\Tests\\": "tests/",
+                    "Modules\\ArchiveData\\Database\\Factories\\": "database/factories/",
+                    "Modules\\ArchiveData\\Database\\Seeders\\": "database/seeders/"
+                }
+            },
+            "license": [
+                "proprietary"
+            ],
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
         },
         {
             "name": "modules/data-management",

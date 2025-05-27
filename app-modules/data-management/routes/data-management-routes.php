@@ -12,6 +12,7 @@ Route::post('/data-managements/submissions/store', [SubmissionController::class,
 Route::post('/data-managements/submissions/add-as-beneficiary', [SubmissionController::class, 'addAsBeneficairy']);
 Route::post('/data-managements/submissions/remove-as-beneficiary', [SubmissionController::class, 'removeAsBeneficairy']);
 Route::post('/data-managements/submissions/download-excel', [SubmissionController::class, 'downloadExcel']);
+Route::post('/data-managements/submissions/move-to-archive', [SubmissionController::class, 'moveToArchive']);
 Route::get('/data-managements/submissions/{id}/download-profile', [SubmissionController::class, 'downloadProfile']);
 
 

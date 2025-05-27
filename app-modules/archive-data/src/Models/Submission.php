@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\DataManagement\Models;
+namespace Modules\ArchiveData\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,8 +11,9 @@ use Modules\Projects\Models\Project;
 class Submission extends Model
 {
 
-    protected $table = "dm_submissions";
+    protected $table = "archive_dm_submissions";
     protected $fillable = [
+        'id',
         '_id', 
         '_uuid', 
         'start',
@@ -22,7 +23,9 @@ class Submission extends Model
         'consent',
         'status',
         'today', 
-        'dm_form_id'
+        'dm_form_id',
+        'archived_at',
+        'archived_by'
     ];
 
     protected $appends = ['map_image'];
@@ -157,35 +160,6 @@ class Submission extends Model
     public function skillIdea() : HasOne
     {
         return $this->hasOne(SkillIdea::class);
-    }
-
-    public static function boot()
-    {
-        parent::boot();
-
-        static::deleting(function ($submission) {
-            $submission->sourceInformation()->delete(); // Delete all related documents in one query
-            $submission->familyInformation()->delete();
-            $submission->headFamily()->delete();
-            $submission->interviewwee()->delete();
-            $submission->composition()->delete();
-            $submission->idp()->delete();
-            $submission->returnee()->delete();
-            $submission->extremelyVulnerableMember()->delete();
-            $submission->accessCivilDocumentMale()->delete();
-            $submission->accessCivilDocumentFemale()->delete();
-            $submission->houseLandOwnership()->delete();
-            $submission->houseCondition()->delete();
-            $submission->accessBasicService()->delete();
-            $submission->foodConsumptionScore()->delete();
-            $submission->householdStrategyFood()->delete();
-            $submission->communityAvailability()->delete();
-            $submission->livelihood()->delete();
-            $submission->durableSolution()->delete();
-            $submission->skillIdea()->delete();
-            $submission->infrasttructureService()->delete();
-            $submission->photoSection()->delete();
-        });
     }
 
 }

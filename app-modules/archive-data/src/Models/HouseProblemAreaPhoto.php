@@ -1,14 +1,15 @@
 <?php
 
-namespace Modules\DataManagement\Models;
+namespace Modules\ArchiveData\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class HouseProblemAreaPhoto extends Model
 {
-    protected $table = "dm_house_problem_area_photos";
+    protected $table = "archive_dm_house_problem_area_photos";
     protected $fillable = [
+        'id',
         'current_house_problem_title',
         'current_house_problem_photo',
         'dm_house_condition_id',
@@ -24,6 +25,4 @@ class HouseProblemAreaPhoto extends Model
     {
         return $this->belongsTo(HouseCondition::class, 'dm_house_condition_id');
     }
-
-    
 }

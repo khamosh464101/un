@@ -1,14 +1,15 @@
 <?php
 
-namespace Modules\DataManagement\Models;
+namespace Modules\ArchiveData\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 class HouseCondition extends Model
 {
-    protected $table = "dm_house_conditions";
+    protected $table = "archive_dm_house_conditions";
     protected $fillable = [
+        'id',
         'materials_house_constructed',
         'issues_current_house',
         'issues_current_house_other',
@@ -38,17 +39,8 @@ class HouseCondition extends Model
         return $this->belongsTo(Submission::class);
     }
 
-    public function houseProblemAreaPhoto(): HasMany
+    public function HouseProblemAreaPhoto(): HasMany
     {
         return $this->hasMany(HouseProblemAreaPhoto::class, 'dm_house_condition_id');
-    }
-
-    public static function boot()
-    {
-        parent::boot();
-
-        static::deleting(function ($submission) {
-            $submission->houseProblemAreaPhoto()->delete(); // Delete all related documents in one query
-        });
     }
 }

@@ -1,16 +1,16 @@
 <?php
 
-namespace Modules\DataManagement\Http\Controllers;
+namespace Modules\ArchiveData\Http\Controllers;
 
 use App\Exports\SubmissionsExport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
-use Modules\DataManagement\Models\Form;
-use Modules\DataManagement\Models\Submission;
-use Modules\DataManagement\Services\CreateSubmissionParser;
-use Modules\DataManagement\Services\FilterableService;
+use Modules\ArchiveData\Models\Form;
+use Modules\ArchiveData\Models\Submission;
+use Modules\ArchiveData\Services\CreateSubmissionParser;
+use Modules\ArchiveData\Services\FilterableService;
 use Modules\Projects\Models\Project;
 use Mpdf\Mpdf;
 
@@ -267,7 +267,7 @@ class SubmissionController
         return Excel::download(new SubmissionsExport($result, $request->project ? $request->project['label'] : now()->format('Y-m-d'), $header ), now()->format('Y-m-d') . 'submissions.xlsx');
     }
 
-    function getSurvey( $survey, $choices, $name, $value) {
+    private function getSurvey( $survey, $choices, $name, $value) {
         foreach ($survey as $item) {
 
             if ($item->type === "select_one" || $item->type === "select_multiple") {
@@ -280,7 +280,7 @@ class SubmissionController
         return $value;
     }
 
-    function getHeader($survey, $column) {
+    private function getHeader($survey, $column) {
         foreach ($survey as $item) {
             if ($item->type === 'end_group') {
                 continue;
@@ -296,7 +296,7 @@ class SubmissionController
         return $column;
     }
 
-    function getLabel( $choices, $value) {
+    private function getLabel( $choices, $value) {
         foreach ($choices as $item) {
             if ($item->name === $value) {
                 if (isset($item->label[0])) {
@@ -307,5 +307,7 @@ class SubmissionController
         }
         return $value;
     }
+
+  
 
 }

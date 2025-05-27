@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\DataManagement\Models;
+namespace Modules\ArchiveData\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -8,8 +8,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class HouseLandOwnership extends Model
 {
-    protected $table = "dm_house_land_ownerships";
+    protected $table = "archive_dm_house_land_ownerships";
     protected $fillable = [
+        'id',
         'house_owner',
         'inter_name_owner',
         'inter_father_name_owner',
@@ -33,14 +34,5 @@ class HouseLandOwnership extends Model
     public function landOwnershipDocument(): HasMany
     {
         return $this->belongsTo(LandOwnershipDocument::class, 'dm_house_land_ownership_id');
-    }
-
-    public static function boot()
-    {
-        parent::boot();
-
-        static::deleting(function ($submission) {
-            $submission->landOwnershipDocument()->delete(); // Delete all related documents in one query
-        });
     }
 }

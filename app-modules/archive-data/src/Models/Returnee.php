@@ -1,14 +1,15 @@
 <?php
 
-namespace Modules\DataManagement\Models;
+namespace Modules\ArchiveData\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Returnee extends Model
 {
-    protected $table = "dm_returnees";
+    protected $table = "archive_dm_returnees";
     protected $fillable = [
+        'id',
         'year_returnee',
         'migrate_country',
         'migrate_country_other',
@@ -42,15 +43,4 @@ class Returnee extends Model
     {
         return $this->hasMany(TypeReturnDocomentPhoto::class, 'dm_returnee_id');
     }
-
-    public static function boot()
-    {
-        parent::boot();
-
-        static::deleting(function ($submission) {
-            $submission->typeReturnDocumentPhoto()->delete(); // Delete all related documents in one query
-        });
-    }
-
-    
 }
