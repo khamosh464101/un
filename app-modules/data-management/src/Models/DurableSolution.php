@@ -9,6 +9,7 @@ class DurableSolution extends Model
 {
     protected $table = "dm_durable_solutions";
     protected $fillable = [
+        'id',
         'future_families_preference',
         'local_integration_details',
         'local_integration_other',
@@ -16,6 +17,13 @@ class DurableSolution extends Model
         'do_you_have_land_yes',
         'submission_id',
     ];
+
+    public function getIgnoreIdFillable()
+    {
+        return array_filter(parent::getFillable(), function ($field) {
+            return $field !== 'id';
+        });
+    }
 
     public function submission(): BelongsTo
     {

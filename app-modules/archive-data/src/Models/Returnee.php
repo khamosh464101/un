@@ -4,6 +4,7 @@ namespace Modules\ArchiveData\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Returnee extends Model
 {
@@ -41,6 +42,15 @@ class Returnee extends Model
 
     public function typeReturnDocumentPhoto(): HasMany
     {
-        return $this->hasMany(TypeReturnDocomentPhoto::class, 'dm_returnee_id');
+        return $this->hasMany(TypeReturnDocumentPhoto::class, 'dm_returnee_id');
+    }
+
+    public static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($submission) {
+            $submission->typeReturnDocumentPhoto()->delete(); // Delete all related documents in one query
+        });
     }
 }

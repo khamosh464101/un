@@ -9,13 +9,25 @@ class LandOwnershipDocument extends Model
 {
     protected $table = "dm_land_ownership_documents";
     protected $fillable = [
+        'id',
         'house_document_photo',
         'dm_house_land_ownership_id',
     ];
 
+    public function getIgnoreIdFillable()
+    {
+        return array_filter(parent::getFillable(), function ($field) {
+            return $field !== 'id';
+        });
+    }
+
+    public bool $returnRawPhoto = false;
     public function getHouseDocumentPhotoAttribute($value)
     {
-        $tmpName = $value->houseLandOwnership->submission->_id . '-' . $value;
+        if ($returnRawPhoto) {
+            return $value;
+        }
+        $tmpName = $this->houseLandOwnership->submission->_id . '-' . $value;
         return $value ? asset("storage/kobo-attachments/$tmpName") : asset('import/assets/post-pic-dummy.png');
     }
 

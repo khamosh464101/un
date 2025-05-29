@@ -9,6 +9,7 @@ class Composition extends Model
 {
     protected $table = "dm_compositions";
     protected $fillable = [
+        'id',
         'female_0_1',
         'male_0_1',
         'female_1_5',
@@ -25,6 +26,13 @@ class Composition extends Model
         'male_60_above',
         'submission_id',
     ];
+
+    public function getIgnoreIdFillable()
+    {
+        return array_filter(parent::getFillable(), function ($field) {
+            return $field !== 'id';
+        });
+    }
 
     public function submission(): BelongsTo
     {

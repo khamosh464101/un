@@ -24,6 +24,17 @@ class Interviewwee extends Model
         'submission_id',
     ];
 
+    public bool $returnRawPhoto = false;
+
+    public function getInterNicPhotoAttribute($value)
+    {
+        if ($this->returnRawPhoto) {
+            return $value;
+        }
+        $tmpName = $this->submission->_id . '-' . $value;
+        return $value ? asset("storage/kobo-attachments/$tmpName") : asset('import/assets/post-pic-dummy.png');
+    }
+
     public function submission(): BelongsTo
     {
         return $this->belongsTo(Submission::class);

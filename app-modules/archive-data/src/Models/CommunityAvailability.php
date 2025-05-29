@@ -23,4 +23,13 @@ class CommunityAvailability extends Model
     {
         return $this->belongsTo(Submission::class);
     }
+
+    public function getCommunityCenterPhotoAttribute($value)
+    {
+        if ($this->returnRawPhoto) {
+            return $value;
+        }
+        $tmpName = $this->submission->_id . '-' . $value;
+        return $value ? asset("storage/kobo-attachments/$tmpName") : asset('import/assets/post-pic-dummy.png');
+    }
 }

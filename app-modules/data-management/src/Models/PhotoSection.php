@@ -14,6 +14,7 @@ class PhotoSection extends Model
 {
     protected $table = "dm_photo_sections";
     protected $fillable = [
+        'id',
         'field_name',
         'latitude',
         'longitude',
@@ -27,6 +28,60 @@ class PhotoSection extends Model
         'remarks',
         'submission_id',
     ];
+
+    public function getIgnoreIdFillable()
+    {
+        return array_filter(parent::getFillable(), function ($field) {
+            return $field !== 'id';
+        });
+    }
+
+    public bool $returnRawPhoto = false;
+
+    public function getPhotoInterviewweeAttribute($value)
+    {
+        if ($this->returnRawPhoto) {
+            return $value;
+        }
+        $tmpName = $this->submission->_id . '-' . $value;
+        return $value ? asset("storage/kobo-attachments/$tmpName") : asset('import/assets/post-pic-dummy.png');
+    }
+
+    public function getPhotoHouseBuildingAttribute($value)
+    {
+        if ($this->returnRawPhoto) {
+            return $value;
+        }
+        $tmpName = $this->submission->_id . '-' . $value;
+        return $value ? asset("storage/kobo-attachments/$tmpName") : asset('import/assets/post-pic-dummy.png');
+    }
+
+    public function getPhotoHouseDoorAttribute($value)
+    {
+        if ($this->returnRawPhoto) {
+            return $value;
+        }
+        $tmpName = $this->submission->_id . '-' . $value;
+        return $value ? asset("storage/kobo-attachments/$tmpName") : asset('import/assets/post-pic-dummy.png');
+    }
+
+    public function getPhotoEnovirmentAttribute($value)
+    {
+        if ($this->returnRawPhoto) {
+            return $value;
+        }
+        $tmpName = $this->submission->_id . '-' . $value;
+        return $value ? asset("storage/kobo-attachments/$tmpName") : asset('import/assets/post-pic-dummy.png');
+    }
+
+    public function getPhotoOtherAttribute($value)
+    {
+        if ($this->returnRawPhoto) {
+            return $value;
+        }
+        $tmpName = $this->submission->_id . '-' . $value;
+        return $value ? asset("storage/kobo-attachments/$tmpName") : asset('import/assets/post-pic-dummy.png');
+    }
 
 
 //     {
@@ -134,29 +189,7 @@ class PhotoSection extends Model
         return asset($publicStoragePath);
     }
 
-    public function getPhotoHouseBuildingAttribute($value)
-    {
-        $tmpName = $this->submission->_id . '-' . $value;
-        return $value ? asset("storage/kobo-attachments/$tmpName") : asset('import/assets/post-pic-dummy.png');
-    }
-
-    public function getPhotoHouseDoorAttribute($value)
-    {
-        $tmpName = $this->submission->_id . '-' . $value;
-        return $value ? asset("storage/kobo-attachments/$tmpName") : asset('import/assets/post-pic-dummy.png');
-    }
-
-    public function getPhotoEnovirmentAttribute($value)
-    {
-        $tmpName = $this->submission->_id . '-' . $value;
-        return $value ? asset("storage/kobo-attachments/$tmpName") : asset('import/assets/post-pic-dummy.png');
-    }
-
-    public function getPhotoOtherAttribute($value)
-    {
-        $tmpName = $this->submission->_id . '-' . $value;
-        return $value ? asset("storage/kobo-attachments/$tmpName") : asset('import/assets/post-pic-dummy.png');
-    }
+  
     public function submission(): BelongsTo
     {
         return $this->belongsTo(Submission::class);

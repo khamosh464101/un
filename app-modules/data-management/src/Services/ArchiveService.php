@@ -55,116 +55,163 @@ use Modules\ArchiveData\Models\Resettlement as ArchiveResettlement;
 use Modules\ArchiveData\Models\RecentAssistance as ArchiveRecentAssistance;
 use Modules\ArchiveData\Models\InfrasttructureService as ArchiveInfrasttructureService;
 use Modules\ArchiveData\Models\PhotoSection as ArchivePhotoSection;
+use Illuminate\Support\Facades\DB;
 
 use Carbon\Carbon;
 
 class ArchiveService
 {
     public function archiveSubmission(int $submissionId, int $userId) {
-        $submission = Submission::find($submissionId);
-        if ($submission) {
-            $tmp = $submission->toArray();
-            $archivedAt = Carbon::now();
-            $tmp['archived_by'] = $userId;
-            $tmp['archived_at'] = $archivedAt;
-            $as = ArchiveSubmission::create($tmp);
+        return DB::transaction(function () use ($submissionId, $userId) {
+            $submission = Submission::find($submissionId);
+            $t = ArchiveSubmission::find($submissionId);
+           
+            if ($submission && !$t) {
+                
+                $tmp = $submission->toArray();
+                $archivedAt = Carbon::now();
+                $tmp['archived_by'] = $userId;
+                $tmp['archived_at'] = $archivedAt;
+                $as = ArchiveSubmission::create($tmp);
 
-            if ($submission->sourceInformation && !$as->sourceInformation){
-                $tmp = $submission->sourceInformation->toArray();
-                ArchiveSourceInformation::create($tmp);
-            }
-
-            if ($submission->headFamily && !$as->headFamily){
-                $tmp = $submission->headFamily->toArray();
-                ArchiveHeadFamily::create($tmp);
-            }
-
-            if ($submission->interviewwee && !$as->interviewwee){
-                $tmp = $submission->interviewwee->toArray();
-                ArchiveInterviewwee::create($tmp);
-            }
-
-            if ($submission->composition && !$as->composition){
-                $tmp = $submission->composition->toArray();
-                ArchiveComposition::create($tmp);
-            }
-
-
-            if ($submission->idp && !$as->idp){
-                $tmp = $submission->idp->toArray();
-                ArchiveIdp::create($tmp);
-            }
-            if ($submission->returnee && !$as->returnee){
-                $tmp = $submission->returnee->toArray();
-                ArchiveReturnee::create($tmp);
-                foreach ($$as->returnee->typeReturnDocumentPhoto as $key => $value) {
-                    $val = $value->toArray();
-                    ArchiveTypeReturnDocumentPhoto::create($val);
+                if ($submission->sourceInformation && !$as->sourceInformation){
+                    $tmp = $submission->sourceInformation->toArray();
+                    ArchiveSourceInformation::create($tmp);
                 }
-            }
 
-            if ($submission->extremelyVulnerableMember && !$as->extremelyVulnerableMember){
-                $tmp = $submission->extremelyVulnerableMember->toArray();
-                ArchiveExtremelyVulnerableMember::create($tmp);
-            }
-
-            if ($submission->accessCivilDocumentMale && !$as->accessCivilDocumentMale){
-                $tmp = $submission->accessCivilDocumentMale->toArray();
-                ArchiveAccessCivilDocumentMale::create($tmp);
-            }
-            if ($submission->accessCivilDocumentFemale && !$as->accessCivilDocumentFemale){
-                $tmp = $submission->accessCivilDocumentFemale->toArray();
-                ArchiveAccessCivilDocumentFemale::create($tmp);
-            }
-            if ($submission->houseLandOwnership && !$as->houseLandOwnership){
-                $tmp = $submission->houseLandOwnership->toArray();
-                ArchiveHouseLandOwnership::create($tmp);
-                foreach ($submission->houseLandOwnership->landOwnershipDocument as $key => $value) {
-                    $val = $value->toArray();
-                    ArchiveLandOwnershipDocument::create($val);
+                if ($submission->familyInformation && !$as->familyInformation){
+                    $tmp = $submission->familyInformation->toArray();
+                    ArchiveFamilyInformation::create($tmp);
                 }
-            }
+                
 
-            if ($submission->houseCondition && !$as->houseCondition){
-                $tmp = $submission->houseCondition->toArray();
-                ArchiveHouseCondition::create($tmp);
-                foreach ($submission->houseCondition->houseProblemAreaPhoto as $key => $value) {
-                    $val = $value->toArray();
-                    ArchiveHouseProblemAreaPhoto::create($val);
+                if ($submission->headFamily && !$as->headFamily){
+                    $submission->headFamily->returnRawPhoto = true;
+                    $tmp = $submission->headFamily->toArray();
+                    ArchiveHeadFamily::create($tmp);
                 }
+
+                if ($submission->interviewwee && !$as->interviewwee){
+                    $submission->interviewwee->returnRawPhoto = true;
+                    $tmp = $submission->interviewwee->toArray();
+                    ArchiveInterviewwee::create($tmp);
+                }
+
+                if ($submission->composition && !$as->composition){
+                    $tmp = $submission->composition->toArray();
+                    ArchiveComposition::create($tmp);
+                }
+
+
+                if ($submission->idp && !$as->idp){
+                    $tmp = $submission->idp->toArray();
+                    ArchiveIdp::create($tmp);
+                }
+                if ($submission->returnee && !$as->returnee) {
+                    $tmp = $submission->returnee->getAttributes();
+                    ArchiveReturnee::create($tmp);
+                
+                    foreach ($submission->returnee->typeReturnDocumentPhoto as $documentPhoto) {
+                        $val = $documentPhoto->getAttributes();
+                        ArchiveTypeReturnDocumentPhoto::create($val);
+                    }
+                }
+
+                if ($submission->extremelyVulnerableMember && !$as->extremelyVulnerableMember){
+                    $tmp = $submission->extremelyVulnerableMember->toArray();
+                    ArchiveExtremelyVulnerableMember::create($tmp);
+                }
+
+                if ($submission->accessCivilDocumentMale && !$as->accessCivilDocumentMale){
+                    $tmp = $submission->accessCivilDocumentMale->toArray();
+                    ArchiveAccessCivilDocumentMale::create($tmp);
+                }
+                if ($submission->accessCivilDocumentFemale && !$as->accessCivilDocumentFemale){
+                    $tmp = $submission->accessCivilDocumentFemale->toArray();
+                    ArchiveAccessCivilDocumentFemale::create($tmp);
+                }
+                if ($submission->houseLandOwnership && !$as->houseLandOwnership){
+                    $tmp = $submission->houseLandOwnership->getAttributes();
+                    ArchiveHouseLandOwnership::create($tmp);
+                    foreach ($submission->houseLandOwnership->landOwnershipDocument as $key => $value) {
+                        $val = $value->getAttributes();
+                        ArchiveLandOwnershipDocument::create($val);
+                    }
+                }
+
+                if ($submission->houseCondition && !$as->houseCondition){
+                    $tmp = $submission->houseCondition->getAttributes();
+                    ArchiveHouseCondition::create($tmp);
+                    foreach ($submission->houseCondition->houseProblemAreaPhoto as $key => $value) {
+                        $val = $value->getAttributes();
+                        ArchiveHouseProblemAreaPhoto::create($val);
+                    }
+                }
+
+                if ($submission->accessBasicService && !$as->accessBasicService){
+                    $submission->accessBasicService->returnRawPhoto = true;
+                    $tmp = $submission->accessBasicService->toArray();
+                    ArchiveAccessBasicService::create($tmp);
+                }
+
+                if ($submission->foodConsumptionScore && !$as->foodConsumptionScore){
+                    $tmp = $submission->foodConsumptionScore->toArray();
+                    ArchiveFoodConsumptionScore::create($tmp);
+                }
+
+                if ($submission->householdStrategyFood && !$as->householdStrategyFood){
+                    $tmp = $submission->householdStrategyFood->toArray();
+                    ArchiveHouseholdStrategyFood::create($tmp);
+                }
+
+                if ($submission->communityAvailability && !$as->communityAvailability){
+                    $tmp = $submission->communityAvailability->getAttributes();
+                    ArchiveCommunityAvailability::create($tmp);
+                }
+
+                if ($submission->livelihood && !$as->livelihood){
+                    $tmp = $submission->livelihood->toArray();
+                    ArchiveLivelihood::create($tmp);
+                }
+
+                if ($submission->durableSolution && !$as->durableSolution){
+                    $tmp = $submission->durableSolution->toArray();
+                    ArchiveDurableSolution::create($tmp);
+                }
+
+                if ($submission->skillIdea && !$as->skillIdea){
+                    $tmp = $submission->skillIdea->toArray();
+                    ArchiveSkillIdea::create($tmp);
+                }
+
+                if ($submission->resettlement && !$as->resettlement){
+                    $tmp = $submission->resettlement->toArray();
+                    ArchiveResettlement::create($tmp);
+                }
+                if ($submission->recentAssistance && !$as->recentAssistance){
+                    $tmp = $submission->recentAssistance->toArray();
+                    ArchiveRecentAssistance::create($tmp);
+                }
+                if ($submission->infrasttructureService && !$as->infrasttructureService){
+                    $tmp = $submission->infrasttructureService->toArray();
+                    ArchiveInfrasttructureService::create($tmp);
+                }
+                if ($submission->photoSection && !$as->photoSection){
+                    $tmp = $submission->photoSection->getAttributes();
+                    ArchivePhotoSection::create($tmp);
+                }
+
+                $submission->delete();
+
+                return $as;
             }
 
-            if ($submission->accessBasicService && !$as->accessBasicService){
-                $tmp = $submission->accessBasicService->toArray();
-                ArchiveAccessBasicService::create($tmp);
-            }
+            return false;
+            
+            
 
-            if ($submission->foodConsumptionScore && !$as->foodConsumptionScore){
-                $tmp = $submission->foodConsumptionScore->toArray();
-                ArchiveFoodConsumptionScore::create($tmp);
-            }
-
-            if ($submission->householdStrategyFood && !$as->householdStrategyFood){
-                $tmp = $submission->householdStrategyFood->toArray();
-                ArchiveHouseholdStrategyFood::create($tmp);
-            }
-
-            if ($submission->communityAvailability && !$as->communityAvailability){
-                $tmp = $submission->communityAvailability->toArray();
-                ArchiveCommunityAvailability::create($tmp);
-            }
-
-use Modules\ArchiveData\Models\Livelihood as ArchiveLivelihood;
-use Modules\ArchiveData\Models\DurableSolution as ArchiveDurableSolution;
-use Modules\ArchiveData\Models\SkillIdea as ArchiveSkillIdea;
-use Modules\ArchiveData\Models\Resettlement as ArchiveResettlement;
-use Modules\ArchiveData\Models\RecentAssistance as ArchiveRecentAssistance;
-use Modules\ArchiveData\Models\InfrasttructureService as ArchiveInfrasttructureService;
-use Modules\ArchiveData\Models\PhotoSection as ArchivePhotoSection;
-
-        }
+        });
         
-        return $as;
     }
 
 }

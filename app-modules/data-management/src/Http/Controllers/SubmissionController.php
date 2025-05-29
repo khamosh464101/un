@@ -22,7 +22,7 @@ class SubmissionController
 {
     protected $parser;
     protected $filterable;
-    protected $arcive;
+    protected $archive;
 
     public function __construct(
         CreateSubmissionParser $submissionParser, 
@@ -99,6 +99,7 @@ class SubmissionController
             'access_education_photo',
             'access_health_photo',
             'access_road_photo',
+
             'community_center_photo',
             'photo_interviewee',
             'photo_house_building',
@@ -423,8 +424,12 @@ class SubmissionController
     }
 
     public function moveToArchive(Request $request) {
-        return $this->archive->archiveSubmission(2, 1);
-        return $request;
+        foreach ($request->selects as $key => $value) {
+            $this->archive->archiveSubmission($value, 1);
+        }
+        
+        // return 
+        return response()->json(['message' => 'Successfully Archived.'], 201);
     }
 
 }

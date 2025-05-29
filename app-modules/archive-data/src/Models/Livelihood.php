@@ -9,7 +9,7 @@ class Livelihood extends Model
 {
     protected $table = "archive_dm_livelihoods";
     protected $fillable = [
-        id,
+        'id',
         'Household_main_source_income',
         'women_engagement_income',
         'average_Household_monthly_income',

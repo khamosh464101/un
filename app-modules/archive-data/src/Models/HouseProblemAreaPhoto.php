@@ -14,10 +14,13 @@ class HouseProblemAreaPhoto extends Model
         'current_house_problem_photo',
         'dm_house_condition_id',
     ];
-
+    public bool $returnRawPhoto = false;
     public function getCurrentHouseProblemPhotoAttribute($value)
     {
-        $tmpName = $value->houseCondition->submission->_id . '-' . $value;
+        if ($returnRawPhoto) {
+            return $value;
+        }
+        $tmpName = $this->houseCondition->submission->_id . '-' . $value;
         return $value ? asset("storage/kobo-attachments/$tmpName") : asset('import/assets/post-pic-dummy.png');
     }
 

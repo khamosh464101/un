@@ -14,9 +14,14 @@ class TypeReturnDocumentPhoto extends Model
         'dm_returnee_id',
     ];
 
+    public bool $returnRawPhoto = false;
+
     public function getTypeReturnDocumentPhotoAttribute($value)
     {
-        $tmpName = $value->returnee->submission->_id . '-' . $value;
+        if ($returnRawPhoto) {
+            return $value;
+        }
+        $tmpName = $this->returnee->submission->_id . '-' . $value;
         return $value ? asset("storage/kobo-attachments/$tmpName") : asset('import/assets/post-pic-dummy.png');
     }
 

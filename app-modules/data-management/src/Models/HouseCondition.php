@@ -9,6 +9,7 @@ class HouseCondition extends Model
 {
     protected $table = "dm_house_conditions";
     protected $fillable = [
+        'id',
         'materials_house_constructed',
         'issues_current_house',
         'issues_current_house_other',
@@ -28,6 +29,13 @@ class HouseCondition extends Model
         'received_humanitarian_assistance_org',
         'submission_id',
     ];
+
+    public function getIgnoreIdFillable()
+    {
+        return array_filter(parent::getFillable(), function ($field) {
+            return $field !== 'id';
+        });
+    }
 
     protected $casts = [
         'issues_current_house' => 'array', // or 'json'

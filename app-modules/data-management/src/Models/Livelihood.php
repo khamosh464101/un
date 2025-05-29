@@ -9,6 +9,7 @@ class Livelihood extends Model
 {
     protected $table = "dm_livelihoods";
     protected $fillable = [
+        'id',
         'Household_main_source_income',
         'women_engagement_income',
         'average_Household_monthly_income',
@@ -19,7 +20,12 @@ class Livelihood extends Model
         'submission_id',
     ];
 
- 
+    public function getIgnoreIdFillable()
+    {
+        return array_filter(parent::getFillable(), function ($field) {
+            return $field !== 'id';
+        });
+    }
 
 
 

@@ -162,4 +162,43 @@ class Submission extends Model
         return $this->hasOne(SkillIdea::class);
     }
 
+    public static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($submission) {
+            $submission->sourceInformation()->delete(); // Delete all related documents in one query
+            $submission->familyInformation()->delete();
+            $submission->headFamily()->delete();
+            $submission->interviewwee()->delete();
+            $submission->composition()->delete();
+            $submission->idp()->delete();
+            foreach ($submission->returnee?->typeReturnDocumentPhoto ?? [] as $value) {
+                $value->delete();
+            }
+            $submission->returnee()->delete();
+            $submission->extremelyVulnerableMember()->delete();
+            $submission->accessCivilDocumentMale()->delete();
+            $submission->accessCivilDocumentFemale()->delete();
+            foreach ($submission->houseLandOwnership?->landOwnershipDocument ?? [] as $key => $value) {
+                $value->delete();
+            }
+            $submission->houseLandOwnership()->delete();
+            foreach ($submission->houseCondition?->houseProblemAreaPhoto ?? [] as $key => $value) {
+                $value->delete();
+            }
+            $submission->houseCondition()->delete();
+            $submission->accessBasicService()->delete();
+            $submission->foodConsumptionScore()->delete();
+            $submission->householdStrategyFood()->delete();
+            $submission->communityAvailability()->delete();
+            $submission->livelihood()->delete();
+            $submission->durableSolution()->delete();
+            $submission->skillIdea()->delete();
+            $submission->infrasttructureService()->delete();
+            $submission->photoSection()->delete();
+        });
+    }
+
+
 }

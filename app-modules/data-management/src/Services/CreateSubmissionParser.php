@@ -108,7 +108,7 @@ class CreateSubmissionParser
     }
 
     function createSubmission($submission) {
-        $fillable = (new Submission)->getFillable();
+        $fillable = (new Submission)->getIgnoreIdFillable();
         $filteredData = array_intersect_key($submission, array_flip($fillable));
     
         $sub = Submission::create(
@@ -125,7 +125,7 @@ class CreateSubmissionParser
     function createSourceInformation($submission, $sub) {
         $filteredData = array_intersect_key(
             $submission,
-            array_flip((new SourceInformation)->getFillable())
+            array_flip((new SourceInformation)->getIgnoreIdFillable())
         );
         $si = SourceInformation::create(
             array_merge(['submission_id' => $sub->id], $filteredData)
@@ -136,7 +136,7 @@ class CreateSubmissionParser
     function createFamilyInformation($submission, $sub) {
         $filteredData = array_intersect_key(
             $submission,
-            array_flip((new FamilyInformation)->getFillable())
+            array_flip((new FamilyInformation)->getIgnoreIdFillable())
         );
         $fi = FamilyInformation::create(
             array_merge(['submission_id' => $sub->id], $filteredData)
@@ -147,7 +147,7 @@ class CreateSubmissionParser
     function createHeadFamily($submission, $sub) {
          $filteredData = array_intersect_key(
             $submission,
-            array_flip((new HeadFamily)->getFillable())
+            array_flip((new HeadFamily)->getIgnoreIdFillable())
         );
         return $sub->headFamily()->create($filteredData);
     }
@@ -155,7 +155,7 @@ class CreateSubmissionParser
     function createInterviewwee($submission, $sub) {
         $filteredData = array_intersect_key(
             $submission,
-            array_flip((new Interviewwee)->getFillable())
+            array_flip((new Interviewwee)->getIgnoreIdFillable())
         );
         return $sub->interviewwee()->create($filteredData);
     }
@@ -163,7 +163,7 @@ class CreateSubmissionParser
      function createComposition($submission, $sub) {
         $filteredData = array_intersect_key(
             $submission,
-            array_flip((new Composition)->getFillable())
+            array_flip((new Composition)->getIgnoreIdFillable())
         );
         return $sub->composition()->create($filteredData);
     }
@@ -171,7 +171,7 @@ class CreateSubmissionParser
     function createIdp($submission, $sub) {
         $filteredData = array_intersect_key(
             $submission,
-            array_flip((new Idp)->getFillable())
+            array_flip((new Idp)->getIgnoreIdFillable())
         );
         return $sub->idp()->create($filteredData);
     }
@@ -180,7 +180,7 @@ class CreateSubmissionParser
     function createReturnee($submission, $sub) {
         $filteredData = array_intersect_key(
             $submission,
-            array_flip((new Returnee)->getFillable())
+            array_flip((new Returnee)->getIgnoreIdFillable())
         );
          $sub->returnee()->create($filteredData);
          if (isset($submission['house_document_photos'])) {
@@ -198,7 +198,7 @@ class CreateSubmissionParser
     function createExtremelyVulnerableMember($submission, $sub) {
         $filteredData = array_intersect_key(
             $submission,
-            array_flip((new ExtremelyVulnerableMember)->getFillable())
+            array_flip((new ExtremelyVulnerableMember)->getIgnoreIdFillable())
         );
         return $sub->extremelyVulnerableMember()->create($filteredData);
     }
@@ -206,7 +206,7 @@ class CreateSubmissionParser
     function createAccessCivilDocumentMale($submission, $sub) {
         $filteredData = array_intersect_key(
             $submission,
-            array_flip((new AccessCivilDocumentMale)->getFillable())
+            array_flip((new AccessCivilDocumentMale)->getIgnoreIdFillable())
         );
         return $sub->accessCivilDocumentMale()->create($filteredData);
     }
@@ -214,7 +214,7 @@ class CreateSubmissionParser
    function createAccessCivilDocumentFemale($submission, $sub) {
         $filteredData = array_intersect_key(
             $submission,
-            array_flip((new AccessCivilDocumentFemale)->getFillable())
+            array_flip((new AccessCivilDocumentFemale)->getIgnoreIdFillable())
         );
         return $sub->accessCivilDocumentFemale()->create($filteredData);
     }
@@ -223,7 +223,7 @@ class CreateSubmissionParser
         
         $filteredData = array_intersect_key(
             $submission,
-            array_flip((new HouseLandOwnership)->getFillable())
+            array_flip((new HouseLandOwnership)->getIgnoreIdFillable())
         );
         $sub->houseLandOwnership()->create($filteredData);
         if (isset($submission['house_document_photo_repeat'])) {
@@ -240,7 +240,7 @@ class CreateSubmissionParser
     function createHouseCondition($submission, $sub) {
         $filteredData = array_intersect_key(
             $submission,
-            array_flip((new HouseCondition)->getFillable())
+            array_flip((new HouseCondition)->getIgnoreIdFillable())
         );
 
         
@@ -261,7 +261,7 @@ class CreateSubmissionParser
     function createAccessBasicService($submission, $sub) {
         $filteredData = array_intersect_key(
             $submission,
-            array_flip((new AccessBasicService)->getFillable())
+            array_flip((new AccessBasicService)->getIgnoreIdFillable())
         );
         return $sub->accessBasicService()->create($filteredData);
     }
@@ -269,7 +269,7 @@ class CreateSubmissionParser
     function createFoodConsumptionScore($submission, $sub) {
         $filteredData = array_intersect_key(
             $submission,
-            array_flip((new FoodConsumptionScore)->getFillable())
+            array_flip((new FoodConsumptionScore)->getIgnoreIdFillable())
         );
         return $sub->foodConsumptionScore()->create($filteredData);
     }
@@ -277,7 +277,7 @@ class CreateSubmissionParser
     function createHouseholdStrategyFood($submission, $sub) {
         $filteredData = array_intersect_key(
             $submission,
-            array_flip((new HouseholdStrategyFood)->getFillable())
+            array_flip((new HouseholdStrategyFood)->getIgnoreIdFillable())
         );
         return $sub->householdStrategyFood()->create($filteredData);
     }
@@ -285,7 +285,7 @@ class CreateSubmissionParser
     function createCommunityAvailability($submission, $sub) {
         $filteredData = array_intersect_key(
             $submission,
-            array_flip((new CommunityAvailability)->getFillable())
+            array_flip((new CommunityAvailability)->getIgnoreIdFillable())
         );
         return $sub->communityAvailability()->create($filteredData);
     }
@@ -293,7 +293,7 @@ class CreateSubmissionParser
     function createLivelihood($submission, $sub) {
         $filteredData = array_intersect_key(
             $submission,
-            array_flip((new Livelihood)->getFillable())
+            array_flip((new Livelihood)->getIgnoreIdFillable())
         );
         return $sub->livelihood()->create($filteredData);
     }
@@ -302,7 +302,7 @@ class CreateSubmissionParser
     function createDurableSolution($submission, $sub) {
         $filteredData = array_intersect_key(
             $submission,
-            array_flip((new DurableSolution)->getFillable())
+            array_flip((new DurableSolution)->getIgnoreIdFillable())
         );
         return $sub->durableSolution()->create($filteredData);
     }
@@ -310,7 +310,7 @@ class CreateSubmissionParser
     function createSkillIdea($submission, $sub) {
         $filteredData = array_intersect_key(
             $submission,
-            array_flip((new SkillIdea)->getFillable())
+            array_flip((new SkillIdea)->getIgnoreIdFillable())
         );
         return $sub->skillIdea()->create($filteredData);
     }
@@ -318,7 +318,7 @@ class CreateSubmissionParser
     function createResettlement($submission, $sub) {
         $filteredData = array_intersect_key(
             $submission,
-            array_flip((new Resettlement)->getFillable())
+            array_flip((new Resettlement)->getIgnoreIdFillable())
         );
         return $sub->resettlement()->create($filteredData);
     }
@@ -326,7 +326,7 @@ class CreateSubmissionParser
     function createRecentAssistance($submission, $sub) {
         $filteredData = array_intersect_key(
             $submission,
-            array_flip((new RecentAssistance)->getFillable())
+            array_flip((new RecentAssistance)->getIgnoreIdFillable())
         );
         return $sub->recentAssistance()->create($filteredData);
     }
@@ -334,7 +334,7 @@ class CreateSubmissionParser
     function createInfrasttructureService($submission, $sub) {
         $filteredData = array_intersect_key(
             $submission,
-            array_flip((new InfrasttructureService)->getFillable())
+            array_flip((new InfrasttructureService)->getIgnoreIdFillable())
         );
         return $sub->infrasttructureService()->create($filteredData);
     }
@@ -344,7 +344,7 @@ class CreateSubmissionParser
 
         $filteredData = array_intersect_key(
             $submission,
-            array_flip((new PhotoSection)->getFillable())
+            array_flip((new PhotoSection)->getIgnoreIdFillable())
         );
        
         return $sub->photoSection()->create(

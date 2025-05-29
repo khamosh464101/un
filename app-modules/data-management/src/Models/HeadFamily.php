@@ -8,7 +8,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class HeadFamily extends Model
 {
     protected $table = "dm_head_families";
+    
     protected $fillable = [
+        'id',
         'hoh_name',
         'hoh_father_name',
         'hoh_grandfather_name',
@@ -20,6 +22,24 @@ class HeadFamily extends Model
         'hoh_age',
         'submission_id',
     ];
+
+    public function getIgnoreIdFillable()
+    {
+        return array_filter(parent::getFillable(), function ($field) {
+            return $field !== 'id';
+        });
+    }
+
+    public bool $returnRawPhoto = false;
+
+    public function getHohNicPhotoAttribute($value)
+    {
+        if ($this->returnRawPhoto) {
+            return $value;
+        }
+        $tmpName = $this->submission->_id . '-' . $value;
+        return $value ? asset("storage/kobo-attachments/$tmpName") : asset('import/assets/post-pic-dummy.png');
+    }
 
     public function submission(): BelongsTo
     {

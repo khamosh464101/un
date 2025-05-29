@@ -43,4 +43,13 @@ class HouseCondition extends Model
     {
         return $this->hasMany(HouseProblemAreaPhoto::class, 'dm_house_condition_id');
     }
+
+    public static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($submission) {
+            $submission->houseProblemAreaPhoto()->delete(); // Delete all related documents in one query
+        });
+    }
 }

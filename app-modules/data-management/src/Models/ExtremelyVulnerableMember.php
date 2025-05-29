@@ -9,6 +9,7 @@ class ExtremelyVulnerableMember extends Model
 {
     protected $table = "dm_extremely_vulnerable_members";
     protected $fillable = [
+        'id',
         'large_Household',
         'disable_member',
         'physical_disable',
@@ -19,10 +20,15 @@ class ExtremelyVulnerableMember extends Model
         'conditional_women_pregnant',
         'conditional_women_breastfeeding_mother',
         'conditional_women_widow',
-        'drug_addicted',
-        'drug_addicted',
         'submission_id',
     ];
+
+    public function getIgnoreIdFillable()
+    {
+        return array_filter(parent::getFillable(), function ($field) {
+            return $field !== 'id';
+        });
+    }
 
     public function submission(): BelongsTo
     {

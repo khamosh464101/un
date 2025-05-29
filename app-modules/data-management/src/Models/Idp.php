@@ -9,6 +9,7 @@ class Idp extends Model
 {
     protected $table = "dm_idps";
     protected $fillable = [
+        'id',
         'year_idp',
         'idp_reason',
         'idp_securtiy_reason',
@@ -16,6 +17,13 @@ class Idp extends Model
         'other_reason',
         'submission_id',
     ];
+
+    public function getIgnoreIdFillable()
+    {
+        return array_filter(parent::getFillable(), function ($field) {
+            return $field !== 'id';
+        });
+    }
 
     public function submission(): BelongsTo
     {

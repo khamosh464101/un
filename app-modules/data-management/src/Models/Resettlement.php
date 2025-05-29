@@ -9,6 +9,7 @@ class Resettlement extends Model
 {
     protected $table = "dm_resettlements";
     protected $fillable = [
+        'id',
         'relocate_another_place_by_government',
         'reason_notwantto_relocate',
         'relocate_minimum_condition',
@@ -16,6 +17,13 @@ class Resettlement extends Model
         'relocate_another_place_by_government',
         'submission_id',
     ];
+
+    public function getIgnoreIdFillable()
+    {
+        return array_filter(parent::getFillable(), function ($field) {
+            return $field !== 'id';
+        });
+    }
 
     public function submission(): BelongsTo
     {

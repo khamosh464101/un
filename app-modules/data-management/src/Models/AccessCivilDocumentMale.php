@@ -9,6 +9,7 @@ class AccessCivilDocumentMale extends Model
 {
     protected $table = "dm_access_civil_document_males";
     protected $fillable = [
+        'id',
         'access_civil_documentation_male_tazkira',
         'access_civil_documentation_male_birthcertificate',
         'access_civil_documentation_male_marriagecertificate',
@@ -16,6 +17,13 @@ class AccessCivilDocumentMale extends Model
         'access_civil_documentation_male_drivinglicense',
         'submission_id',
     ];
+
+    public function getIgnoreIdFillable()
+    {
+        return array_filter(parent::getFillable(), function ($field) {
+            return $field !== 'id';
+        });
+    }
 
     public function submission(): BelongsTo
     {

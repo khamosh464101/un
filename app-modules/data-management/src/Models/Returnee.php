@@ -4,11 +4,13 @@ namespace Modules\DataManagement\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Returnee extends Model
 {
     protected $table = "dm_returnees";
     protected $fillable = [
+        'id',
         'year_returnee',
         'migrate_country',
         'migrate_country_other',
@@ -33,6 +35,13 @@ class Returnee extends Model
         'submission_id',
     ];
 
+    public function getIgnoreIdFillable()
+    {
+        return array_filter(parent::getFillable(), function ($field) {
+            return $field !== 'id';
+        });
+    }
+
     public function submission(): BelongsTo
     {
         return $this->belongsTo(Submission::class);
@@ -40,7 +49,7 @@ class Returnee extends Model
 
     public function typeReturnDocumentPhoto(): HasMany
     {
-        return $this->hasMany(TypeReturnDocomentPhoto::class, 'dm_returnee_id');
+        return $this->hasMany(TypeReturnDocumentPhoto::class, 'dm_returnee_id');
     }
 
     public static function boot()

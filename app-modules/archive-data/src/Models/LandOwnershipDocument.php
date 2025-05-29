@@ -14,9 +14,13 @@ class LandOwnershipDocument extends Model
         'dm_house_land_ownership_id',
     ];
 
+    public bool $returnRawPhoto = false;
     public function getHouseDocumentPhotoAttribute($value)
     {
-        $tmpName = $value->houseLandOwnership->submission->_id . '-' . $value;
+        if ($returnRawPhoto) {
+            return $value;
+        }
+        $tmpName = $this->houseLandOwnership->submission->_id . '-' . $value;
         return $value ? asset("storage/kobo-attachments/$tmpName") : asset('import/assets/post-pic-dummy.png');
     }
 

@@ -7,10 +7,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
-use Modules\ArchiveData\Models\Form;
+use Modules\DataManagement\Models\Form;
 use Modules\ArchiveData\Models\Submission;
-use Modules\ArchiveData\Services\CreateSubmissionParser;
-use Modules\ArchiveData\Services\FilterableService;
+use Modules\DataManagement\Services\FilterableService;
+use Modules\ArchiveData\Services\RestoreArchiveService;
 use Modules\Projects\Models\Project;
 use Mpdf\Mpdf;
 
@@ -19,13 +19,13 @@ use Google\Cloud\Vision\V1\Client\ImageAnnotatorClient;
 
 class SubmissionController
 {
-    protected $parser;
     protected $filterable;
+    protected $restore;
 
-    public function __construct(CreateSubmissionParser $submissionParser, FilterableService $filterable)
+    public function __construct(FilterableService $filterable, RestoreArchiveService $restore)
     {
-        $this->parser = $submissionParser;
         $this->filterable = $filterable->getFilterable();
+        $this->restore = $restore;
     }
 
     public function index(Request $request) {
@@ -306,6 +306,15 @@ class SubmissionController
             }
         }
         return $value;
+    }
+
+    public function restore(Request $request) {
+        foreach ($request->selects as $key => $value) {
+            $this->restore->restoreSubmission($value, 1);
+        }
+        
+        // return 
+        return response()->json(['message' => 'Successfully restored.'], 201);
     }
 
   

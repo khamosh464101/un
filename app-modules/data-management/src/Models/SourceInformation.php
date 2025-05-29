@@ -10,6 +10,7 @@ class SourceInformation extends Model
     
     protected $table = 'dm_source_information';
     protected $fillable = [
+        'id',
         'survey_province',
         'district_name',
         'surveyors_code',
@@ -23,6 +24,13 @@ class SourceInformation extends Model
         'village_name',
         'submission_id',
     ];
+
+    public function getIgnoreIdFillable()
+    {
+        return array_filter(parent::getFillable(), function ($field) {
+            return $field !== 'id';
+        });
+    }
 
     public function submission (): belongsTo
     {

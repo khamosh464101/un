@@ -13,6 +13,7 @@ class Submission extends Model
 
     protected $table = "dm_submissions";
     protected $fillable = [
+        'id',
         '_id', 
         '_uuid', 
         'start',
@@ -24,6 +25,13 @@ class Submission extends Model
         'today', 
         'dm_form_id'
     ];
+
+    public function getIgnoreIdFillable()
+    {
+        return array_filter(parent::getFillable(), function ($field) {
+            return $field !== 'id';
+        });
+    }
 
     protected $appends = ['map_image'];
 
@@ -170,11 +178,20 @@ class Submission extends Model
             $submission->interviewwee()->delete();
             $submission->composition()->delete();
             $submission->idp()->delete();
+            foreach ($submission->returnee?->typeReturnDocumentPhoto ?? [] as $value) {
+                $value->delete();
+            }
             $submission->returnee()->delete();
             $submission->extremelyVulnerableMember()->delete();
             $submission->accessCivilDocumentMale()->delete();
             $submission->accessCivilDocumentFemale()->delete();
+            foreach ($submission->houseLandOwnership?->landOwnershipDocument ?? [] as $key => $value) {
+                $value->delete();
+            }
             $submission->houseLandOwnership()->delete();
+            foreach ($submission->houseCondition?->houseProblemAreaPhoto ?? [] as $key => $value) {
+                $value->delete();
+            }
             $submission->houseCondition()->delete();
             $submission->accessBasicService()->delete();
             $submission->foodConsumptionScore()->delete();

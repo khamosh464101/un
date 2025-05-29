@@ -24,6 +24,7 @@ class SourceInformation extends Model
         'village_name',
         'submission_id',
     ];
+    
 
     public function submission (): belongsTo
     {

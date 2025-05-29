@@ -10,6 +10,7 @@ class HouseLandOwnership extends Model
 {
     protected $table = "dm_house_land_ownerships";
     protected $fillable = [
+        'id',
         'house_owner',
         'inter_name_owner',
         'inter_father_name_owner',
@@ -25,6 +26,24 @@ class HouseLandOwnership extends Model
         'submission_id',
     ];
 
+    public function getIgnoreIdFillable()
+    {
+        return array_filter(parent::getFillable(), function ($field) {
+            return $field !== 'id';
+        });
+    }
+
+    public bool $returnRawPhoto = false;
+
+    public function getInterNicPhotoOwnerAttribute($value)
+    {
+        if ($this->returnRawPhoto) {
+            return $value;
+        }
+        $tmpName = $this->submission->_id . '-' . $value;
+        return $value ? asset("storage/kobo-attachments/$tmpName") : asset('import/assets/post-pic-dummy.png');
+    }
+
     public function submission(): BelongsTo
     {
         return $this->belongsTo(Submission::class);
@@ -32,15 +51,15 @@ class HouseLandOwnership extends Model
 
     public function landOwnershipDocument(): HasMany
     {
-        return $this->belongsTo(LandOwnershipDocument::class, 'dm_house_land_ownership_id');
+        return $this->hasMany(LandOwnershipDocument::class, 'dm_house_land_ownership_id');
     }
 
     public static function boot()
     {
         parent::boot();
 
-        static::deleting(function ($submission) {
-            $submission->landOwnershipDocument()->delete(); // Delete all related documents in one query
+        static::deleting(function ($houseLandOwnership) {
+            $houseLandOwnership->landOwnershipDocument()->delete(); // Delete all related documents in one query
         });
     }
 }
