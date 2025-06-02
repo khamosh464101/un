@@ -20,6 +20,11 @@ return new class extends Migration
             $table->string('nahya_number')->nullable();
             $table->string('kbl_guzar_number')->nullable();
             $table->string('village_name')->nullable();
+            $table->string('province_code')->nullable();
+            $table->string('city_name')->nullable();
+            $table->string('city_code')->nullable();
+            $table->string('district_code')->nullable();
+            $table->string('code_number')->nullable();
             $table->string('block_number');
             $table->string('house_number');
             $table->string('area_representative_name');

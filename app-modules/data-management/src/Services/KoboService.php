@@ -11,12 +11,14 @@ class KoboService
     protected $baseUrl;
     protected $token;
     protected $formId;
+    protected $copyFormId;
 
     public function __construct()
     {
         $this->baseUrl = config('services.kobo.base_url');
         $this->token = config('services.kobo.token'); // Prefer token over username/password
         $this->formId = config('services.kobo.form_id');
+        $this->copyFormId = config('services.kobo.copy_form_id');
     }
 
     public function getForms()
@@ -42,7 +44,7 @@ class KoboService
         $response = Http::withHeaders([
             'Authorization' => 'Token ' . $this->token,
             'Accept' => 'application/json',
-        ])->get("{$this->baseUrl}/assets/{$this->formId}/deployment/");
+        ])->get("{$this->baseUrl}/assets/{$this->copyFormId}/deployment/");
         return $response;
     }
 

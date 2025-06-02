@@ -41,6 +41,7 @@ return [
         'base_url' => env('KOBO_BASE_URL'),
         'token' => env('KOBO_TOKEN'),
         'form_id' => env('KOBO_FORM_ID'),
+        'copy_form_id' => env('KOBO_COPY_FORM_ID'),
     ]
 
 ];

@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\File;
 use Modules\DataManagement\Models\Form;
 use Modules\DataManagement\Models\Submission;
 use Modules\DataManagement\Services\CreateSubmissionParser;
@@ -14,6 +15,7 @@ use Modules\DataManagement\Services\FilterableService;
 use Modules\DataManagement\Services\ArchiveService;
 use Modules\Projects\Models\Project;
 use Mpdf\Mpdf;
+use App\Imports\MultiTableImport;
 
 use Google\Cloud\Vision\V1\Client\ImageAnnotatorClient;
 
@@ -430,6 +432,64 @@ class SubmissionController
         
         // return 
         return response()->json(['message' => 'Successfully Archived.'], 201);
+    }
+
+    public function importExcel (Request $request) {
+        $schema = json_decode(Form::first()->raw_schema);
+        $survey = $schema->asset->content->survey;
+
+        $submission = (new Submission)->getIgnoreIdFillable();
+        $submission_labels = [];
+        foreach ($submission as $key => $value) {
+            foreach ($survey as $key => $val) {
+                if (isset($val->name) && $val->name === $value) {
+                    array_push($submission_labels, $val);
+                    break;
+                }
+            }
+        }
+
+        // $path = public_path('wochtangi_final.xlsx');
+    
+        // if (!File::exists($path)) {
+        //     return response()->json(['error' => 'File not found.'], 404);
+        // }
+    
+        // try {
+        //     // For immediate processing (smaller files)
+        //     // $import = new MultiTableImport();
+        //     // Excel::import($import, $path);
+            
+        //     // For large files - queue the import
+        //     $import = new MultiTableImport();
+        //     Excel::import($import, $path);
+        //     // Excel::queueImport($import, $path);
+            
+        //     return response()->json([
+        //         'message' => 'Import started successfully. Processing in background.',
+        //         'rows_processed' => $import->sheets()[0]->getRowCount() ?? 0
+        //     ]);
+            
+        // } catch (\Exception $e) {
+        //     return response()->json([
+        //         'error' => 'Import failed',
+        //         'message' => $e->getMessage()
+        //     ], 500);
+        // }
+        
+        $path = public_path('wochtangi_final.xlsx'); // full path to the file
+
+        if (!File::exists($path)) {
+            return 'File not found.';
+        }
+
+        Excel::import(new MultiTableImport, $path);
+        return 'working';
+        return $data[0];
+        // Example: dump first sheet
+        dd($data[0]);
+
+
     }
 
 }

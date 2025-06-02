@@ -17,6 +17,11 @@ class SourceInformation extends Model
         'surveyors_name',
         'nahya_number',
         'kbl_guzar_number',
+        'province_code',
+        'city_name',
+        'city_code',
+        'district_code',
+        'code_number',
         'block_number',
         'house_number',
         'area_representative_name',
@@ -24,6 +29,7 @@ class SourceInformation extends Model
         'village_name',
         'submission_id',
     ];
+
 
     public function getIgnoreIdFillable()
     {
