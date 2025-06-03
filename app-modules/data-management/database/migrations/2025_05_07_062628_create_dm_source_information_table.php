@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('survey_province');
             $table->string('district_name');
-            $table->string('surveyors_code');
-            $table->string('surveyors_name');
+            $table->string('surveyors_code')->nullable();
+            $table->string('surveyors_name')->nullable();
             $table->string('nahya_number')->nullable();
             $table->string('kbl_guzar_number')->nullable();
             $table->string('village_name')->nullable();
