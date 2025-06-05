@@ -53,7 +53,6 @@ class SubmissionController
             'accessCivilDocumentFemale',
             'houseLandOwnership',
             'houseCondition',
-            'houseCondition',
             'accessBasicService',
             'foodConsumptionScore',
             'householdStrategyFood',
@@ -71,18 +70,16 @@ class SubmissionController
             });
         }
         foreach ($this->filterable as $field) {
-            if ($request->filled($field) && $request->input($field)) {
-                
+            $query->when($request->filled($field), function ($q) use ($field, $request) {
                 if (Str::contains($field, '__')) {
                     [$relation, $column] = explode('__', $field, 2);
-
-                    $query->whereHas($relation, function ($q) use ($column, $request, $field) {
-                        $q->where($column, $request->input($field));
+                    $q->whereHas($relation, function ($subQ) use ($column, $request, $field) {
+                        $subQ->where($column, $request->input($field));
                     });
                 } else {
-                    $query->where($field, $request->input($field));
+                    $q->where($field, $request->input($field));
                 }
-            }
+            });
         }
 
         return ["data" => $query->paginate(8), "filterable" => $this->filterable, "projects" => Project::select("id as value", "title as label")->get()];
