@@ -26,6 +26,7 @@ use Modules\DataManagement\Models\HouseProblemAreaPhoto;
 use Modules\DataManagement\Models\AccessBasicService;
 use Modules\DataManagement\Models\FoodConsumptionScore;
 use Modules\DataManagement\Models\HouseholdStrategyFood;
+use Modules\DataManagement\Models\CommunityAvailability;
 use Modules\DataManagement\Models\Livelihood;
 use Modules\DataManagement\Models\DurableSolution;
 use Modules\DataManagement\Models\SkillIdea;
@@ -37,21 +38,43 @@ use Modules\DataManagement\Models\Form;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Imports\HeadingRowFormatter;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
+use Illuminate\Support\Str;
+use Modules\DataManagement\Services\KoboService;
+use Modules\DataManagement\Services\KoboSubmissionParser;
+
 // ✅ Disable header formatting (keep labels exactly as in Excel)
 HeadingRowFormatter::default('none');
 
 class SubmissionSheetImport implements ToModel, WithHeadingRow, WithChunkReading, WithLimit
 {
+    
     private const DATES = [
         'today', 
+        'start',
+        'end',
         'date_return_home_country', 
         'type_return_document_date', 
         'house_document_date'
     ];
-    private const PHOTOS = ['hoh_nic_photo', 'inter_nic_photo', 'inter_nic_photo_owner'];
+    private const PHOTOS = [
+        'hoh_nic_photo', 
+        'inter_nic_photo', 
+        'inter_nic_photo_owner',
+        'water_point_photo',
+        'access_sanitation_photo',
+        'access_education_photo',
+        'access_health_photo',
+        'access_road_photo'
+    ];
+
+
+    
     public function model(array $row)
     {
         // try {
+            $row['1.7 Block Code Number'] = str_pad($row['1.7 Block Code Number'], 3, "0", STR_PAD_LEFT);
+            $row['1.6 Guzar Code Number'] = str_pad($row['1.6 Guzar Code Number'], 3, "0", STR_PAD_LEFT);
+
             logger()->info("Processing row:", $row);
             $form = Form::first();
             $schema = json_decode($form->raw_schema);
@@ -103,7 +126,7 @@ class SubmissionSheetImport implements ToModel, WithHeadingRow, WithChunkReading
             $food_consumption_score = (new FoodConsumptionScore)->getIgnoreIdFillable();
             $food_consumption_score_data = [];
 
-            $household_strategy_food = (new HouseholdStrategyFlood)->getIgnoreIdFillable();
+            $household_strategy_food = (new HouseholdStrategyFood)->getIgnoreIdFillable();
             $household_strategy_food_data = [];
 
             $community_availability = (new CommunityAvailability)->getIgnoreIdFillable();
@@ -121,28 +144,23 @@ class SubmissionSheetImport implements ToModel, WithHeadingRow, WithChunkReading
             $resettlement = (new Resettlement)->getIgnoreIdFillable();
             $resettlement_data = [];
 
-            $recent_assistance = (new ResentAssistance)->getIgnoreIdFillable();
+            $recent_assistance = (new RecentAssistance)->getIgnoreIdFillable();
             $recent_assistance_data = [];
 
-            // $recent_assistance = (new ResentAssistance)->getIgnoreIdFillable();
-            // $recent_assistance_data = [];
+            $Infrasttructure_service = (new InfrasttructureService)->getIgnoreIdFillable();
+            $Infrasttructure_service_data = [];
 
-            // $recent_assistance = (new ResentAssistance)->getIgnoreIdFillable();
-            // $recent_assistance_data = [];
+            $photo_section = (new PhotoSection)->getIgnoreIdFillable();
+            $photo_section_data = [];
 
-            // $recent_assistance = (new ResentAssistance)->getIgnoreIdFillable();
-            // $recent_assistance_data = [];
 
-            
-            
-            
-            
                 
             foreach ($survey as $surveyItem) {
                 if (!isset($surveyItem->name)) {
                     continue;
                 }
                 if (in_array($surveyItem->name, $submission, true)) {
+                    
                     $result = $this->getSingleValue($surveyItem, $row, $choices, $surveyItem->name);
                 
                     if ($result !== 12345) {
@@ -318,6 +336,39 @@ class SubmissionSheetImport implements ToModel, WithHeadingRow, WithChunkReading
                     }
                 }
 
+                if (in_array($surveyItem->name, $Infrasttructure_service, true)) {
+
+                    if (isset($surveyItem->label)) {
+                        $filtered = [];
+                        foreach ($row as $key => $value) {
+                            if (strpos($key, $surveyItem->label[0]) === 0) { // key starts with 'kbl'
+                                $filtered[$key] = $value;
+                            }
+                        }
+                        logger()->info("this is what you got?", $filtered);
+                        // isset($row[$surveyItem->label[0]])
+                        // $labelValue = $row[$surveyItem->label[0]];
+                        // $result = $this->checkChoice($choices, $labelValue);
+                        // if ($result) {
+                        //     return $result;
+                        // }
+            
+                        // if (in_array($fieldName, self::PHOTOS)) {
+                        //     return $labelValue; // FOR NOW
+                        // }
+                        // if (in_array($fieldName, self::DATES)) {
+                        //     return $this->getDate($labelValue); 
+                        // }
+                        // return $labelValue;
+                        
+            
+                    } 
+                
+                    if ($result !== 12345) { 
+                        $Infrasttructure_service_data[$surveyItem->name] = $result;
+                    }
+                }
+
          
                 
             }
@@ -325,7 +376,20 @@ class SubmissionSheetImport implements ToModel, WithHeadingRow, WithChunkReading
             $submission_data['dm_form_id'] = $form->id;
             
             $submission = new Submission($submission_data);
+            $submission->_id = $row['_id'];
             $submission->save();
+
+            $service = new KoboService();
+            $parser = new KoboSubmissionParser($service);
+            $kobo_submission = $service->getSubmission($submission->_id);
+            $kobo_submission = $this->cleanKoboSubmissionKeys($kobo_submission);
+            if ($kobo_submission) {
+                foreach ($kobo_submission['_attachments'] as $attachment) {
+                    if (Str::startsWith($attachment['mimetype'], 'image/')) {
+                        $service->downloadAttachment($attachment);
+                    }
+                }
+            } 
 
             $source_information_data['submission_id'] = $submission->id;
             $sourceInformaton = new SourceInformation($source_information_data);
@@ -349,6 +413,7 @@ class SubmissionSheetImport implements ToModel, WithHeadingRow, WithChunkReading
             $composition_data['submission_id'] = $submission->id;
             $composition = new Composition($composition_data);
             $composition->save();
+            
 
             if ($submission->status === "idp" ) {
                 $idp_data['submission_id'] = $submission->id;
@@ -358,6 +423,14 @@ class SubmissionSheetImport implements ToModel, WithHeadingRow, WithChunkReading
                 $returnee_data['submission_id'] = $submission->id;
                 $returnee = new Returnee($returnee_data);
                 $returnee->save();
+                if (isset($kobo_submission['house_document_photos'])) {
+                    foreach ($kobo_submission['house_document_photos'] as $key => $value) {
+                        TypeReturnDocumentPhoto::create([
+                            'type_return_document_photo' => $value["start_survey/returnee/house_document_photos/type_return_document_photo"],
+                            'dm_returnee_id' => $returnee->id
+                        ]);
+                    }
+                 }
                 
                }
             
@@ -376,8 +449,67 @@ class SubmissionSheetImport implements ToModel, WithHeadingRow, WithChunkReading
             $house_land_ownership_data['submission_id'] = $submission->id;
             $house_land_ownership = new HouseLandOwnership($house_land_ownership_data);
             $house_land_ownership->save();
+            if (isset($kobo_submission['house_document_photo_repeat'])) {
+                foreach ($kobo_submission['house_document_photo_repeat'] as $key => $value) {
+                    LandOwnershipDocument::create([
+                        'house_document_photo' => $value["start_survey/house_land_ownership/house_document_photo_repeat/house_document_photo"],
+                        'dm_house_land_ownership_id' => $house_land_ownership->id
+                    ]);
+                }
+            }
+
+            $house_condition_data['submission_id'] = $submission->id;
+            $house_condition = new HouseCondition($house_condition_data);
+            $house_condition->save();
+            if (isset($kobo_submission['house_problems_area_photos'])) {
+                foreach ($kobo_submission['house_problems_area_photos'] as $key => $value) {
+                    HouseProblemAreaPhoto::create([
+                        'current_house_problem_title' => $value["start_survey/house_condition/house_problems_area_photos/current_house_problem_title"],
+                        'current_house_problem_photo' => $value["start_survey/house_condition/house_problems_area_photos/current_house_problem_photo"],
+                        'dm_house_condition_id' => $house_condition->id
+                    ]);
+                }
+            }
+
+            $access_basic_service_data['submission_id'] = $submission->id;
+            $access_basic_service = new AccessBasicService($access_basic_service_data);
+            $access_basic_service->save();
+
+            $food_consumption_score_data['submission_id'] = $submission->id;
+            $food_consumption_score = new FoodConsumptionScore($food_consumption_score_data);
+            $food_consumption_score->save();
+
+            $household_strategy_food_data['submission_id'] = $submission->id;
+            $household_strategy_food = new HouseholdStrategyFood($household_strategy_food_data);
+            $household_strategy_food->save();
+
+            $community_availability_data['submission_id'] = $submission->id;
+            $community_availability = new CommunityAvailability($community_availability_data);
+            $community_availability->save();
+
+            $livelihood_data['submission_id'] = $submission->id;
+            $livelihood = new Livelihood($livelihood_data);
+            $livelihood->save();
+
+            $durable_solution_data['submission_id'] = $submission->id;
+            $durable_solution = new DurableSolution($durable_solution_data);
+            $durable_solution->save();
+
+            $skill_idea_data['submission_id'] = $submission->id;
+            $skill_idea = new SkillIdea($skill_idea_data);
+            $skill_idea->save();
+            
+            $resettlement_data['submission_id'] = $submission->id;
+            $resettlement = new Resettlement($resettlement_data);
+            $resettlement->save();
             
 
+            $recent_assistance_data['submission_id'] = $submission->id;
+            $recent_assistance = new RecentAssistance($recent_assistance_data);
+            $recent_assistance->save();
+
+            $parser->createInfrasttructureService($kobo_submission, $submission);
+            $parser->createPhotoSection($kobo_submission, $submission);
             
         // } catch (\Exception $e) {
         //     logger()->error("Error importing row: " . $e->getMessage());
@@ -386,12 +518,12 @@ class SubmissionSheetImport implements ToModel, WithHeadingRow, WithChunkReading
 
     public function chunkSize(): int
     {
-        return 1;
+        return 5;
     }
 
     public function limit(): int
     {
-        return 5;
+        return 30;
     }
 
     private function getDate($date): Carbon
@@ -439,5 +571,19 @@ class SubmissionSheetImport implements ToModel, WithHeadingRow, WithChunkReading
             
         }
         return 12345;
+    }
+
+    public function cleanKoboSubmissionKeys(array $submission): array
+    {
+        $cleaned = [];
+
+        foreach ($submission as $key => $value) {
+            // Get the last part after the last slash
+            $parts = explode('/', $key);
+            $attributeName = end($parts);
+            $cleaned[$attributeName] = $value;
+        }
+
+        return $cleaned;
     }
 }

@@ -331,7 +331,7 @@ class KoboSubmissionParser
         return $sub->recentAssistance()->create($filteredData);
     }
 
-    function createInfrasttructureService($submission, $sub) {
+    public function createInfrasttructureService($submission, $sub) {
         $filteredData = array_intersect_key(
             $submission,
             array_flip((new InfrasttructureService)->getIgnoreIdFillable())
@@ -339,7 +339,7 @@ class KoboSubmissionParser
         return $sub->infrasttructureService()->create($filteredData);
     }
 
-    function createPhotoSection($submission, $sub) {
+    public function createPhotoSection($submission, $sub) {
         list($latitude, $longitude, $altitude, $accuracy) = explode(' ', $submission['Please_collect_the_GPS_point']);
 
         $filteredData = array_intersect_key(

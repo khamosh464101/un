@@ -5,6 +5,7 @@ use Modules\DataManagement\Http\Controllers\SyncKoboController;
 use Modules\DataManagement\Http\Controllers\SubmissionController;
 
 Route::get('/data-management/get-form', [SubmissionController::class, 'getForm']);
+Route::get('/data-management/get-sumbission', [SyncKoboController::class, 'getSubmission']);
 Route::get('/data-managements', [SyncKoboController::class, 'listForms'])->name('data-managements.index');
 Route::get('/data-managements/add-form-to-db', [SyncKoboController::class, 'addFormToDb']);
 Route::post('/data-managements/submissions/index', [SubmissionController::class, 'index']);
@@ -15,6 +16,8 @@ Route::post('/data-managements/submissions/download-excel', [SubmissionControlle
 Route::post('/data-managements/submissions/import-excel', [SubmissionController::class, 'importExcel']);
 Route::post('/data-managements/submissions/move-to-archive', [SubmissionController::class, 'moveToArchive']);
 Route::get('/data-managements/submissions/{id}/download-profile', [SubmissionController::class, 'downloadProfile']);
+
+
 
 
 

@@ -13,6 +13,10 @@ class FilterableService
         'sourceInformation__nahya_number',
         'sourceInformation__kbl_guzar_number',
         'sourceInformation__village_name',
+        'sourceInformation__province_code',
+        'sourceInformation__city_name',
+        'sourceInformation__city_code',
+        'sourceInformation__district_code',
         'sourceInformation__block_number',
         'sourceInformation__house_number',
         'sourceInformation__area_representative_name',
@@ -100,8 +104,6 @@ class FilterableService
         'extremelyVulnerableMember__conditional_women_pregnant',
         'extremelyVulnerableMember__conditional_women_breastfeeding_mother',
         'extremelyVulnerableMember__conditional_women_widow',
-        'extremelyVulnerableMember__drug_addicted',
-        'extremelyVulnerableMember__drug_addicted',
 
         'accessCivilDocumentMale__access_civil_documentation_male_tazkira',
         'accessCivilDocumentMale__access_civil_documentation_male_birthcertificate',
@@ -144,7 +146,6 @@ class FilterableService
         'houseCondition__shelter_support_received_yes_other',
         'houseCondition__rate_need_shelter_repair',
         'houseCondition__surveyor_observation_current_house',
-        'houseCondition__received_humanitarian_assistance_org',
 
         'accessBasicService__drinkingwater_main_source',
         'accessBasicService__type_water_source',
@@ -240,8 +241,6 @@ class FilterableService
         'resettlement__relocate_another_place_by_government',
         'resettlement__reason_notwantto_relocate',
         'resettlement__relocate_minimum_condition',
-        'resettlement__relocate_another_place_by_government',
-        'resettlement__relocate_another_place_by_government',
 
         'recentAssistance__receive_assistance',
         'recentAssistance__type_assistance',

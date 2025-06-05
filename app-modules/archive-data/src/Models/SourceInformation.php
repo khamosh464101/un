@@ -21,9 +21,15 @@ class SourceInformation extends Model
         'house_number',
         'area_representative_name',
         'area_representative_phone',
+        'province_code',
+        'city_name',
+        'city_code',
+        'district_code',
+        'code_number',
         'village_name',
         'submission_id',
     ];
+   
     
 
     public function submission (): belongsTo

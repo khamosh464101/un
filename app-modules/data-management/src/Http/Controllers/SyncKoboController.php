@@ -72,5 +72,11 @@ class SyncKoboController
 
         return $cleaned;
     }
+
+    public function getSubmission()
+    {
+        $submission = $this->kobo->getSubmission();
+        return $submission;
+    }
     
 }

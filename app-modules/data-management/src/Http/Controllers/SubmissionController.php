@@ -19,6 +19,7 @@ use App\Imports\MultiTableImport;
 
 use Google\Cloud\Vision\V1\Client\ImageAnnotatorClient;
 
+use Storage;
 
 class SubmissionController
 {
@@ -216,16 +217,43 @@ class SubmissionController
                     $location['nahya'] = $value->label[0];
                 }
             }
+            // if (isset($value->name) && $value->name === $submission->sourceInformation->kbl_guzar_number) {
+            //     if (isset($value->label[0])) {
+            //         $location['guzar'] = $value->label[0];
+            //     }
+            // }
+            if ($submission->sourceInformation->province_code) {
+
+                    $location['province_code'] = $submission->sourceInformation->province_code;
+ 
+            }
+            if ($submission->sourceInformation->city_code) {
+
+                $location['city_code'] = $submission->sourceInformation->city_code;
+            }
+            if ($submission->sourceInformation->district_code) {
+
+                $location['district_code'] = $submission->sourceInformation->district_code;
+            }
+
+            // if ($submission->sourceInformation->kbl_guzar_number) {
+
+            //     $location['guzar'] = $submission->sourceInformation->kbl_guzar_number;
+            // }
+     
             if (isset($value->name) && $value->name === $submission->sourceInformation->kbl_guzar_number) {
                 if (isset($value->label[0])) {
-                    $location['guzar'] = $value->label[0];
+                    $location['guzar'] = substr($value->label[0], 1);
                 }
             }
+
             if (isset($value->name) && $value->name === $submission->sourceInformation->block_number) {
                 if (isset($value->label[0])) {
                     $location['block'] = $value->label[0];
                 }
             }
+
+
             if (isset($value->name) && $value->name === $submission->sourceInformation->house_number) {
                 if (isset($value->label[0])) {
                     $location['house'] = $value->label[0];
@@ -268,13 +296,8 @@ class SubmissionController
 
         }
 
-
-        // return $location;
-        // return view('pdf.template', [
-        //     'submission' => $submission,
-        //     'location' => $location,
-        //     'choices' => $choices,
-        // ]);
+       $map_path = $this->getPath($location);
+        $location['map_image'] = $map_path;
         $html = View::make('pdf.template', [
             'submission' => $submission,
             'location' => $location,
@@ -490,6 +513,10 @@ class SubmissionController
         dd($data[0]);
 
 
+    }
+
+    private function getPath($location) {
+        return 'storage/gis/'.'W_'.$location['province_code'].'-'.$location['city_code'].'-'.$location['district_code'].'-'.$location['guzar'].'-'.$location['block'].'-'.$location['house'].'.jpg';
     }
 
 }
