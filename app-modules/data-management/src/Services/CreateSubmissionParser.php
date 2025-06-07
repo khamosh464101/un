@@ -45,6 +45,7 @@ class CreateSubmissionParser
 
     public function parseAndReturn(array $submission)
     {
+       
 
         try {
            $savedSubmission = DB::transaction(function () use ($submission) {
@@ -83,11 +84,7 @@ class CreateSubmissionParser
            $this->createInfrasttructureService($submission, $sub);
           $this->createPhotoSection($submission, $sub);
 
-        //    foreach ($submission['_attachments'] as $attachment) {
-        //         if (Str::startsWith($attachment['mimetype'], 'image/')) {
-        //             $this->koboService->downloadAttachment($attachment);
-        //         }
-        //     }  
+   
 
             
             });
@@ -186,7 +183,7 @@ class CreateSubmissionParser
          if (isset($submission['house_document_photos'])) {
             foreach ($submission['house_document_photos'] as $key => $value) {
                 TypeReturnDocumentPhoto::create([
-                    'type_return_document_photo' => $value["start_survey/returnee/house_document_photos/type_return_document_photo"],
+                    'type_return_document_photo' => $value["type_return_document_photo"],
                     'dm_returnee_id' => $sub->returnee->id
                 ]);
             }
@@ -229,7 +226,7 @@ class CreateSubmissionParser
         if (isset($submission['house_document_photo_repeat'])) {
             foreach ($submission['house_document_photo_repeat'] as $key => $value) {
                 LandOwnershipDocument::create([
-                    'house_document_photo' => $value["start_survey/house_land_ownership/house_document_photo_repeat/house_document_photo"],
+                    'house_document_photo' => $value["house_document_photo"],
                     'dm_house_land_ownership_id' => $sub->houseLandOwnership->id
                 ]);
             }
@@ -248,8 +245,8 @@ class CreateSubmissionParser
          if (isset($submission['house_problems_area_photos'])) {
             foreach ($submission['house_problems_area_photos'] as $key => $value) {
                 HouseProblemAreaPhoto::create([
-                    'current_house_problem_title' => $value["start_survey/house_condition/house_problems_area_photos/current_house_problem_title"],
-                    'current_house_problem_photo' => $value["start_survey/house_condition/house_problems_area_photos/current_house_problem_photo"],
+                    'current_house_problem_title' => $value["current_house_problem_title"],
+                    'current_house_problem_photo' => $value["current_house_problem_photo"],
                     'dm_house_condition_id' => $sub->houseCondition->id
                 ]);
             }
@@ -340,20 +337,15 @@ class CreateSubmissionParser
     }
 
     function createPhotoSection($submission, $sub) {
-        list($latitude, $longitude, $altitude, $accuracy) = explode(' ', $submission['Please_collect_the_GPS_point']);
-
+        
+        unset($submission['altitude']);
+        unset($submission['accuracy']);
         $filteredData = array_intersect_key(
             $submission,
             array_flip((new PhotoSection)->getIgnoreIdFillable())
         );
        
-        return $sub->photoSection()->create(
-             array_merge(
-            ['latitude' => $latitude],
-            ['longitude' => $longitude],
-            ['altitude' => $altitude],
-            ['accuracy' => $accuracy], $filteredData)
-        );
+        return $sub->photoSection()->create($filteredData);
     }
 
     function convertToMySQLDateTime($isoDatetime) {

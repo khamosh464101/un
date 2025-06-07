@@ -531,9 +531,9 @@ class SubmissionSheetImport implements ToModel, WithHeadingRow, WithChunkReading
         return Carbon::instance(Date::excelToDateTimeObject($date));
     }
 
-    private function checkChoice($choices, $labelValue) {
+    private function checkChoice($choices, $labelValue, $surveyItem) {
         foreach ($choices as $choice) {
-            if ($choice->label[0] === $labelValue) {
+            if ($choice->label[0] === $labelValue && $surveyItem->select_from_list_name === $choice->list_name) {
                 return $choice->name;
             }
         }
@@ -543,7 +543,7 @@ class SubmissionSheetImport implements ToModel, WithHeadingRow, WithChunkReading
     private function getSingleValue($surveyItem, $row, $choices, $fieldName) {
         if (isset($surveyItem->label) && isset($row[$surveyItem->label[0]])) {
             $labelValue = $row[$surveyItem->label[0]];
-            $result = $this->checkChoice($choices, $labelValue);
+            $result = $this->checkChoice($choices, $labelValue, $surveyItem);
             if ($result) {
                 return $result;
             }

@@ -39,6 +39,7 @@ class SubmissionController
     }
 
     public function index(Request $request) {
+      
 
         $query = Submission::with([
             'sourceInformation', 
@@ -90,6 +91,10 @@ class SubmissionController
     }
 
     public function store (Request $request) {
+        // if ($request->hasFile('photo_interviewee')) {
+        //     return $request;
+        // }
+        // return 'not working';
         $files = [
             'hoh_nic_photo',
             'inter_nic_photo',
@@ -115,10 +120,14 @@ class SubmissionController
             'house_problems_area_photos',
         ];
         $data = $request->except(array_merge($files, $multipleFiles));
+         foreach ($data as $key => $value) {
+            if ($data[$key] == "null") {
+                $data[$key] = "";
+            }
+        }
         foreach ($files as $key => $value) {
             
             if ($request->hasFile($value) && $request->file($value)->isValid()) {
-                return 'has file and working';
                 $uuidPrefix = Str::uuid();
                 $get_file = $request->file($value)->storeAs('kobo-attachments', $this->getFileName($uuidPrefix, $request->file($value)));
                 $data[$value] = $get_file;
@@ -135,7 +144,7 @@ class SubmissionController
             $data['house_problems_area_photos'] =  $this->storeArrayFileWithTitle('house_problems_area_photos', $request);
             }
 
-        $result = $this->parser->parseAndReturn($data);
+        return   $result = $this->parser->parseAndReturn($data);
         if ($result['success'] === 'true') {
             return response()->json(["message" => 'Successfully added!'], 201);
         }
