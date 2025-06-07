@@ -67,6 +67,11 @@ class SubmissionSheetImport implements ToModel, WithHeadingRow, WithChunkReading
         'access_road_photo'
     ];
 
+    public function startRow(): int
+    {
+        return 31; // Start from row 31 (skips first 30 rows)
+    }
+
 
     
     public function model(array $row)
@@ -518,12 +523,12 @@ class SubmissionSheetImport implements ToModel, WithHeadingRow, WithChunkReading
 
     public function chunkSize(): int
     {
-        return 5;
+        return 1;
     }
 
     public function limit(): int
     {
-        return 30;
+        return 5;
     }
 
     private function getDate($date): Carbon
@@ -532,11 +537,14 @@ class SubmissionSheetImport implements ToModel, WithHeadingRow, WithChunkReading
     }
 
     private function checkChoice($choices, $labelValue, $surveyItem) {
-        foreach ($choices as $choice) {
-            if ($choice->label[0] === $labelValue && $surveyItem->select_from_list_name === $choice->list_name) {
-                return $choice->name;
+        if (isset($surveyItem->select_from_list_name)) {
+            foreach ($choices as $choice) {
+                if ($choice->label[0] === $labelValue && $surveyItem->select_from_list_name === $choice->list_name) {
+                    return $choice->name;
+                }
             }
         }
+        
         return false;
     }
 
