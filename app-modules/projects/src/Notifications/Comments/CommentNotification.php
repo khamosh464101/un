@@ -64,7 +64,8 @@ class CommentNotification extends Notification implements ShouldQueue
      * Get the mail representation of the notification.
      */
     public function toMail(object $notifiable): MailMessage
-    {   
+    {  
+        logger()->info('working in the beginning of notification EMAIL method'); 
         $frontendUrl = config('frontend.url');
         $url = $frontendUrl . '/project-management/tickets/' . $this->ticket->id;
 
@@ -82,6 +83,7 @@ class CommentNotification extends Notification implements ShouldQueue
      */
     public function toArray(object $notifiable): array
     {
+        logger()->info('working in the beginning of notification DB method');
         $frontendUrl = config('frontend.url');
         $url = $frontendUrl . '/project-management/tickets/' . $this->ticket->id;
         return [
@@ -102,6 +104,7 @@ class CommentNotification extends Notification implements ShouldQueue
 
         public function toFcm($notifiable): FcmMessage
     {
+        logger()->info('working in the beginning of notification FCM method');
         $frontendUrl = config('frontend.url');
             $url = $frontendUrl . '/project-management/tickets/' . $this->ticket->id;
         return (new FcmMessage(notification: new FcmNotification(

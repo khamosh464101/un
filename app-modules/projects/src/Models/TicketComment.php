@@ -52,6 +52,7 @@ class TicketComment extends Model
                 } else {
                     $user = $comment->ticket->responsible->user;
                 }
+                logger()->info('working in model');
                 $user->notify(new CommentNotification($comment->toArray(), auth()->user(), 'added'));
                 }
         });
