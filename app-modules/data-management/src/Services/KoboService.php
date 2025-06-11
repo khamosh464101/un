@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Http;
 
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use App\Models\Setting;
 
 class KoboService
 {
@@ -15,10 +16,11 @@ class KoboService
 
     public function __construct()
     {
-        $this->baseUrl = config('services.kobo.base_url');
-        $this->token = config('services.kobo.token'); // Prefer token over username/password
-        $this->formId = config('services.kobo.form_id');
-        $this->copyFormId = config('services.kobo.copy_form_id');
+        $settings = Setting::all();
+        $this->baseUrl = $settings->where('key','kobo_base_url')->first()->value; // config('services.kobo.base_url');
+        $this->token = $settings->where('key', 'kobo_token')->first()->value; // config('services.kobo.token'); // Prefer token over username/password
+        $this->formId = $settings->where('key', 'kobo_form_id')->first()->value; // config('services.kobo.form_id');
+        $this->copyFormId = $settings->where('key', 'kobo_copy_form_id')->first()->value; // config('services.kobo.copy_form_id');
     }
 
     public function getForms()
@@ -77,8 +79,8 @@ class KoboService
     {
         $url = $attachment['download_url'];
         $filename = basename($attachment['filename']); // Extract filename from full path
-        $uuidPrefix = $attachment['instance']; //Str::uuid();
-        $finalName = "$uuidPrefix-$filename"; // avoid name collisions
+        // $uuidPrefix = $attachment['instance']; //Str::uuid();
+        $finalName = "$filename"; // avoid name collisions
 
         try {
             $response = Http::withHeaders([

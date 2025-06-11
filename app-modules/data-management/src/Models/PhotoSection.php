@@ -43,8 +43,7 @@ class PhotoSection extends Model
         if ($this->returnRawPhoto) {
             return $value;
         }
-        $tmpName = $this->submission->_id . '-' . $value;
-        return $value ? asset("storage/kobo-attachments/$tmpName") : asset('import/assets/post-pic-dummy.png');
+        return $value ? asset("storage/kobo-attachments/$value") : asset('import/assets/post-pic-dummy.png');
     }
 
     public function getPhotoHouseBuildingAttribute($value)
@@ -52,8 +51,7 @@ class PhotoSection extends Model
         if ($this->returnRawPhoto) {
             return $value;
         }
-        $tmpName = $this->submission->_id . '-' . $value;
-        return $value ? asset("storage/kobo-attachments/$tmpName") : asset('import/assets/post-pic-dummy.png');
+        return $value ? asset("storage/kobo-attachments/$value") : asset('import/assets/post-pic-dummy.png');
     }
 
     public function getPhotoHouseDoorAttribute($value)
@@ -61,8 +59,7 @@ class PhotoSection extends Model
         if ($this->returnRawPhoto) {
             return $value;
         }
-        $tmpName = $this->submission->_id . '-' . $value;
-        return $value ? asset("storage/kobo-attachments/$tmpName") : asset('import/assets/post-pic-dummy.png');
+        return $value ? asset("storage/kobo-attachments/$value") : asset('import/assets/post-pic-dummy.png');
     }
 
     public function getPhotoEnovirmentAttribute($value)
@@ -70,8 +67,7 @@ class PhotoSection extends Model
         if ($this->returnRawPhoto) {
             return $value;
         }
-        $tmpName = $this->submission->_id . '-' . $value;
-        return $value ? asset("storage/kobo-attachments/$tmpName") : asset('import/assets/post-pic-dummy.png');
+        return $value ? asset("storage/kobo-attachments/$value") : asset('import/assets/post-pic-dummy.png');
     }
 
     public function getPhotoOtherAttribute($value)
@@ -79,23 +75,9 @@ class PhotoSection extends Model
         if ($this->returnRawPhoto) {
             return $value;
         }
-        $tmpName = $this->submission->_id . '-' . $value;
-        return $value ? asset("storage/kobo-attachments/$tmpName") : asset('import/assets/post-pic-dummy.png');
+        return $value ? asset("storage/kobo-attachments/$value") : asset('import/assets/post-pic-dummy.png');
     }
 
-
-//     {
-//     "photo_interviewee": "1724844532412.jpg",
-//     "photo_house_building": "1724844540728.jpg",
-//     "photo_house_door": "1724844563358.jpg",
-//     "photo_enovirment": "1724844571435.jpg"
-// }
-
-// "photo_interviewee": "1724844532412.jpg",
-//         "photo_house_building": "1724844540728.jpg",
-//         "photo_house_door": "1724844563358.jpg",
-//         "photo_enovirment": "1724844571435.jpg",
-//         "photo_other": null,
 
 // public function getPhotoIntervieweeAttribute($value)
 // {
@@ -158,11 +140,8 @@ class PhotoSection extends Model
         if (!$value) {
             return asset('import/assets/post-pic-dummy.png');
         }
-
-        // 2. Determine file paths
-        $filename = $this->submission->_id . '-' . $value;
-        $originalPath = storage_path("app/public/kobo-attachments/$filename");
-        $publicStoragePath = "storage/kobo-attachments/$filename"; // Path for asset()
+        $originalPath = storage_path("app/public/kobo-attachments/$value");
+        $publicStoragePath = "storage/kobo-attachments/$value"; // Path for asset()
 
         // 3. Check if original file exists
         if (!file_exists($originalPath)) {
@@ -219,4 +198,38 @@ class PhotoSection extends Model
 
         $imageAnnotator->close();
     }
+
+
+     public static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($photoSection) {
+            $photoInterviewee = $photoSection->getRawOriginal('photo_interviewee');
+            $photoHouseBuilding = $photoSection->getRawOriginal('photo_house_building');
+            $photoHouseDoor = $photoSection->getRawOriginal('photo_house_door');
+            $photoEnovirment = $photoSection->getRawOriginal('photo_enovirment');
+            $photoOther = $photoSection->getRawOriginal('photo_other');
+
+            if (!is_null($photoInterviewee)) {
+                Storage::delete("kobo-attachments/$photoInterviewee");
+            }
+
+            if (!is_null($photoHouseBuilding)) {
+                Storage::delete("kobo-attachments/$photoHouseBuilding");
+            }
+
+            if (!is_null($photoHouseDoor)) {
+                Storage::delete("kobo-attachments/$photoHouseDoor");
+            }
+
+            if (!is_null($photoEnovirment)) {
+                Storage::delete("kobo-attachments/$photoEnovirment");
+            }
+            if (!is_null($photoOther)) {
+                Storage::delete("kobo-attachments/$photoOther");
+            }
+        });
+    }
+
 }

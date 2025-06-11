@@ -178,19 +178,19 @@ class Submission extends Model
             $submission->interviewwee()->delete();
             $submission->composition()->delete();
             $submission->idp()->delete();
-            foreach ($submission->returnee?->typeReturnDocumentPhoto ?? [] as $value) {
-                $value->delete();
+            if ($submission->returnee) {
+                $submission->returnee->typeReturnDocumentPhoto()?->delete();
             }
             $submission->returnee()->delete();
             $submission->extremelyVulnerableMember()->delete();
             $submission->accessCivilDocumentMale()->delete();
             $submission->accessCivilDocumentFemale()->delete();
-            foreach ($submission->houseLandOwnership?->landOwnershipDocument ?? [] as $key => $value) {
-                $value->delete();
+            if ($submission->houseLandOwnership) {
+                $submission->houseLandOwnership->landOwnershipDocument()?->delete();
             }
             $submission->houseLandOwnership()->delete();
-            foreach ($submission->houseCondition?->houseProblemAreaPhoto ?? [] as $key => $value) {
-                $value->delete();
+             if ($submission->houseCondition) {
+                $submission->houseCondition->houseProblemAreaPhoto()?->delete();
             }
             $submission->houseCondition()->delete();
             $submission->accessBasicService()->delete();

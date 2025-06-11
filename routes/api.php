@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\PermissionController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\NotificationController;
+use App\Http\Controllers\SettingController;
 
 Route::middleware(['auth:sanctum', 'twofactor'])->group(function () {
     Route::resource('/user', UserController::class)->only(['store']);
@@ -18,6 +19,8 @@ Route::middleware(['auth:sanctum', 'twofactor'])->group(function () {
     Route::post('/notifications', [NotificationController::class, 'index']);
     Route::get('/notifications/mark-as-read/{id}/{type}', [NotificationController::class, 'markAsRead']);
     Route::get('/notifications/unread', [NotificationController::class, 'getUnread']);
+    Route::get('/settings', [SettingController::class, 'index']);
+    Route::post('/settings/store', [SettingController::class, 'store']);
 });
 
 Route::middleware(['auth:sanctum'])->group(function () {

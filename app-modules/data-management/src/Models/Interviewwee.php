@@ -4,6 +4,7 @@ namespace Modules\DataManagement\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Storage;
 
 class Interviewwee extends Model
 {
@@ -38,8 +39,7 @@ class Interviewwee extends Model
         if ($this->returnRawPhoto) {
             return $value;
         }
-        $tmpName = $this->submission->_id . '-' . $value;
-        return $value ? asset("storage/kobo-attachments/$tmpName") : asset('import/assets/post-pic-dummy.png');
+        return $value ? asset("storage/kobo-attachments/$value") : asset('import/assets/post-pic-dummy.png');
     }
 
     public function submission(): BelongsTo
@@ -47,5 +47,16 @@ class Interviewwee extends Model
         return $this->belongsTo(Submission::class);
     }
 
+     public static function boot()
+    {
+         parent::boot();
+
+        static::deleting(function ($interviewwee) {
+            $photo = $interviewwee->getRawOriginal('inter_nic_photo');
+            if (!is_null($photo)) {
+                Storage::delete("kobo-attachments/$photo");
+            }
+        });
+    }
 
 }

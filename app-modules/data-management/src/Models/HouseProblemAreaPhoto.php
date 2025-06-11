@@ -4,6 +4,7 @@ namespace Modules\DataManagement\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Storage;
 
 class HouseProblemAreaPhoto extends Model
 {
@@ -28,8 +29,7 @@ class HouseProblemAreaPhoto extends Model
         if ($returnRawPhoto) {
             return $value;
         }
-        $tmpName = $this->houseCondition->submission->_id . '-' . $value;
-        return $value ? asset("storage/kobo-attachments/$tmpName") : asset('import/assets/post-pic-dummy.png');
+        return $value ? asset("storage/kobo-attachments/$value") : asset('import/assets/post-pic-dummy.png');
     }
 
     public function houseCondition(): BelongsTo
@@ -37,5 +37,16 @@ class HouseProblemAreaPhoto extends Model
         return $this->belongsTo(HouseCondition::class, 'dm_house_condition_id');
     }
 
+     public static function boot()
+    {
+         parent::boot();
+
+        static::deleting(function ($houseProblemAreaPhoto) {
+            $photo = $houseProblemAreaPhoto->getRawOriginal('current_house_problem_photo');
+            if (!is_null($photo)) {
+                Storage::delete("kobo-attachments/$photo");
+            }
+        });
+    }
     
 }

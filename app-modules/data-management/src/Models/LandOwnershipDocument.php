@@ -4,6 +4,7 @@ namespace Modules\DataManagement\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Storage;
 
 class LandOwnershipDocument extends Model
 {
@@ -27,12 +28,25 @@ class LandOwnershipDocument extends Model
         if ($returnRawPhoto) {
             return $value;
         }
-        $tmpName = $this->houseLandOwnership->submission->_id . '-' . $value;
-        return $value ? asset("storage/kobo-attachments/$tmpName") : asset('import/assets/post-pic-dummy.png');
+        return $value ? asset("storage/kobo-attachments/$value") : asset('import/assets/post-pic-dummy.png');
     }
 
     public function houseLandOwnership(): BelongsTo
     {
         return $this->belongsTo(HouseLandOwnership::class, 'dm_house_land_ownership_id');
     }
+
+    public static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($landOwnershipDocument) {
+            $houseDocumentPhoto = $landOwnershipDocument->getRawOriginal('house_document_photo');
+            if (!is_null($houseDocumentPhoto)) {
+                Storage::delete("kobo-attachments/$houseDocumentPhoto");
+            }
+        });
+    }
+
+
 }

@@ -180,10 +180,10 @@ class CreateSubmissionParser
             array_flip((new Returnee)->getIgnoreIdFillable())
         );
          $sub->returnee()->create($filteredData);
-         if (isset($submission['house_document_photos'])) {
-            foreach ($submission['house_document_photos'] as $key => $value) {
+         if (isset($submission['type_return_document_photos'])) {
+            foreach ($submission['type_return_document_photos'] as $key => $value) {
                 TypeReturnDocumentPhoto::create([
-                    'type_return_document_photo' => $value["type_return_document_photo"],
+                    'type_return_document_photo' => $value,
                     'dm_returnee_id' => $sub->returnee->id
                 ]);
             }
@@ -223,10 +223,10 @@ class CreateSubmissionParser
             array_flip((new HouseLandOwnership)->getIgnoreIdFillable())
         );
         $sub->houseLandOwnership()->create($filteredData);
-        if (isset($submission['house_document_photo_repeat'])) {
-            foreach ($submission['house_document_photo_repeat'] as $key => $value) {
+        if (isset($submission['house_document_photos'])) {
+            foreach ($submission['house_document_photos'] as $key => $value) {
                 LandOwnershipDocument::create([
-                    'house_document_photo' => $value["house_document_photo"],
+                    'house_document_photo' => $value,
                     'dm_house_land_ownership_id' => $sub->houseLandOwnership->id
                 ]);
             }

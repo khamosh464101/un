@@ -17,6 +17,7 @@ use NotificationChannels\Fcm\FcmChannel;
 use NotificationChannels\Fcm\FcmMessage;
 use NotificationChannels\Fcm\Resources\Notification as FcmNotification;
 use Ramsey\Uuid\Uuid;
+use App\Models\Setting;
 
 class HourNotification extends Notification implements ShouldQueue
 {

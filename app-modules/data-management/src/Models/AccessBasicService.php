@@ -4,6 +4,7 @@ namespace Modules\DataManagement\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Storage;
 
 class AccessBasicService extends Model
 {
@@ -72,8 +73,7 @@ class AccessBasicService extends Model
         if ($this->returnRawPhoto) {
             return $value;
         }
-        $tmpName = $this->submission->_id . '-' . $value;
-        return $value ? asset("storage/kobo-attachments/$tmpName") : asset('import/assets/post-pic-dummy.png');
+        return $value ? asset("storage/kobo-attachments/$value") : asset('import/assets/post-pic-dummy.png');
     }
 
     public function getAccessSanitationPhotoAttribute($value)
@@ -81,8 +81,7 @@ class AccessBasicService extends Model
         if ($this->returnRawPhoto) {
             return $value;
         }
-        $tmpName = $this->submission->_id . '-' . $value;
-        return $value ? asset("storage/kobo-attachments/$tmpName") : asset('import/assets/post-pic-dummy.png');
+        return $value ? asset("storage/kobo-attachments/$value") : asset('import/assets/post-pic-dummy.png');
     }
 
     public function getAccessEducationPhotoAttribute($value)
@@ -90,8 +89,7 @@ class AccessBasicService extends Model
         if ($this->returnRawPhoto) {
             return $value;
         }
-        $tmpName = $this->submission->_id . '-' . $value;
-        return $value ? asset("storage/kobo-attachments/$tmpName") : asset('import/assets/post-pic-dummy.png');
+        return $value ? asset("storage/kobo-attachments/$value") : asset('import/assets/post-pic-dummy.png');
     }
 
     public function getAccessHealthPhotoAttribute($value)
@@ -99,8 +97,7 @@ class AccessBasicService extends Model
         if ($this->returnRawPhoto) {
             return $value;
         }
-        $tmpName = $this->submission->_id . '-' . $value;
-        return $value ? asset("storage/kobo-attachments/$tmpName") : asset('import/assets/post-pic-dummy.png');
+        return $value ? asset("storage/kobo-attachments/$value") : asset('import/assets/post-pic-dummy.png');
     }
 
     public function getAccessRoadPhotoAttribute($value)
@@ -108,12 +105,45 @@ class AccessBasicService extends Model
         if ($this->returnRawPhoto) {
             return $value;
         }
-        $tmpName = $this->submission->_id . '-' . $value;
-        return $value ? asset("storage/kobo-attachments/$tmpName") : asset('import/assets/post-pic-dummy.png');
+        return $value ? asset("storage/kobo-attachments/$value") : asset('import/assets/post-pic-dummy.png');
     }
 
     public function submission(): BelongsTo
     {
         return $this->belongsTo(Submission::class);
     }
+
+
+    public static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($accessBasicService) {
+            $waterPointPhoto = $accessBasicService->getRawOriginal('water_point_photo');
+            $accessSanitationPhoto = $accessBasicService->getRawOriginal('access_sanitation_photo');
+            $accessEducationPhoto = $accessBasicService->getRawOriginal('access_education_photo');
+            $accessHealthPhoto = $accessBasicService->getRawOriginal('access_health_photo');
+            $accessRoadPhoto = $accessBasicService->getRawOriginal('access_road_photo');
+            if (!is_null($waterPointPhoto)) {
+                Storage::delete("kobo-attachments/$waterPointPhoto");
+            }
+
+            if (!is_null($accessSanitationPhoto)) {
+                Storage::delete("kobo-attachments/$accessSanitationPhoto");
+            }
+
+            if (!is_null($accessEducationPhoto)) {
+                Storage::delete("kobo-attachments/$accessEducationPhoto");
+            }
+
+            if (!is_null($accessHealthPhoto)) {
+                Storage::delete("kobo-attachments/$accessHealthPhoto");
+            }
+
+            if (!is_null($accessRoadPhoto)) {
+                Storage::delete("kobo-attachments/$accessRoadPhoto");
+            }
+        });
+    }
+
 }

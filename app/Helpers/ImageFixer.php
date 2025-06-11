@@ -11,12 +11,16 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\File;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
+use App\Models\Setting;
 use Exception;
+use Storage;
 
 class ImageFixer
 {
     public static function fixFaceOrientationWithVision(string $imagePath, int $maxRecursions = 3, int $currentRecursion = 0): bool
     {
+        $google_application_credentials = Setting::where('key', 'google_application_credentials')->first()->value;
+        $google_cloud_project_id = Setting::where('key', 'google_cloud_project_id')->first()->value;
         if (!File::exists($imagePath)) {
             Log::warning("ImageFixer: File does not exist at path: " . $imagePath);
             return false;
@@ -42,14 +46,14 @@ class ImageFixer
         }
 
         try {
-            if (!File::exists(config('google.credentials_path'))) {
-                Log::error("ImageFixer: Google credentials file not found at " . config('google.credentials_path'));
+            if (!Storage::exists("$google_application_credentials")) {
+                Log::error("ImageFixer: Google credentials file not found at " . "storage/$google_application_credentials");
                 return false;
             }
 
             $vision = new ImageAnnotatorClient([
-                'credentials' => json_decode(file_get_contents(config('google.credentials_path')), true),
-                'projectId' => config('google.project_id'),
+                'credentials' => json_decode(Storage::get("$google_application_credentials"), true),
+                'projectId' => $google_cloud_project_id,
             ]);
         } catch (Exception $e) {
             Log::error("ImageFixer: Failed to initialize Vision API client: " . $e->getMessage());

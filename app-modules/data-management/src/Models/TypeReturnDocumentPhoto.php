@@ -4,6 +4,7 @@ namespace Modules\DataManagement\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Storage;
 
 class TypeReturnDocumentPhoto extends Model
 {
@@ -28,12 +29,24 @@ class TypeReturnDocumentPhoto extends Model
         if ($returnRawPhoto) {
             return $value;
         }
-        $tmpName = $this->returnee->submission->_id . '-' . $value;
-        return $value ? asset("storage/kobo-attachments/$tmpName") : asset('import/assets/post-pic-dummy.png');
+        return $value ? asset("storage/kobo-attachments/$value") : asset('import/assets/post-pic-dummy.png');
     }
 
     public function returnee(): BelongsTo
     {
         return $this->belongsTo(Returnee::class, 'dm_returnee_id');
     }
+
+     public static function boot()
+    {
+         parent::boot();
+
+        static::deleting(function ($typeReturnDocumentPhoto) {
+            $photo = $typeReturnDocumentPhoto->getRawOriginal('type_return_document_photo');
+            if (!is_null($photo)) {
+                Storage::delete("kobo-attachments/$photo");
+            }
+        });
+    }
+
 }

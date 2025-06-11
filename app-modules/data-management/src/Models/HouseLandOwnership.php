@@ -5,6 +5,7 @@ namespace Modules\DataManagement\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Storage;
 
 class HouseLandOwnership extends Model
 {
@@ -40,8 +41,7 @@ class HouseLandOwnership extends Model
         if ($this->returnRawPhoto) {
             return $value;
         }
-        $tmpName = $this->submission->_id . '-' . $value;
-        return $value ? asset("storage/kobo-attachments/$tmpName") : asset('import/assets/post-pic-dummy.png');
+        return $value ? asset("storage/kobo-attachments/$value") : asset('import/assets/post-pic-dummy.png');
     }
 
     public function submission(): BelongsTo
@@ -60,6 +60,10 @@ class HouseLandOwnership extends Model
 
         static::deleting(function ($houseLandOwnership) {
             $houseLandOwnership->landOwnershipDocument()->delete(); // Delete all related documents in one query
+            $photo = $houseLandOwnership->getRawOriginal('inter_nic_photo_owner');
+            if (!is_null($photo)) {
+                Storage::delete("kobo-attachments/$photo");
+            }
         });
     }
 }

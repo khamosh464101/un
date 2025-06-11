@@ -16,6 +16,7 @@ Route::post('/data-managements/submissions/download-excel', [SubmissionControlle
 Route::post('/data-managements/submissions/import-excel', [SubmissionController::class, 'importExcel']);
 Route::post('/data-managements/submissions/move-to-archive', [SubmissionController::class, 'moveToArchive']);
 Route::get('/data-managements/submissions/{id}/download-profile', [SubmissionController::class, 'downloadProfile']);
+Route::delete('/data-managements/submissions/{id}', [SubmissionController::class, 'destroy']);
 
 
 

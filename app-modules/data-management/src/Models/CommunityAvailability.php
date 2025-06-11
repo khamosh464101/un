@@ -4,6 +4,7 @@ namespace Modules\DataManagement\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Storage;
 
 class CommunityAvailability extends Model
 {
@@ -31,12 +32,25 @@ class CommunityAvailability extends Model
         if ($this->returnRawPhoto) {
             return $value;
         }
-        $tmpName = $this->submission->_id . '-' . $value;
-        return $value ? asset("storage/kobo-attachments/$tmpName") : asset('import/assets/post-pic-dummy.png');
+        return $value ? asset("storage/kobo-attachments/$value") : asset('import/assets/post-pic-dummy.png');
     }
 
     public function submission(): BelongsTo
     {
         return $this->belongsTo(Submission::class);
     }
+
+     public static function boot()
+    {
+         parent::boot();
+
+        static::deleting(function ($communithAvailability) {
+            $communityCenterPhoto = $communithAvailability->getRawOriginal('community_center_photo');
+            if (!is_null($communityCenterPhoto)) {
+                Storage::delete("kobo-attachments/$communityCenterPhoto");
+            }
+        });
+    }
+
+
 }

@@ -4,6 +4,7 @@ namespace Modules\DataManagement\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Storage; 
 
 class HeadFamily extends Model
 {
@@ -37,14 +38,26 @@ class HeadFamily extends Model
         if ($this->returnRawPhoto) {
             return $value;
         }
-        $tmpName = $this->submission->_id . '-' . $value;
-        return $value ? asset("storage/kobo-attachments/$tmpName") : asset('import/assets/post-pic-dummy.png');
+        return $value ? asset("storage/kobo-attachments/$value") : asset('import/assets/post-pic-dummy.png');
     }
 
     public function submission(): BelongsTo
     {
         return $this->belongsTo(Submission::class);
     }
+
+    public static function boot()
+    {
+         parent::boot();
+
+        static::deleting(function ($headFamily) {
+            $photo = $headFamily->getRawOriginal('hoh_nic_photo');
+            if (!is_null($photo)) {
+                Storage::delete("kobo-attachments/$photo");
+            }
+        });
+    }
+
 
 
 }

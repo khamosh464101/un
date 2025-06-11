@@ -12,6 +12,7 @@ use Modules\DataManagement\Models\Form;
 use Modules\DataManagement\Models\Submission;
 use Modules\DataManagement\Services\CreateSubmissionParser;
 use Modules\DataManagement\Services\FilterableService;
+use Modules\DataManagement\Services\QueryService;
 use Modules\DataManagement\Services\ArchiveService;
 use Modules\Projects\Models\Project;
 use Mpdf\Mpdf;
@@ -25,65 +26,49 @@ class SubmissionController
 {
     protected $parser;
     protected $filterable;
+    protected $query;
     protected $archive;
 
     public function __construct(
         CreateSubmissionParser $submissionParser, 
         FilterableService $filterable,
+        QueryService $query,
         ArchiveService $archive
         )
     {
         $this->parser = $submissionParser;
         $this->filterable = $filterable->getFilterable();
+        $this->query = $query->getQuery();
         $this->archive = $archive;
     }
 
     public function index(Request $request) {
+        $query = Submission::with($this->query);
       
-
-        $query = Submission::with([
-            'sourceInformation', 
-            'familyInformation', 
-            'headFamily', 
-            'interviewwee', 
-            'composition',
-            'idp',
-            'returnee',
-            'extremelyVulnerableMember',
-            'accessCivilDocumentMale',
-            'accessCivilDocumentFemale',
-            'houseLandOwnership',
-            'houseCondition',
-            'accessBasicService',
-            'foodConsumptionScore',
-            'householdStrategyFood',
-            'communityAvailability',
-            'livelihood',
-            'durableSolution',
-            'skillIdea',
-            'resettlement',
-            'recentAssistance',
-            'photoSection',
-        ]);
         if ($request->project_id) {
             $query->whereHas('projects', function ($q) use ($request) {
                 $q->where('projects.id', $request->project_id);
             });
         }
-        foreach ($this->filterable as $field) {
-            $query->when($request->filled($field), function ($q) use ($field, $request) {
-                if (Str::contains($field, '__')) {
-                    [$relation, $column] = explode('__', $field, 2);
-                    $q->whereHas($relation, function ($subQ) use ($column, $request, $field) {
-                        $subQ->where($column, $request->input($field));
+
+        foreach ($request->search as $key => $field) {
+                
+            if ($field) {
+                if (Str::contains($key, '__') ) {
+                    [$relation, $column] = explode('__', $key, 2);
+
+                    $query->whereHas($relation, function ($q) use ($column, $field) {
+                        $q->where($column, $field);
                     });
                 } else {
-                    $q->where($field, $request->input($field));
+                    $query->where($key, $field);
                 }
-            });
+            }
         }
 
-        return ["data" => $query->paginate(8), "filterable" => $this->filterable, "projects" => Project::select("id as value", "title as label")->get()];
+        $data = $query->paginate(8);
+
+        return ["data" => $data, "filterable" => $this->filterable, "projects" => Project::select("id as value", "title as label")->get()];
     }
     public function getForm() {
         
@@ -91,10 +76,6 @@ class SubmissionController
     }
 
     public function store (Request $request) {
-        // if ($request->hasFile('photo_interviewee')) {
-        //     return $request;
-        // }
-        // return 'not working';
         $files = [
             'hoh_nic_photo',
             'inter_nic_photo',
@@ -130,7 +111,8 @@ class SubmissionController
             if ($request->hasFile($value) && $request->file($value)->isValid()) {
                 $uuidPrefix = Str::uuid();
                 $get_file = $request->file($value)->storeAs('kobo-attachments', $this->getFileName($uuidPrefix, $request->file($value)));
-                $data[$value] = $get_file;
+                $get_file_clean = str_replace('kobo-attachments/', '', $get_file);
+                $data[$value] = $get_file_clean;
             }
         }
 
@@ -166,7 +148,8 @@ class SubmissionController
                     'kobo-attachments',
                     $this->getFileName($uuidPrefix, $file)
                 );
-                $storedFiles[] = $path;
+                $path_clean = str_replace('kobo-attachments/', '', $path);
+                $storedFiles[] = $path_clean;
             
         }
         return $storedFiles;
@@ -189,7 +172,9 @@ class SubmissionController
                     'kobo-attachments',
                     $this->getFileName($uuidPrefix, $file)
                 );
-                $storedFiles[$key]['current_house_problem_photo'] = $path;
+                $path_clean = str_replace('kobo-attachments/', '', $path);
+
+                $storedFiles[$key]['current_house_problem_photo'] = $path_clean;
         
         }
     
@@ -477,34 +462,6 @@ class SubmissionController
                 }
             }
         }
-
-        // $path = public_path('wochtangi_final.xlsx');
-    
-        // if (!File::exists($path)) {
-        //     return response()->json(['error' => 'File not found.'], 404);
-        // }
-    
-        // try {
-        //     // For immediate processing (smaller files)
-        //     // $import = new MultiTableImport();
-        //     // Excel::import($import, $path);
-            
-        //     // For large files - queue the import
-        //     $import = new MultiTableImport();
-        //     Excel::import($import, $path);
-        //     // Excel::queueImport($import, $path);
-            
-        //     return response()->json([
-        //         'message' => 'Import started successfully. Processing in background.',
-        //         'rows_processed' => $import->sheets()[0]->getRowCount() ?? 0
-        //     ]);
-            
-        // } catch (\Exception $e) {
-        //     return response()->json([
-        //         'error' => 'Import failed',
-        //         'message' => $e->getMessage()
-        //     ], 500);
-        // }
         
         $path = public_path('wochtangi_final.xlsx'); // full path to the file
 
@@ -523,6 +480,51 @@ class SubmissionController
 
     private function getPath($location) {
         return 'storage/gis/'.'W_'.$location['province_code'].'-'.$location['city_code'].'-'.$location['district_code'].'-'.$location['guzar'].'-'.$location['block'].'-'.$location['house'].'.jpg';
+    }
+
+    public function destroy($id) {
+        $submission = Submission::find($id);
+        if (!$submission) {
+            return response()->json(['message' => 'Record not found'], 404);
+        }
+
+        $headFamily = $submission->headFamily;
+        if ($headFamily) {
+            $headFamily->delete();
+        }
+
+        $interviewwee = $submission->interviewwee;
+        if ($interviewwee) {
+            $interviewwee->delete();
+        }
+        foreach ($submission->returnee?->typeReturnDocumentPhoto ?? [] as $value) {
+            $value->delete();
+        }
+        foreach ($submission->houseLandOwnership?->landOwnershipDocument ?? [] as $key => $value) {
+            $value->delete();
+        }
+        $houseLandOwnership = $submission->houseLandOwnership;
+        if ($houseLandOwnership) {
+            $houseLandOwnership->delete();
+        }
+        foreach ($submission->houseCondition?->houseProblemAreaPhoto ?? [] as $key => $value) {
+            $value->delete();
+        }
+        $accessBasicService = $submission->accessBasicService;
+        if ($accessBasicService) {
+            $accessBasicService->delete();
+        }
+        $communityAvailability = $submission->communityAvailability;
+        if ($communityAvailability) {
+            $communityAvailability->delete();
+        }
+        $photoSection = $submission->photoSection;
+        if ($photoSection) {
+            $photoSection->delete();
+        }
+        $submission->delete();
+
+        return response()->json(['message' => 'Record deleted successfully'], 201);
     }
 
 }

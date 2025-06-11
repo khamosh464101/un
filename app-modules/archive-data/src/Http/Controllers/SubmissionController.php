@@ -10,6 +10,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use Modules\DataManagement\Models\Form;
 use Modules\ArchiveData\Models\Submission;
 use Modules\DataManagement\Services\FilterableService;
+use Modules\DataManagement\Services\QueryService;
 use Modules\ArchiveData\Services\RestoreArchiveService;
 use Modules\Projects\Models\Project;
 use Mpdf\Mpdf;
@@ -21,56 +22,38 @@ class SubmissionController
 {
     protected $filterable;
     protected $restore;
+    protected $query;
 
-    public function __construct(FilterableService $filterable, RestoreArchiveService $restore)
+    public function __construct(
+        FilterableService $filterable,
+        QueryService $query,
+        RestoreArchiveService $restore
+        )
     {
         $this->filterable = $filterable->getFilterable();
+        $this->query = $query->getQuery();
         $this->restore = $restore;
     }
 
     public function index(Request $request) {
-
-        $query = Submission::with([
-            'sourceInformation', 
-            'familyInformation', 
-            'headFamily', 
-            'interviewwee', 
-            'composition',
-            'idp',
-            'returnee',
-            'extremelyVulnerableMember',
-            'accessCivilDocumentMale',
-            'accessCivilDocumentFemale',
-            'houseLandOwnership',
-            'houseCondition',
-            'houseCondition',
-            'accessBasicService',
-            'foodConsumptionScore',
-            'householdStrategyFood',
-            'communityAvailability',
-            'livelihood',
-            'durableSolution',
-            'skillIdea',
-            'resettlement',
-            'recentAssistance',
-            'photoSection',
-        ]);
+        
+         $query = Submission::with($this->query);
         if ($request->project_id) {
             $query->whereHas('projects', function ($q) use ($request) {
                 $q->where('projects.id', $request->project_id);
             });
         }
-        foreach ($this->filterable as $field) {
-            if ($request->filled($field) && $request->input($field)) {
+        foreach ($request->search as $key => $field) {
                 
-                if (Str::contains($field, '__')) {
-                    [$relation, $column] = explode('__', $field, 2);
+            if ($field) {
+                if (Str::contains($key, '__') ) {
+                    [$relation, $column] = explode('__', $key, 2);
 
-                    $query->whereHas($relation, function ($q) use ($column, $request, $field) {
-                        $q->where($column, $request->input($field));
+                    $query->whereHas($relation, function ($q) use ($column, $field) {
+                        $q->where($column, $field);
                     });
                 } else {
-                    $query->where($field, $request->input($field));
+                    $query->where($key, $field);
                 }
             }
         }
