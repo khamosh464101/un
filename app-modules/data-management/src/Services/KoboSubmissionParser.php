@@ -194,6 +194,7 @@ class KoboSubmissionParser
 
         return $sub;
     }
+    
 
     function createExtremelyVulnerableMember($submission, $sub) {
         $filteredData = array_intersect_key(

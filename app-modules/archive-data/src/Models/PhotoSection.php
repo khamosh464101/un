@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Storage;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
 use App\Helpers\ImageFixer;
-
 class PhotoSection extends Model
 {
     protected $table = "archive_dm_photo_sections";
@@ -159,7 +158,7 @@ class PhotoSection extends Model
 
         // 3. Check if original file exists
         if (!file_exists($originalPath)) {
-            Log::warning("Photo file not found at: " . $originalPath);
+            \Log::warning("Photo file not found at: " . $originalPath);
             return asset('import/assets/post-pic-dummy.png');
         }
 

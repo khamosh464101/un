@@ -2,7 +2,7 @@
 <html lang="fa">
 <head>
     <meta charset="UTF-8">
-    <title>سند ملکیت</title>
+    <title>معلومات ملکیت</title>
     <style>
         body {
             direction: rtl;
@@ -31,17 +31,48 @@
         .center {
             text-align: center;
         }
+        .left {
+            text-align: left;
+        }
+        .right {
+            text-align: right;
+        }
         .hidden-tr {
             display: none;
         }
     </style>
 </head>
 <body>
+<!-- Top Logos Horizontal Row -->
+<!-- Horizontal Logo Row for mPDF -->
+<!-- Horizontal Logo Row for mPDF (No Borders, Larger Logos) -->
+<table style="width: 100%; text-align: center; border: none;  direction: ltr;">
+    <tr>
+        <td style="width: 33.33%; text-align: left; border: none;">
+            @php
+                $logo_left = 'logos/ahf_logo.png';
+            @endphp
+            <img src="{{ public_path($logo_left) }}" alt="لوگو چپ" style="max-width: 140px; max-height: 140px;">
+        </td>
+        <td style="width: 33.33%; text-align: center; border: none;">
+            @php
+                $logo_center = 'logos/hlp_logo.jpg';
+            @endphp
+            <img src="{{ public_path($logo_center) }}" alt="لوگو مرکز" style="max-width: 160px; max-height: 160px;">
+            <h3>Property Information</h3>
+            <h3>معلومات ملکیت</h3>
+        </td>
+        <td style="width: 33.33%; text-align: right; border: none;">
+            @php
+                $logo_right = 'logos/habitat.png';
+            @endphp
+            <img src="{{ public_path($logo_right) }}" alt="لوگو راست" style="max-width: 140px; max-height: 140px;">
+        </td>
+    </tr>
+</table>
 
-<div class="center">
-    <h2>سند ملکیت</h2>
-    <h2>Land Ownership Deed</h2>
-</div>
+
+
 
 <p>کود نمبر / Code Number:</p>
 
@@ -70,9 +101,9 @@
 <!-- Displacement & Interviewee Info -->
 <table>
     <tr>
-        <td style="width:33%;">سکونت اصلی/Place of Origin</td>
-        <td style="width:33%;">{{ $location['province_origin'] ?? '' }}, {{ $location['district_origin'] ?? '' }}</td>
-        <td style="width:33%;" rowspan="3" class="center">
+        <td style="width:33%;">نام باشنده/Name of Occupier</td>
+        <td style="width:33%;">{{ $submission->headFamily ? $submission->headFamily->hoh_name : $submission->interviewwee->inter_name }}</td>
+        <td style="width:33%;" rowspan="4" class="center">
             @php
                 $path = str_replace('http://127.0.0.1:8000/', '', $submission->photoSection->photo_interviewee);
             @endphp
@@ -80,54 +111,52 @@
         </td>
     </tr>
     <tr>
-        <td>نوعیت بیجاه شده/Type of Displacement</td>
-        <td>{{ $location['status'] ?? '' }}</td>
+        <td>نام پدر باشنده/Father Name of Occupier</td>
+        <td>{{ $submission->headFamily ? $submission->headFamily->hoh_father_name : $submission->interviewwee->inter_father_name }}</td>
     </tr>
     <tr>
-        <td>مدت بیجاه شده/Displacement Duration</td>
-        <td>{{ $location['year'] ?? '' }}</td>
+    
+        <td>نام پدر کلان باشنده/Grand Father Name</td>
+        <td>{{ $submission->headFamily ? $submission->headFamily->hoh_grandfather_name : $submission->interviewwee->inter_grandfather_name }}</td>
     </tr>
+    <tr>
+        <td>تذکره نمبر/ID Number</td>
+        <td>{{ $submission->headFamily ? $submission->headFamily->hoh_nic_number : $submission->interviewwee->inter_nic_number }}</td>
+    </tr>
+
 </table>
 
 <br>
 
-<!-- Personal and Property Info -->
 <table>
     <tr>
-        <td colspan="2">مشخصات شخصی / Personal Information</td>
-        <td colspan="2">مشخصات حقوقی و فزیکی ملکیت / Land Ownership</td>
+        <td>سکونت اصلی/Province of Origin</td>
+        <td>{{ $location['province_origin'] ?? '' }}, {{ $location['district_origin'] ?? '' }}</td>
+        <td>نوعیت مالکیت/Type of Occupancy</td>
+        <td>{{ $location['house_owner'] ?? '' }}</td>
+       
     </tr>
     <tr>
-        <td style="width:25%;">نام / Name</td>
-        <td style="width:25%;">{{ $submission->headFamily ? $submission->headFamily->hoh_name : $submission->interviewwee->inter_name }}</td>
-        <td>نوعیت مالکیت / Type of Ownership</td>
+        <td> وضعیت بی جاه شدگی/Displacement Status</td>
+        <td>{{ $location['status'] ?? '' }}</td>
+        <td>نوعیت سنت دست داشته/ Land document type</td>
         <td>{{ $location['ownership_type'] ?? '' }}</td>
     </tr>
     <tr>
-        <td>نام پدر / Father Name</td>
-        <td>{{ $submission->headFamily ? $submission->headFamily->hoh_father_name : $submission->interviewwee->inter_father_name }}</td>
-        <td>اسناد دست داشته / Land Deed Type</td>
-        <td></td>
+        <td> مدت بیجاه شدگی/Displacement Duration</td>
+        <td>{{ $location['year'] ?? '' }}</td>
+        <td>مدت اقامت/Duration of Occupation</td>
+        <td>{{ $location['duration_lived_thishouse'] ?? '' }}</td>
     </tr>
     <tr>
-        <td>نام پدر کلان / Grandfather Name</td>
-        <td>{{ $submission->headFamily ? $submission->headFamily->hoh_grandfather_name : $submission->interviewwee->inter_grandfather_name }}</td>
-        <td>نوعیت ملکیت / Land Type</td>
-        <td></td>
-    </tr>
-    <tr>
-        <td>نمبر تذکره / ID Number</td>
-        <td>{{ $submission->headFamily ? $submission->headFamily->hoh_nic_number : $submission->interviewwee->inter_nic_number }}</td>
-        <td>مختصات ملکیت / GPS Coordinates</td>
-        <td>Lat: {{ $submission->photoSection->latitude }}<br>Lon: {{ $submission->photoSection->longitude }}</td>
-    </tr>
-    <tr>
-        <td>شماره تماس / Phone Number</td>
+    <td > مختصات ملکیت/GPS Coordinate</td>
+    <td > Lat: {{ $submission->photoSection->latitude }}<br>Lon: {{ $submission->photoSection->longitude }}</td>
+    <td>شماره تماس / Phone Number</td>
         <td>{{ $submission->headFamily ? $submission->headFamily->hoh_phone_number : $submission->interviewwee->inter_phone_number }}</td>
-        <td></td>
-        <td></td>
     </tr>
 </table>
+
+
 
 <br>
 

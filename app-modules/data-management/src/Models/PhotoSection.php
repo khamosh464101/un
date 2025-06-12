@@ -145,7 +145,7 @@ class PhotoSection extends Model
 
         // 3. Check if original file exists
         if (!file_exists($originalPath)) {
-            Log::warning("Photo file not found at: " . $originalPath);
+            \Log::warning("Photo file not found at: " . $originalPath);
             return asset('import/assets/post-pic-dummy.png');
         }
 

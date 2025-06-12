@@ -278,10 +278,20 @@ class SubmissionController
                     }
                 }
             } 
-
+            
+            if (isset($value->name) && $value->name === $submission->houseLandOwnership->house_owner) {
+                if (isset($value->label[1])) {
+                    $location['house_owner'] = $value->label[1];
+                }
+            }
             if (isset($value->name) && $value->name === $submission->houseLandOwnership->type_tenure_document) {
                 if (isset($value->label[1])) {
                     $location['ownership_type'] = $value->label[1];
+                }
+            }
+            if (isset($value->name) && $value->name === $submission->houseLandOwnership->duration_lived_thishouse) {
+                if (isset($value->label[1])) {
+                    $location['duration_lived_thishouse'] = $value->label[1];
                 }
             }
 

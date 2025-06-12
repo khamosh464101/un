@@ -66,13 +66,13 @@ class AttachmentNotification extends Notification
     public function toMail(object $notifiable): MailMessage
     {   
         $frontendUrl = config('frontend.url');
-        $url = $frontendUrl . '/project-management/tickets/' . $this->ticket->id;
+        $url = $frontendUrl . '/project-management/tasks/' . $this->ticket->id;
 
         return (new MailMessage)
-        ->subject("[{$this->ticket->activity->project->title}] {$this->user->name} has {$this->action} a Attachement on {$this->ticket->title} ticket")
-        ->greeting("{$this->user->name} {$this->action} a Attachement on {$this->ticket->title} ticket")
+        ->subject("[{$this->ticket->activity->project->title}] {$this->user->name} has {$this->action} a Attachement on {$this->ticket->title} task")
+        ->greeting("{$this->user->name} {$this->action} a Attachement on {$this->ticket->title} task")
         ->line($this->title)
-        ->action('Go to Ticket', $url);
+        ->action('Go to Task', $url);
     }
 
     /**
@@ -83,10 +83,10 @@ class AttachmentNotification extends Notification
     public function toArray(object $notifiable): array
     {
         $frontendUrl = config('frontend.url');
-        $url = $frontendUrl . '/project-management/tickets/' . $this->ticket->id;
+        $url = $frontendUrl . '/project-management/tasks/' . $this->ticket->id;
         return [
             'ticket_id' => $this->ticket->id,
-            'title' => "{$this->user->name} has {$this->action} a Attachement on \"{$this->ticket->title}\" ticket",
+            'title' => "{$this->user->name} has {$this->action} a Attachement on \"{$this->ticket->title}\" task",
             'subtitle' => "On \"{$this->ticket->activity->project->title}\" project",
             'link' => $url,
             'causer_id' => $this->user->id,
@@ -103,10 +103,10 @@ class AttachmentNotification extends Notification
         public function toFcm($notifiable): FcmMessage
     {
         $frontendUrl = config('frontend.url');
-            $url = $frontendUrl . '/project-management/tickets/' . $this->ticket->id;
+            $url = $frontendUrl . '/project-management/tasks/' . $this->ticket->id;
         return (new FcmMessage(notification: new FcmNotification(
-            title : "Ticket Attachement",
-            body: "{$this->user->name} has {$this->action} a Attachement on \"{$this->ticket->title}\" ticket",
+            title : "Task Attachement",
+            body: "{$this->user->name} has {$this->action} a Attachement on \"{$this->ticket->title}\" task",
             image : 'https://www.gstatic.com/mobilesdk/240501_mobilesdk/firebase_28dp.png', 
             )))
             ->data(['link' => $url,

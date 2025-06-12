@@ -67,13 +67,13 @@ class CommentNotification extends Notification implements ShouldQueue
     {  
         logger()->info('working in the beginning of notification EMAIL method'); 
         $frontendUrl = config('frontend.url');
-        $url = $frontendUrl . '/project-management/tickets/' . $this->ticket->id;
+        $url = $frontendUrl . '/project-management/tasks/' . $this->ticket->id;
 
         return (new MailMessage)
         ->subject("[{$this->ticket->activity->project->title}] {$this->user->name} has {$this->action} a comment on {$this->ticket->title} ticket")
-        ->greeting("{$this->user->name} {$this->action} a comment on {$this->ticket->title} ticket")
+        ->greeting("{$this->user->name} {$this->action} a comment on {$this->ticket->title} task")
         ->line($this->content)
-        ->action('Go to Ticket', $url);
+        ->action('Go to Task', $url);
     }
 
     /**
@@ -85,10 +85,10 @@ class CommentNotification extends Notification implements ShouldQueue
     {
         logger()->info('working in the beginning of notification DB method');
         $frontendUrl = config('frontend.url');
-        $url = $frontendUrl . '/project-management/tickets/' . $this->ticket->id;
+        $url = $frontendUrl . '/project-management/tasks/' . $this->ticket->id;
         return [
             'ticket_id' => $this->ticket->id,
-            'title' => "{$this->user->name} has {$this->action} a comment on \"{$this->ticket->title}\" ticket",
+            'title' => "{$this->user->name} has {$this->action} a comment on \"{$this->ticket->title}\" task",
             'subtitle' => "On \"{$this->ticket->activity->project->title}\" project",
             'link' => $url,
             'causer_id' => $this->user->id,
@@ -106,10 +106,10 @@ class CommentNotification extends Notification implements ShouldQueue
     {
         logger()->info('working in the beginning of notification FCM method');
         $frontendUrl = config('frontend.url');
-            $url = $frontendUrl . '/project-management/tickets/' . $this->ticket->id;
+            $url = $frontendUrl . '/project-management/tasks/' . $this->ticket->id;
         return (new FcmMessage(notification: new FcmNotification(
-            title : "Ticket Comment",
-            body: "{$this->user->name} has {$this->action} a comment on \"{$this->ticket->title}\" ticket",
+            title : "Task Comment",
+            body: "{$this->user->name} has {$this->action} a comment on \"{$this->ticket->title}\" task",
             image : 'https://www.gstatic.com/mobilesdk/240501_mobilesdk/firebase_28dp.png', 
             )))
             ->data(['link' => $url,
