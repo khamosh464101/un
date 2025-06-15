@@ -7,9 +7,11 @@ use Modules\Projects\Http\Requests\ProvinceRequest;
 use Modules\Projects\Models\Province;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Gate;
 
 class ProvinceController
 {
+
     public function select2() {
         return response()->json(Province::all(), 201);
     }
@@ -28,6 +30,7 @@ class ProvinceController
         return response()->json($provinces, 201);
     }
     public function store(ProvinceRequest $request) {
+        Gate::authorize('create', Province::class);
         $data = $request->validated();
         $province = Province::create($data);
         return response()->json(['message' => 'Sucessfully added!', 'data' => $data], 201);
@@ -41,14 +44,16 @@ class ProvinceController
     }
 
     public function update(ProvinceRequest $request, $id) {
-        $data = $request->validated();
         $province = Province::find($id);
+        Gate::authorize('update', $province);
+        $data = $request->validated();
         $province->update($data);
         return response()->json(['message' => 'Sucessfully updated!', 'data' => $province], 201);
     }
 
     public function destroy($id) {
         $province = Province::find($id);
+        Gate::authorize('delete', $province);
         if (!$province) {
             return response()->json(['message' => 'Province not found'], 404);
         }

@@ -5,6 +5,7 @@ namespace Modules\Projects\Http\Controllers;
 use Illuminate\Http\Request;
 use Modules\Projects\Models\TicketStatus;
 use Modules\Projects\Http\Requests\TicketStatusRequest;
+use Illuminate\Support\Facades\Gate;
 
 class TicketStatusController
 {
@@ -21,6 +22,7 @@ class TicketStatusController
     }
 
     public function store(TicketStatusRequest $request) {
+        Gate::authorize('create', TicketStatus::class);
         $data = $request->validated();
          $status = TicketStatus::create($data);
         return response()->json(['message' => 'Sucessfully added!', 'data' => $data], 201);
@@ -32,14 +34,17 @@ class TicketStatusController
     }
 
     public function update(TicketStatusRequest $request, $id) {
-        $data = $request->safe()->except(['_method']);
         $status = TicketStatus::find($id);
+        Gate::authorize('update', $status);
+        $data = $request->safe()->except(['_method']);
+        
         $status->update($data);
         return response()->json(['message' => 'Sucessfully updated!', 'data' => $status], 201);
     }
 
     public function destroy($id) {
         $status = TicketStatus::find($id);
+        Gate::authorize('delete', $status);
         if (!$status) {
             return response()->json(['message' => 'Not found'], 404);
         }

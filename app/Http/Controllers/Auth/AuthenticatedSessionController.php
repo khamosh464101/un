@@ -25,7 +25,8 @@ class AuthenticatedSessionController extends Controller
         $token = $request->user()->createToken('token-name')->plainTextToken;
         return response([
             'user' => $request->user(),
-            'access_token' => $token
+            'access_token' => $token,
+            'permissions' => $request->user()->getAllPermissions()->pluck('name'),
         ]);
 
     }

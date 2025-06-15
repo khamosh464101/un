@@ -7,6 +7,7 @@ use Modules\Projects\Http\Requests\DonorRequest;
 use Modules\Projects\Models\Donor;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Gate;
 
 class DonorController
 {
@@ -26,6 +27,7 @@ class DonorController
     }
 
     public function store(DonorRequest $request) {
+        Gate::authorize('create', Donor::class);
         $data = $request->validated();
          $donor = Donor::create($data);
         return response()->json(['message' => 'Sucessfully added!', 'data' => $donor], 201);
@@ -38,14 +40,17 @@ class DonorController
     }
 
     public function update(DonorRequest $request, $id) {
-        $data = $request->safe()->except(['_method']);
         $donor = Donor::find($id);
+        Gate::authorize('update', $donor);
+        $data = $request->safe()->except(['_method']);
+        
         $donor->update($data);
         return response()->json(['message' => 'Sucessfully updated!', 'data' => $donor], 201);
     }
 
     public function destroy($id) {
         $donor = Donor::find($id);
+        Gate::authorize('delete', $donor);
         if (!$donor) {
             return response()->json(['message' => 'Donor not found'], 404);
         }

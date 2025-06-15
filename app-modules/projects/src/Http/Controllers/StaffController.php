@@ -6,6 +6,7 @@ use Modules\Projects\Models\Project;
 use Modules\Projects\Models\Activity;
 use Modules\Projects\Http\Requests\StaffRequest;
 use Modules\Projects\Http\Controllers\ProgramController;
+use Illuminate\Support\Facades\Gate;
 
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -36,6 +37,7 @@ class StaffController
     }
     
     public function store(StaffRequest $request) {
+        Gate::authorize('create', Staff::class);
         $data = $request->safe()->except(['photo']);
         // Handle the file upload
         if ($request->hasFile('photo') && $request->file('photo')->isValid()) {
@@ -62,6 +64,8 @@ class StaffController
     }
 
     public function update(StaffRequest $request, $id) {
+        $staff = Staff::find($id);
+        Gate::authorize('update', $staff);
         $data = $request->safe()->except(['photo', '_method']);
         // Handle the file upload
         if ($request->hasFile('photo') && $request->file('photo')->isValid()) {
@@ -69,7 +73,7 @@ class StaffController
             $get_file = $request->file('photo')->storeAs('project-management/staff/photo', ProgramController::getFileName($data['name'], $request->file('photo')));
             $data['photo'] = $get_file;
         }
-        $staff = Staff::find($id);
+       
         $staff->update($data);
         if ($staff->user) {
             $staff->user->update([
@@ -84,6 +88,7 @@ class StaffController
     public function destroy($id) {
        
         $staff = Staff::find($id);
+        Gate::authorize('delete', $staff);
         if (!$staff) {
             return response()->json(['message' => 'Staff not found'], 404);
         }

@@ -5,6 +5,7 @@ namespace Modules\Projects\Http\Controllers;
 use Illuminate\Http\Request;
 use Modules\Projects\Models\SubprojectType;
 use Modules\Projects\Http\Requests\SubprojectTypeRequest;
+use Illuminate\Support\Facades\Gate;
 
 class SubprojectTypeController
 {
@@ -21,6 +22,7 @@ class SubprojectTypeController
     }
 
     public function store(SubprojectTypeRequest $request) {
+        Gate::authorize('create', SubprojectType::class);
         $data = $request->validated();
          $type = SubprojectType::create($data);
         return response()->json(['message' => 'Sucessfully added!', 'data' => $data], 201);
@@ -32,14 +34,17 @@ class SubprojectTypeController
     }
 
     public function update(SubprojectTypeRequest $request, $id) {
-        $data = $request->safe()->except(['_method']);
         $type = SubprojectType::find($id);
+        Gate::authorize('update', $type);
+        $data = $request->safe()->except(['_method']);
+        
         $type->update($data);
         return response()->json(['message' => 'Sucessfully updated!', 'data' => $type], 201);
     }
 
     public function destroy($id) {
         $type = SubprojectType::find($id);
+        Gate::authorize('delete', $type);
         if (!$type) {
             return response()->json(['message' => 'Not found'], 404);
         }

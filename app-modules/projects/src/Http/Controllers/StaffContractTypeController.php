@@ -5,6 +5,7 @@ namespace Modules\Projects\Http\Controllers;
 use Illuminate\Http\Request;
 use Modules\Projects\Models\StaffContractType;
 use Modules\Projects\Http\Requests\StaffContractTypeRequest;
+use Illuminate\Support\Facades\Gate;
 
 class StaffContractTypeController
 {
@@ -21,6 +22,7 @@ class StaffContractTypeController
     }
 
     public function store(StaffContractTypeRequest $request) {
+        Gate::authorize('create', StaffContractType::class);
         $data = $request->validated();
          $status = StaffContractType::create($data);
         return response()->json(['message' => 'Sucessfully added!', 'data' => $data], 201);
@@ -32,14 +34,17 @@ class StaffContractTypeController
     }
 
     public function update(StaffContractTypeRequest $request, $id) {
-        $data = $request->safe()->except(['_method']);
         $status = StaffContractType::find($id);
+        Gate::authorize('update', $status);
+        $data = $request->safe()->except(['_method']);
+        
         $status->update($data);
         return response()->json(['message' => 'Sucessfully updated!', 'data' => $status], 201);
     }
 
     public function destroy($id) {
         $status = StaffContractType::find($id);
+        Gate::authorize('delete', $status);
         if (!$status) {
             return response()->json(['message' => 'Not found'], 404);
         }

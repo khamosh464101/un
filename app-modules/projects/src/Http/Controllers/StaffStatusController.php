@@ -5,6 +5,7 @@ namespace Modules\Projects\Http\Controllers;
 use Illuminate\Http\Request;
 use Modules\Projects\Models\StaffStatus;
 use Modules\Projects\Http\Requests\StaffStatusRequest;
+use Illuminate\Support\Facades\Gate;
 
 class StaffStatusController
 {
@@ -21,6 +22,7 @@ class StaffStatusController
     }
 
     public function store(StaffStatusRequest $request) {
+        Gate::authorize('create', StaffStatus::class);
         $data = $request->validated();
          $status = StaffStatus::create($data);
         return response()->json(['message' => 'Sucessfully added!', 'data' => $data], 201);
@@ -32,14 +34,17 @@ class StaffStatusController
     }
 
     public function update(StaffStatusRequest $request, $id) {
-        $data = $request->safe()->except(['_method']);
         $status = StaffStatus::find($id);
+        Gate::authorize('update', $status);
+        $data = $request->safe()->except(['_method']);
+        
         $status->update($data);
         return response()->json(['message' => 'Sucessfully updated!', 'data' => $status], 201);
     }
 
     public function destroy($id) {
         $status = StaffStatus::find($id);
+        Gate::authorize('delete', $status);
         if (!$status) {
             return response()->json(['message' => 'Not found'], 404);
         }

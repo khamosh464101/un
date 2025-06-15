@@ -7,6 +7,7 @@ use Modules\Projects\Http\Requests\DistrictRequest;
 use Modules\Projects\Models\District;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Gate;
 
 class DistrictController
 {
@@ -30,6 +31,7 @@ class DistrictController
         return response()->json($programs, 201);
     }
     public function store(DistrictRequest $request) {
+        Gate::authorize('create', District::class);
         $data = $request->validated();
         $district = District::create($data);
         return response()->json(['message' => 'Sucessfully added!', 'data' => $district], 201);
@@ -43,14 +45,17 @@ class DistrictController
     }
 
     public function update(DistrictRequest $request, $id) {
-        $data = $request->validated();
         $district = District::find($id);
+        Gate::authorize('update', $district);
+        $data = $request->validated();
+        
         $district->update($data);
         return response()->json(['message' => 'Sucessfully updated!', 'data' => $district], 201);
     }
 
     public function destroy($id) {
         $district = District::find($id);
+        Gate::authorize('delete', $district);
         if (!$district) {
             return response()->json(['message' => 'District not found'], 404);
         }

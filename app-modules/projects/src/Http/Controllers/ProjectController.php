@@ -10,6 +10,7 @@ use Modules\Projects\Http\Controllers\ProgramController;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Modules\Projects\Http\Resources\Project\ProjectsResource;
+use Illuminate\Support\Facades\Gate;
 
 class ProjectController
 {
@@ -39,6 +40,7 @@ class ProjectController
     }
     
     public function store(ProjectRequest $request) {
+        Gate::authorize('create', Project::class);
         $data = $request->safe()->except(['logo']);
         // Handle the file upload
         if ($request->hasFile('logo') && $request->file('logo')->isValid()) {
@@ -68,6 +70,8 @@ class ProjectController
     }
 
     public function update(ProjectRequest $request, $id) {
+        $project = Project::find($id);
+        Gate::authorize('update', $project);
         $data = $request->safe()->except(['logo', '_method']);
         // Handle the file upload
         if ($request->hasFile('logo') && $request->file('logo')->isValid()) {
@@ -75,13 +79,14 @@ class ProjectController
             $get_file = $request->file('logo')->storeAs('project-management/project/logo', ProgramController::getFileName($data['title'], $request->file('logo')));
             $data['logo'] = $get_file;
         }
-        $project = Project::find($id);
+        
         $project->update($data);
         return response()->json(['message' => 'Sucessfully updated!', 'data' => $project], 201);
     }
 
     public function destroy($id) {
         $project = Project::find($id);
+        Gate::authorize('delete', $project);
         if (!$project) {
             return response()->json(['message' => 'Project not found'], 404);
         }

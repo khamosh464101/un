@@ -5,6 +5,7 @@ namespace Modules\Projects\Http\Controllers;
 use Illuminate\Http\Request;
 use Modules\Projects\Models\ActivityStatus;
 use Modules\Projects\Http\Requests\ActivityStatusRequest;
+use Illuminate\Support\Facades\Gate;
 
 class ActivityStatusController
 {
@@ -21,6 +22,7 @@ class ActivityStatusController
     }
 
     public function store(ActivityStatusRequest $request) {
+        Gate::authorize('create', ActivityStatus::class);
         $data = $request->validated();
          $status = ActivityStatus::create($data);
         return response()->json(['message' => 'Sucessfully added!', 'data' => $data], 201);
@@ -32,14 +34,17 @@ class ActivityStatusController
     }
 
     public function update(ActivityStatusRequest $request, $id) {
-        $data = $request->safe()->except(['_method']);
         $status = ActivityStatus::find($id);
+        Gate::authorize('update', $status);
+        $data = $request->safe()->except(['_method']);
+        
         $status->update($data);
         return response()->json(['message' => 'Sucessfully updated!', 'data' => $status], 201);
     }
 
     public function destroy($id) {
         $status = ActivityStatus::find($id);
+        Gate::authorize('delete', $status);
         if (!$status) {
             return response()->json(['message' => 'Not found'], 404);
         }

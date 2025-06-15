@@ -13,23 +13,30 @@ class SettingController extends Controller
     }
 
     public function store(Request $request)
-{
-    foreach ($request->settings as $key => $value) {
-        $setting = Setting::find($value['id']);
+    {
+        $files = [
+            'firebase_admin_credentials',
+            'google_application_credentials',
+        ];
+        $data = $request->except($files);
+        foreach ($data as $key => $value) {
+            $setting = Setting::where('key', $key)->first();
 
-        if ($value['type'] === 'file' && $request->file("settings.$key.value")) {
-             $file = $request->file("settings.$key.value");
-            $uuidPrefix = Str::uuid();
-            $path = $file->storeAs(
-                'settings',
-                $this->getFileName($file)
-            );
-            $setting->value = $path;
-        } else {
-            $setting->value = $value['value'];
-            $setting->save();
+                $setting->value = $value;
+                $setting->save();
+            
         }
+        foreach ($files as $key => $value) {   
+            if ($request->hasFile($value) && $request->file($value)->isValid()) {
+                $setting = Setting::where('key', $value)->first();
+                $get_file = $request->file($value)->storeAs('settings', $request->file($value)->getClientOriginalName());
+                $setting->value = $get_file;
+                $setting->save();
+            }
+        }
+
+        return response()->json(["message" => "Successfully added!"], 201);
+
     }
-}
 
 }

@@ -12,6 +12,7 @@ use Modules\Projects\Models\District;
 use Modules\Projects\Models\Gozar;
 use Modules\Projects\Http\Requests\TicketRequest;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Gate;
 
 class TicketController
 {
@@ -76,6 +77,7 @@ class TicketController
     }
 
     public function store(TicketRequest $request) {
+        Gate::authorize('create', Ticket::class);
         $data = $request->validated();
         $ticket = Ticket::create($data);
         return response()->json(['message' => 'Sucessfully added!', 'data' => $ticket], 201);
@@ -99,14 +101,17 @@ class TicketController
     }
 
     public function update(TicketRequest $request, $id) {
-        $data = $request->validated();
         $ticket = Ticket::find($id);
+        Gate::authorize('update', $ticket);
+        $data = $request->validated();
+        
         $ticket->update($data);
         return response()->json(['message' => 'Sucessfully updated!', 'data' => $ticket], 201);
     }
 
     public function destroy($id) {
         $ticket = Ticket::find($id);
+        Gate::authorize('delete', $ticket);
         if (!$ticket) {
             return response()->json(['message' => 'Ticket not found'], 404);
         }

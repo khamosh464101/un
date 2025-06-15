@@ -8,6 +8,7 @@ use Modules\Projects\Models\Subproject;
 use Modules\Projects\Models\District;
 use Modules\Projects\Models\Gozar;
 use Modules\Projects\Http\Requests\SubprojectRequest;
+use Illuminate\Support\Facades\Gate;
 
 class SubprojectController
 {
@@ -48,6 +49,7 @@ class SubprojectController
     }
     
     public function store(SubprojectRequest $request) {
+        Gate::authorize('update', Subproject::class);
         $data = $request->validated();
 
         $subproject = Subproject::create($data);
@@ -56,6 +58,7 @@ class SubprojectController
 
     public function edit($id) {
         $subproject = Subproject::with('districts.province')->with('logs.causer')->find($id);
+
         $subproject->partner;
         $subproject->project;
         $subproject->type;
@@ -65,15 +68,17 @@ class SubprojectController
     }
 
     public function update(SubprojectRequest $request, $id) {
-        $data = $request->validated();
         $subproject = Subproject::find($id);
+        Gate::authorize('update', $subporject);
+        $data = $request->validated();
+        
         $subproject->update($data);
         return response()->json(['message' => 'Sucessfully updated!', 'data' => $subproject], 201);
     }
 
     public function destroy($id) {
-       
         $subporject = Subproject::find($id);
+        Gate::authorize('delete', $subporject);
         if (!$subporject) {
             return response()->json(['message' => 'Subproject not found'], 404);
         }

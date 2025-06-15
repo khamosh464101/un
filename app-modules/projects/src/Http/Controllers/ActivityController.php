@@ -11,6 +11,7 @@ use Modules\Projects\Http\Controllers\ProgramController;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Gate;
 
 class ActivityController
 {
@@ -60,6 +61,7 @@ class ActivityController
     }
 
     public function store(ActivityRequest $request) {
+        Gate::authorize('create', Activity::class);
         $data = Arr::except($request->validated(), ['responsibles_id']);
         $activity = Activity::create($data);
         $activity->responsibles()->syncWithoutDetaching($request->responsibles_id);
@@ -81,8 +83,10 @@ class ActivityController
     }
 
     public function update(ActivityRequest $request, $id) {
-        $data = Arr::except($request->validated(), ['responsibles_id']);
         $activity = Activity::find($id);
+        Gate::authorize('update', $activity);
+        $data = Arr::except($request->validated(), ['responsibles_id']);
+        
         $activity->update($data);
         $activity->responsibles()->detach();
         $activity->responsibles()->attach($request->responsibles_id);
@@ -94,6 +98,7 @@ class ActivityController
 
     public function destroy($id) {
         $activity = Activity::find($id);
+        Gate::authorize('delete', $activity);
         if (!$activity) {
             return response()->json(['message' => 'Activity not found'], 404);
         }

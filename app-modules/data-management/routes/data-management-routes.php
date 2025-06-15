@@ -8,15 +8,15 @@ Route::get('/data-management/get-form', [SubmissionController::class, 'getForm']
 Route::get('/data-management/get-sumbission', [SyncKoboController::class, 'getSubmission']);
 Route::get('/data-managements', [SyncKoboController::class, 'listForms'])->name('data-managements.index');
 Route::get('/data-managements/add-form-to-db', [SyncKoboController::class, 'addFormToDb']);
-Route::post('/data-managements/submissions/index', [SubmissionController::class, 'index']);
-Route::post('/data-managements/submissions/store', [SubmissionController::class, 'store']);
-Route::post('/data-managements/submissions/add-as-beneficiary', [SubmissionController::class, 'addAsBeneficairy']);
-Route::post('/data-managements/submissions/remove-as-beneficiary', [SubmissionController::class, 'removeAsBeneficairy']);
-Route::post('/data-managements/submissions/download-excel', [SubmissionController::class, 'downloadExcel']);
-Route::post('/data-managements/submissions/import-excel', [SubmissionController::class, 'importExcel']);
-Route::post('/data-managements/submissions/move-to-archive', [SubmissionController::class, 'moveToArchive']);
-Route::get('/data-managements/submissions/{id}/download-profile', [SubmissionController::class, 'downloadProfile']);
-Route::delete('/data-managements/submissions/{id}', [SubmissionController::class, 'destroy']);
+Route::post('/data-managements/submissions/index', [SubmissionController::class, 'index'])->middleware(['can:profile view']);
+Route::post('/data-managements/submissions/store', [SubmissionController::class, 'store'])->middleware(['can:profile create']);
+Route::post('/data-managements/submissions/add-as-beneficiary', [SubmissionController::class, 'addAsBeneficairy'])->middleware(['can:add profile as beneficiary']);
+Route::post('/data-managements/submissions/remove-as-beneficiary', [SubmissionController::class, 'removeAsBeneficairy'])->middleware(['can:remove profile as beneficairy']);
+Route::post('/data-managements/submissions/download-excel', [SubmissionController::class, 'downloadExcel'])->middleware(['can:download excel']);
+Route::post('/data-managements/submissions/import-excel', [SubmissionController::class, 'importExcel'])->middleware(['can:import excel']);
+Route::post('/data-managements/submissions/move-to-archive', [SubmissionController::class, 'moveToArchive'])->middleware(['can:move profile to archive']);
+Route::get('/data-managements/submissions/{id}/download-profile', [SubmissionController::class, 'downloadProfile'])->middleware(['can:download profile']);
+Route::delete('/data-managements/submissions/{id}', [SubmissionController::class, 'destroy'])->middleware(['can:profile delete']);
 
 
 

@@ -5,6 +5,7 @@ namespace Modules\Projects\Http\Controllers;
 use Illuminate\Http\Request;
 use Modules\Projects\Models\Partner;
 use Modules\Projects\Http\Requests\PartnerRequest;
+use Illuminate\Support\Facades\Gate;
 
 class PartnerController
 {
@@ -30,6 +31,7 @@ class PartnerController
     }
 
     public function store(PartnerRequest $request) {
+        Gate::authorize('create', Partner::class);
         $data = $request->validated();
 
         $partner = Partner::create($data);
@@ -44,8 +46,10 @@ class PartnerController
     }
 
     public function update(PartnerRequest $request, $id) {
-        $data = $request->validated();
         $partner = Partner::find($id);
+        Gate::authorize('update', $partner);
+        $data = $request->validated();
+        
         $partner->update($data);
         return response()->json(['message' => 'Sucessfully updated!', 'data' => $partner], 201);
     }
@@ -53,6 +57,7 @@ class PartnerController
     public function destroy($id) {
        
         $partner = Partner::find($id);
+        Gate::authorize('delete', $partner);
         if (!$partner) {
             return response()->json(['message' => 'Partner not found'], 404);
         }

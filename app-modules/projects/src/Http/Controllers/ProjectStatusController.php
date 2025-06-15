@@ -5,6 +5,7 @@ namespace Modules\Projects\Http\Controllers;
 use Illuminate\Http\Request;
 use Modules\Projects\Models\ProjectStatus;
 use Modules\Projects\Http\Requests\ProjectStatusRequest;
+use Illuminate\Support\Facades\Gate;
 
 class ProjectStatusController
 {
@@ -21,6 +22,7 @@ class ProjectStatusController
     }
 
     public function store(ProjectStatusRequest $request) {
+        Gate::authorize('create', ProjectStatus::class);
         $data = $request->validated();
          $status = ProjectStatus::create($data);
         return response()->json(['message' => 'Sucessfully added!', 'data' => $data], 201);
@@ -32,14 +34,17 @@ class ProjectStatusController
     }
 
     public function update(ProjectStatusRequest $request, $id) {
-        $data = $request->safe()->except(['_method']);
         $status = ProjectStatus::find($id);
+        Gate::authorize('update', $status);
+        $data = $request->safe()->except(['_method']);
+        
         $status->update($data);
         return response()->json(['message' => 'Sucessfully updated!', 'data' => $status], 201);
     }
 
     public function destroy($id) {
         $status = ProjectStatus::find($id);
+        Gate::authorize('update', $status);
         if (!$status) {
             return response()->json(['message' => 'Not found'], 404);
         }

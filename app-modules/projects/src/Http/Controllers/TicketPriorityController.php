@@ -5,6 +5,7 @@ namespace Modules\Projects\Http\Controllers;
 use Illuminate\Http\Request;
 use Modules\Projects\Models\TicketPriority;
 use Modules\Projects\Http\Requests\TicketPriorityRequest;
+use Illuminate\Support\Facades\Gate;
 
 class TicketPriorityController
 {
@@ -21,6 +22,7 @@ class TicketPriorityController
     }
 
     public function store(TicketPriorityRequest $request) {
+        Gate::authorize('create', TicketPriority::class);
         $data = $request->validated();
          $status = TicketPriority::create($data);
         return response()->json(['message' => 'Sucessfully added!', 'data' => $data], 201);
@@ -32,14 +34,17 @@ class TicketPriorityController
     }
 
     public function update(TicketPriorityRequest $request, $id) {
-        $data = $request->safe()->except(['_method']);
         $status = TicketPriority::find($id);
+        Gate::authorize('update', $status);
+        $data = $request->safe()->except(['_method']);
+        
         $status->update($data);
         return response()->json(['message' => 'Sucessfully updated!', 'data' => $status], 201);
     }
 
     public function destroy($id) {
         $status = TicketPriority::find($id);
+        Gate::authorize('delete', $status);
         if (!$status) {
             return response()->json(['message' => 'Not found'], 404);
         }

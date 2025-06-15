@@ -7,6 +7,7 @@ use Modules\Projects\Http\Requests\GozarRequest;
 use Modules\Projects\Models\Gozar;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Gate;
 
 class GozarController
 {
@@ -36,6 +37,7 @@ class GozarController
         return response()->json($gozars, 201);
     }
     public function store(GozarRequest $request) {
+        Gate::authorize('create', Gozar::class);
         $data = $request->validated();
         $gozar = Gozar::create($data);
         return response()->json(['message' => 'Sucessfully added!', 'data' => $gozar], 201);
@@ -49,14 +51,16 @@ class GozarController
     }
 
     public function update(GozarRequest $request, $id) {
-        $data = $request->validated();
         $gozar = Gozar::find($id);
+        Gate::authorize('update', $gozar);
+        $data = $request->validated();
         $gozar->update($data);
         return response()->json(['message' => 'Sucessfully updated!', 'data' => $gozar], 201);
     }
 
     public function destroy($id) {
         $gozar = Gozar::find($id);
+        Gate::authorize('delete', $gozar);
         if (!$gozar) {
             return response()->json(['message' => 'Gozar not found'], 404);
         }

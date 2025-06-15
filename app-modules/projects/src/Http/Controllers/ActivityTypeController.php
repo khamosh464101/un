@@ -5,6 +5,7 @@ namespace Modules\Projects\Http\Controllers;
 use Illuminate\Http\Request;
 use Modules\Projects\Models\ActivityType;
 use Modules\Projects\Http\Requests\ActivityTypeRequest;
+use Illuminate\Support\Facades\Gate;
 
 class ActivityTypeController
 {
@@ -21,6 +22,7 @@ class ActivityTypeController
     }
 
     public function store(ActivityTypeRequest $request) {
+        Gate::authorize('create', ActivityType::class);
         $data = $request->validated();
          $type = ActivityType::create($data);
         return response()->json(['message' => 'Sucessfully added!', 'data' => $type], 201);
@@ -32,14 +34,17 @@ class ActivityTypeController
     }
 
     public function update(ActivityTypeRequest $request, $id) {
-        $data = $request->safe()->except(['_method']);
         $status = ActivityType::find($id);
+        Gate::authorize('update', $status);
+        $data = $request->safe()->except(['_method']);
+        
         $status->update($data);
         return response()->json(['message' => 'Sucessfully updated!', 'data' => $status], 201);
     }
 
     public function destroy($id) {
         $status = ActivityType::find($id);
+        Gate::authorize('delete', $status);
         if (!$status) {
             return response()->json(['message' => 'Not found'], 404);
         }

@@ -4,6 +4,7 @@ namespace Modules\Projects\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Modules\Projects\Models\TicketComment;
+use Illuminate\Support\Facades\Gate;
 
 use Auth;
 class TicketCommentController
