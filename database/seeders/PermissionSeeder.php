@@ -16,7 +16,7 @@ class PermissionSeeder extends Seeder
     public function run(): void
     {
         $permissions = [
-            ['name' => 'view settings'],
+            
             ['name' => 'view dashboard'],
             [ 'name' => 'view role'],
             [ 'name' => 'create role'],
@@ -24,6 +24,8 @@ class PermissionSeeder extends Seeder
             [ 'name' => 'delete role'],
             [ 'name' => 'location view'],
             [ 'name' => 'location create'],
+            ['name' => 'view setting'],
+            ['name' => 'manage backup'],
 
             [ 'name' => 'location update'],
             [ 'name' => 'location delete'],

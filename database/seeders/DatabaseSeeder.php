@@ -30,31 +30,31 @@ class DatabaseSeeder extends Seeder
 
         $this->call([SettingSeeder::class]);
 
-    //     $this->call([ProvinceSeeder::class]);
-    //     $this->call([ProjectStatusSeeder::class]);
-    //     $this->call([ActivityStatusSeeder::class]);
-    //     $this->call([ActivityTypeSeeder::class]);
-    //     $this->call([StaffStatusSeeder::class]);
-    //     $this->call([TicketStatusSeeder::class]);
-    //     $this->call([TicketPrioritySeeder::class]);
-    //    $staff = Staff::create(
-    //         [
-    //             'name' => 'Azim Khamosh',
-    //             'position_title' => 'Defult',
-    //             'official_email' => 'azim@momtaz.af',
-    //             'photo' => 'project-management/staff/photo/azim-khamosh-2025-03-09-16-52-22-149.jpg',
-    //             'phone1' => '+93704499000',
-    //             'duty_station' => 'Kabul',
-    //             'staff_status_id' => 1
-    //         ]
-    //         );
-    //     User::factory()->create([
-    //         'name' => $staff->name,
-    //         'email' => $staff->official_email,
-    //         'phone' => $staff->phone1,
-    //         'password' => bcrypt('azim12azim'),
-    //         'staff_id' => $staff->id,
-    //     ]);
-    //     $this->call([PermissionSeeder::class]);
+        $this->call([ProvinceSeeder::class]);
+        $this->call([ProjectStatusSeeder::class]);
+        $this->call([ActivityStatusSeeder::class]);
+        $this->call([ActivityTypeSeeder::class]);
+        $this->call([StaffStatusSeeder::class]);
+        $this->call([TicketStatusSeeder::class]);
+        $this->call([TicketPrioritySeeder::class]);
+       $staff = Staff::create(
+            [
+                'name' => 'Azim Khamosh',
+                'position_title' => 'Defult',
+                'official_email' => 'azim@momtaz.af',
+                'photo' => 'project-management/staff/photo/azim-khamosh-2025-03-09-16-52-22-149.jpg',
+                'phone1' => '+93704499000',
+                'duty_station' => 'Kabul',
+                'staff_status_id' => 1
+            ]
+            );
+        User::factory()->create([
+            'name' => $staff->name,
+            'email' => $staff->official_email,
+            'phone' => $staff->phone1,
+            'password' => bcrypt('azim12azim'),
+            'staff_id' => $staff->id,
+        ]);
+        $this->call([PermissionSeeder::class]);
     }
 }

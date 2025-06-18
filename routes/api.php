@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\PermissionController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\NotificationController;
+use App\Http\Controllers\Api\BackupController;
 use App\Http\Controllers\SettingController;
 
 Route::middleware(['auth:sanctum', 'twofactor'])->group(function () {
@@ -19,8 +20,15 @@ Route::middleware(['auth:sanctum', 'twofactor'])->group(function () {
     Route::post('/notifications', [NotificationController::class, 'index']);
     Route::get('/notifications/mark-as-read/{id}/{type}', [NotificationController::class, 'markAsRead']);
     Route::get('/notifications/unread', [NotificationController::class, 'getUnread']);
-    Route::get('/settings', [SettingController::class, 'index']);
-    Route::post('/settings/store', [SettingController::class, 'store']);
+    Route::get('/settings', [SettingController::class, 'index'])->middleware('can:view setting');
+    Route::post('/settings/store', [SettingController::class, 'store'])->middleware('can:view setting');
+    Route::get('/backup', [BackupController::class, 'backup'])->middleware('can:manage backup');
+    Route::get('/backups', [BackupController::class, 'listBackups'])->middleware('can:manage backup');
+    Route::post('/uplaod-backup', [BackupController::class, 'uploadBackup'])->middleware('can:manage backup');
+    Route::get('/backups/download/{filename}', [BackupController::class, 'download'])->middleware('can:manage backup');
+    Route::post('/restore-backup', [BackupController::class, 'restoreBackup'])->middleware('can:manage backup');
+    Route::post('/delete-backup', [BackupController::class, 'deleteBackup'])->middleware('can:manage backup');
+    
 });
 
 Route::middleware(['auth:sanctum'])->group(function () {

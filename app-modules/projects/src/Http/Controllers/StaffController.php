@@ -30,7 +30,11 @@ class StaffController
         $sortBy = $request->sortBy;
         $field = ($sortBy == 'Oldest' || $sortBy == 'Newest') ? 'id' : 'name';
         $sortType = ($sortBy == 'Z - A' || $sortBy == 'Newest') ? 'DESC' : 'ASC';
-        $staffs = Staff::with('status')->withCount('projects')->when($search, function($query) use ($search) {
+        $staffs = Staff::with('status')->withCount([
+            'activities as projects_count' => function ($query) {
+                $query->join('projects', 'projects.id', '=', 'activities.project_id');
+            }
+        ])->when($search, function($query) use ($search) {
             $query->where('name', 'like', '%'.$search.'%');
         })->orderBy($field, $sortType)->paginate(8);
         return response()->json($staffs, 201);
@@ -52,7 +56,11 @@ class StaffController
     }
 
     public function edit($id) {
-        $staff = Staff::with('logs.causer')->withCount('projects')->withCount('tickets')->find($id);
+        $staff = Staff::with('logs.causer')->withCount([
+            'activities as projects_count' => function ($query) {
+                $query->join('projects', 'projects.id', '=', 'activities.project_id');
+            }
+        ])->withCount('tickets')->find($id);
         $staff->status;
         $staff->contractType;
         if ($staff->user) {

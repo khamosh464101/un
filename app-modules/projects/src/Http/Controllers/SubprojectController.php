@@ -49,7 +49,7 @@ class SubprojectController
     }
     
     public function store(SubprojectRequest $request) {
-        Gate::authorize('update', Subproject::class);
+        Gate::authorize('create', Subproject::class);
         $data = $request->validated();
 
         $subproject = Subproject::create($data);
@@ -69,7 +69,7 @@ class SubprojectController
 
     public function update(SubprojectRequest $request, $id) {
         $subproject = Subproject::find($id);
-        Gate::authorize('update', $subporject);
+        Gate::authorize('update', $subproject);
         $data = $request->validated();
         
         $subproject->update($data);

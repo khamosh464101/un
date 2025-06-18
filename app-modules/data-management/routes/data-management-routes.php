@@ -3,6 +3,7 @@
 // use Modules\DataManagement\Http\Controllers\DataManagementController;
 use Modules\DataManagement\Http\Controllers\SyncKoboController;
 use Modules\DataManagement\Http\Controllers\SubmissionController;
+use Modules\DataManagement\Http\Controllers\ExcelController;
 
 Route::get('/data-management/get-form', [SubmissionController::class, 'getForm']);
 Route::get('/data-management/get-sumbission', [SyncKoboController::class, 'getSubmission']);
@@ -17,6 +18,12 @@ Route::post('/data-managements/submissions/import-excel', [SubmissionController:
 Route::post('/data-managements/submissions/move-to-archive', [SubmissionController::class, 'moveToArchive'])->middleware(['can:move profile to archive']);
 Route::get('/data-managements/submissions/{id}/download-profile', [SubmissionController::class, 'downloadProfile'])->middleware(['can:download profile']);
 Route::delete('/data-managements/submissions/{id}', [SubmissionController::class, 'destroy'])->middleware(['can:profile delete']);
+
+Route::get('/data-managements/excels', [ExcelController::class, 'list']); //->middleware('can:manage excel')
+Route::post('/data-managements/uplaod-excel', [ExcelController::class, 'uploadFile']); //->middleware('can:manage excel');
+Route::get('/data-managements/excels/download/{filename}', [ExcelController::class, 'download']); //->middleware('can:manage excel');
+Route::post('/data-managements/insert-excel', [ExcelController::class, 'insert']); //->middleware('can:manage excel');
+Route::post('/data-managements/delete-excel', [ExcelController::class, 'delete']); //->middleware('can:manage excel');
 
 
 

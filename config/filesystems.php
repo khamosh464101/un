@@ -37,6 +37,16 @@ return [
             'throw' => false,
             'report' => false,
         ],
+        'backups' => [
+            'driver' => 'local',
+            'root' => storage_path('app/private/UN-Habitat-MIS'),
+        ],
+
+        'excel' => [
+            'driver' => 'local',
+            'root' => storage_path('app/private/excel'),
+        ],
+    
 
         'public' => [
             'driver' => 'local',

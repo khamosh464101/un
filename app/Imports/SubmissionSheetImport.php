@@ -41,12 +41,21 @@ use PhpOffice\PhpSpreadsheet\Shared\Date;
 use Illuminate\Support\Str;
 use Modules\DataManagement\Services\KoboService;
 use Modules\DataManagement\Services\KoboSubmissionParser;
+use Maatwebsite\Excel\Concerns\WithStartRow;
 
 // ✅ Disable header formatting (keep labels exactly as in Excel)
 HeadingRowFormatter::default('none');
 
-class SubmissionSheetImport implements ToModel, WithHeadingRow, WithChunkReading, WithLimit
+class SubmissionSheetImport implements ToModel, WithStartRow, WithHeadingRow, WithChunkReading, WithLimit
 {
+    protected $startRow;
+    protected $limit;
+
+    public function __construct($startRow, $limit)
+    {
+        $this->startRow = $startRow;
+        $this->limit = $limit;
+    }
     
     private const DATES = [
         'today', 
@@ -67,15 +76,17 @@ class SubmissionSheetImport implements ToModel, WithHeadingRow, WithChunkReading
         'access_road_photo'
     ];
 
-    public function startRow(): int
-    {
-        return 31; // Start from row 31 (skips first 30 rows)
-    }
+    
 
 
     
     public function model(array $row)
     {
+        logger()->info('test'.$this->startRow.$this->limit);
+        if (Submission::where('_id', $row['_id'])->exists()) {
+            logger()->info($row['_id']);
+            return null; // ❌ Don't import this row
+        }logger()->info($row['_id'].'end');
         // try {
             $row['1.7 Block Code Number'] = str_pad($row['1.7 Block Code Number'], 3, "0", STR_PAD_LEFT);
             $row['1.6 Guzar Code Number'] = str_pad($row['1.6 Guzar Code Number'], 3, "0", STR_PAD_LEFT);
@@ -521,6 +532,11 @@ class SubmissionSheetImport implements ToModel, WithHeadingRow, WithChunkReading
         // }
     }
 
+    public function startRow(): int
+    {
+        return $this->startRow ?? 1; // Start from row 31 (skips first 30 rows)
+    }
+
     public function chunkSize(): int
     {
         return 1;
@@ -528,7 +544,7 @@ class SubmissionSheetImport implements ToModel, WithHeadingRow, WithChunkReading
 
     public function limit(): int
     {
-        return 5;
+        return $this->limit ?? 10;
     }
 
     private function getDate($date): Carbon
