@@ -25,7 +25,7 @@ class LandOwnershipDocument extends Model
     public bool $returnRawPhoto = false;
     public function getHouseDocumentPhotoAttribute($value)
     {
-        if ($returnRawPhoto) {
+        if ($this->returnRawPhoto) {
             return $value;
         }
         return $value ? asset("storage/kobo-attachments/$value") : asset('import/assets/post-pic-dummy.png');

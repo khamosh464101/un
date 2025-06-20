@@ -48,43 +48,54 @@
 <!-- Horizontal Logo Row for mPDF (No Borders, Larger Logos) -->
 <table style="width: 100%; text-align: center; border: none;  direction: ltr;">
     <tr>
-        <td style="width: 33.33%; text-align: left; border: none;">
+
+    <td style="width: 80%; text-align: center; border: none;">
+        <div style="margin-bottom: 20px;">
             @php
                 $logo_left = 'logos/ahf_logo.png';
             @endphp
-            <img src="{{ public_path($logo_left) }}" alt="لوگو چپ" style="max-width: 140px; max-height: 140px;">
-        </td>
-        <td style="width: 33.33%; text-align: center; border: none;">
+            <img src="{{ public_path($logo_left) }}" alt="لوگو چپ" style="max-width: 170px; max-height: 170px; display: inline-block; margin-bottom: 10px; ">
+
             @php
                 $logo_center = 'logos/hlp_logo.jpg';
             @endphp
-            <img src="{{ public_path($logo_center) }}" alt="لوگو مرکز" style="max-width: 160px; max-height: 160px;">
-            <h3>Property Information</h3>
-            <h3>معلومات ملکیت</h3>
-        </td>
-        <td style="width: 33.33%; text-align: right; border: none;">
+            <img src="{{ public_path($logo_center) }}" alt="لوگو مرکز" style="max-width: 130px; max-height: 130px; display: inline-block; margin-left: 20px; margin-right: 30px;">
+
             @php
                 $logo_right = 'logos/habitat.png';
             @endphp
-            <img src="{{ public_path($logo_right) }}" alt="لوگو راست" style="max-width: 140px; max-height: 140px;">
-        </td>
+            <img src="{{ public_path($logo_right) }}" alt="لوگو راست" style="max-width: 50px; max-height: 50px; display: inline-block; margin-bottom: 10px;">
+        </div>
+
+        <h3 style="margin-top: 40px; display: block;">Property Information <span style="color:#00BFFF; font-size:bold;">|</span> معلومات ملکیت</h3>
+    </td>
+
+    
     </tr>
 </table>
 
 
 
 
-<p>کود نمبر / Code Number:</p>
+<table style="width: 100%; border: none; font-weight: 700;">
+    <tr>
+        <td style="text-align: right; border:none;">کود نمبر:</td>
+        <td style="text-align: left; border:none;direction: ltr">
+        <strong style="direction: ltr; unicode-bidi: embed;">Issue year: 2024</strong>
+        <br>
+        Code Number:</td>
+    </tr>
+</table>
 
 <!-- Location Table -->
 <table>
     <tr>
-        <td>پارسل/Parcel</td>
-        <td>بلاک/Block</td>
-        <td>گذر/Gozar</td>
-        <td>ناحیه/District</td>
-        <td>شهر/City</td>
-        <td>ولایت/Province</td>
+        <td>قطعه زمین-Parcel</td>
+        <td>بلاک-Block</td>
+        <td>گذر-Gozar</td>
+        <td>ناحیه-District</td>
+        <td>شهر-City</td>
+        <td>ولایت-Province</td>
     </tr>
     <tr>
         <td>{{ $location['house'] ?? '' }}</td>
@@ -101,9 +112,16 @@
 <!-- Displacement & Interviewee Info -->
 <table>
     <tr>
-        <td style="width:33%;">نام باشنده/Name of Occupier</td>
-        <td style="width:33%;">{{ $submission->headFamily ? $submission->headFamily->hoh_name : $submission->interviewwee->inter_name }}</td>
-        <td style="width:33%;" rowspan="4" class="center">
+        <td style="width: 42%;">
+            <table style="width: 100%; border: none; padding:0;">
+                <tr style="padding:0">
+                    <td style="text-align: right; direction: rtl; unicode-bidi: embed; width: 40%; border:none; padding:0;">نام باشنده</td>
+                    <td style="text-align: left; direction: ltr; unicode-bidi: embed; width: 60%; border:none; padding:0;">Name of occupier</td>
+                </tr>
+            </table>
+        </td>
+        <td style="width:30%;">{{ $submission->headFamily ? $submission->headFamily->hoh_name : $submission->interviewwee->inter_name }}</td>
+        <td style="width:27%;" rowspan="4" class="center">
             @php
                 $path = str_replace('http://127.0.0.1:8000/', '', $submission->photoSection->photo_interviewee);
             @endphp
@@ -111,16 +129,38 @@
         </td>
     </tr>
     <tr>
-        <td>نام پدر باشنده/Father Name of Occupier</td>
+        <td style="width: 42%;">
+            <table style="width: 100%; border: none; padding:0;">
+                <tr style="padding:0">
+                    <td style="text-align: right; direction: rtl; unicode-bidi: embed; width: 40%; border:none; padding:0;">نام پدر باشنده</td>
+                    <td style="text-align: left; direction: ltr; unicode-bidi: embed; width: 60%; border:none; padding:0;">Father name of occupier</td>
+                </tr>
+            </table>
+        </td>
+
         <td>{{ $submission->headFamily ? $submission->headFamily->hoh_father_name : $submission->interviewwee->inter_father_name }}</td>
     </tr>
     <tr>
-    
-        <td>نام پدر کلان باشنده/Grand Father Name</td>
+        
+        <td style="width: 42%;">
+            <table style="width: 100%; border: none; padding:0;">
+                <tr style="padding:0">
+                    <td style="text-align: right; direction: rtl; unicode-bidi: embed; width: 40%; border:none; padding:0;">نام پدرکلان باشنده</td>
+                    <td style="text-align: left; direction: ltr; unicode-bidi: embed; width: 60%; border:none; padding:0;">Grandfather's name of occupier</td>
+                </tr>
+            </table>
+        </td>
         <td>{{ $submission->headFamily ? $submission->headFamily->hoh_grandfather_name : $submission->interviewwee->inter_grandfather_name }}</td>
     </tr>
     <tr>
-        <td>تذکره نمبر/ID Number</td>
+        <td style="width: 42%;">
+            <table style="width: 100%; border: none; padding:0;">
+                <tr style="padding:0">
+                    <td style="text-align: right; direction: rtl; unicode-bidi: embed; width: 40%; border:none; padding:0;">تذکره نمبر</td>
+                    <td style="text-align: left; direction: ltr; unicode-bidi: embed; width: 60%; border:none; padding:0;">ID number</td>
+                </tr>
+            </table>
+        </td>
         <td>{{ $submission->headFamily ? $submission->headFamily->hoh_nic_number : $submission->interviewwee->inter_nic_number }}</td>
     </tr>
 
@@ -130,28 +170,111 @@
 
 <table>
     <tr>
-        <td>سکونت اصلی/Province of Origin</td>
+        <td>
+            <table style="width: 100%; border: none; padding:none;">
+                <tr style="padding:none;">
+                    <td style="text-align: right; direction: rtl; border:none; padding:none;">سکونت اصلی</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left; direction: ltr; unicode-bidi: embed; border: none; padding:none;">Province of origin</td>
+                </tr>
+            </table>
+        </td>
         <td>{{ $location['province_origin'] ?? '' }}, {{ $location['district_origin'] ?? '' }}</td>
-        <td>نوعیت مالکیت/Type of Occupancy</td>
+        <td>
+            <table style="width: 100%; border: none; padding:none;">
+                <tr style="padding:none;">
+                    <td style="text-align: right; direction: rtl; border:none; padding:none;">نوعیت ملکیت</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left; direction: ltr; unicode-bidi: embed; border: none; padding:none;">Type of occupancy</td>
+                </tr>
+            </table>
+        </td>
+
         <td>{{ $location['house_owner'] ?? '' }}</td>
        
     </tr>
     <tr>
-        <td> وضعیت بی جاه شدگی/Displacement Status</td>
+        <td>
+            <table style="width: 100%; border: none; padding:none;">
+                <tr style="padding:none;">
+                    <td style="text-align: right; direction: rtl; border:none; padding:none;">وضعیت بیجاه شدگی</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left; direction: ltr; unicode-bidi: embed; border: none; padding:none;">Displacement status</td>
+                </tr>
+            </table>
+        </td>
+
         <td>{{ $location['status'] ?? '' }}</td>
-        <td>نوعیت سنت دست داشته/ Land document type</td>
+        <td>
+            <table style="width: 100%; border: none; padding:none;">
+                <tr style="padding:none;">
+                    <td style="text-align: right; direction: rtl; border:none; padding:none;">اسناد زمین</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left; direction: ltr; unicode-bidi: embed; border: none; padding:none;">Land document</td>
+                </tr>
+            </table>
+        </td>
+        @if(array_key_exists('ownership_type', $location) &&$location['ownership_type'] === 'سند تصدی مرسوم [ فروشنده ملک، رسید فروش، ارث و غیره]')
+            @php
+                $location['ownership_type'] = 'سند تصدی مرسوم';
+            @endphp
+        @endif
         <td>{{ $location['ownership_type'] ?? '' }}</td>
     </tr>
     <tr>
-        <td> مدت بیجاه شدگی/Displacement Duration</td>
+    <td>
+            <table style="width: 100%; border: none; padding:none;">
+                <tr style="padding:none;">
+                    <td style="text-align: right; direction: rtl; border:none; padding:none;">مدت بیجاه شدگی</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left; direction: ltr; unicode-bidi: embed; border: none; padding:none;">Displacement duration</td>
+                </tr>
+            </table>
+        </td>
+
         <td>{{ $location['year'] ?? '' }}</td>
-        <td>مدت اقامت/Duration of Occupation</td>
+        <td>
+            <table style="width: 100%; border: none; padding:none;">
+                <tr style="padding:none;">
+                    <td style="text-align: right; direction: rtl; border:none; padding:none;">مدت اقامت</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left; direction: ltr; unicode-bidi: embed; border: none; padding:none;">Duration of occupation</td>
+                </tr>
+            </table>
+        </td>
+
         <td>{{ $location['duration_lived_thishouse'] ?? '' }}</td>
     </tr>
     <tr>
-    <td > مختصات ملکیت/GPS Coordinate</td>
-    <td > Lat: {{ $submission->photoSection->latitude }}<br>Lon: {{ $submission->photoSection->longitude }}</td>
-    <td>شماره تماس / Phone Number</td>
+    <td>
+            <table style="width: 100%; border: none; padding:none;">
+                <tr style="padding:none;">
+                    <td style="text-align: right; direction: rtl; border:none; padding:none;">مختصات ملکیت</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left; direction: ltr; unicode-bidi: embed; border: none; padding:none;">GPS coordinate</td>
+                </tr>
+            </table>
+        </td>
+
+        <td > Lat: {{ $submission->photoSection->latitude }}<br>Lon: {{ $submission->photoSection->longitude }}</td>
+        <td>
+            <table style="width: 100%; border: none; padding:none;">
+                <tr style="padding:none;">
+                    <td style="text-align: right; direction: rtl; border:none; padding:none;">شماره تماس</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left; direction: ltr; unicode-bidi: embed; border: none; padding:none;">Phone number</td>
+                </tr>
+            </table>
+        </td>
+
         <td>{{ $submission->headFamily ? $submission->headFamily->hoh_phone_number : $submission->interviewwee->inter_phone_number }}</td>
     </tr>
 </table>
@@ -163,24 +286,66 @@
 <!-- Property Images -->
 <table>
     <tr>
-        <td class="center">عکس فضای ملکیت / Spatial Photo</td>
-        <td class="center">عکس ملکیت / Property Photo</td>
+    
+    
+        <td class="center">
+            <table style="width: 100%; border: none; padding:0; font-size: 16px;">
+                <tr style="padding:0">
+                    <td style="text-align: right; direction: rtl; unicode-bidi: embed; width: 40%; border:none; padding:0;">عکس سند ملکیت</td>
+                    <td style="text-align: left; direction: ltr; unicode-bidi: embed; width: 60%; border:none; padding:0;">Land document</td>
+                </tr>
+            </table>
+        </td>
+        <td class="center">
+            <table style="width: 100%; border: none; padding:0; font-size: 16px;">
+            <tr style="padding:0">
+                <td style="text-align: right; direction: rtl; unicode-bidi: embed; width: 40%; border:none; padding:0;">عکس فضای ملکیت</td>
+                <td style="text-align: left; direction: ltr; unicode-bidi: embed; width: 60%; border:none; padding:0;">Spatial photo</td>
+            </tr>
+        </table>
+        </td>
+        <td class="center">
+            <table style="width: 100%; border: none; padding:0; font-size: 16px;">
+                <tr style="padding:0">
+                    <td style="text-align: right; direction: rtl; unicode-bidi: embed; width: 40%; border:none; padding:0;">عکس ملکیت</td>
+                    <td style="text-align: left; direction: ltr; unicode-bidi: embed; width: 60%; border:none; padding:0;">Property photo</td>
+                </tr>
+            </table>
+        </td>
     </tr>
     <tr>
-        <td style="height:200px;" class="center">
+        <td style="height:250px; " class="center">
+            @php
+            $document = str_replace('http://127.0.0.1:8000/', '', $submission->houseLandOwnership?->landOwnershipDocument?->first()?->house_document_photo);
+            @endphp
+            <img src="{{ public_path($document) }}" alt="تصویر" style="max-width:100%; max-height:250px;">
+        </td>
+        <td style="height:250px;" class="center">
             @php
                 $map = str_replace('http://127.0.0.1:8000/', '', $location['map_image']);
             @endphp
-            <img src="{{ public_path($map) }}" alt="تصویر" style="max-width:100%; max-height:200px;">
+            <img src="{{ public_path($map) }}" alt="تصویر" style="max-width:100%; max-height:250px;">
         </td>
-        <td style="height:200px;" class="center">
+        <td style="height:250px;" class="center">
             @php
                 $house = str_replace('http://127.0.0.1:8000/', '', $submission->photoSection->photo_house_building);
             @endphp
-            <img src="{{ public_path($house) }}" alt="تصویر" style="max-width:100%; max-height:200px;">
+            <img src="{{ public_path($house) }}" alt="تصویر" style="max-width:100%; max-height:250px;">
         </td>
     </tr>
+    <tr>
+        <td colspan="3" style="text-align: left; direction: ltr; unicode-bidi: embed; border: none; padding:none; font-size: 16px;">Note: This guidance note is not an official and/or legal document but provides information and analysis collected by UN-Habitat
+on housing and land characteristics. For further information or to update the information please contact UN-Habitat. 
+    </br>Email:
+<span style="color:#00BFFF;">info.unhafg@un.org</span></td>
+    </tr>
+    <tr><td colspan="3" style="text-align: right; direction: rtl; border:none; padding-top: 30px; font-size: 16px;">
+    یادداشت:
+این ورق یک سند رسمی و یا حقوقی نمی باشد، بلکه مجموعه معلومات و تحلیل هایی است که از طرف دفتر اسکان بشر ملل متحد در رابطه به خصوصیات مسکن و زمین جمع
+آوری گردیده است. برای دریافت معلومات بیشتر در مورد این ورق لطفآ با دفتر اسکان بشر ملل متحد تماس بیگیرید . ایمیل ادرس : <span style="color:#00BFFF;">info.unhafg@un.org</span>
+    </td></tr>
 </table>
+
 
 </body>
 </html>
