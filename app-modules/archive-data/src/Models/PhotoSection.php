@@ -35,8 +35,7 @@ class PhotoSection extends Model
         if ($this->returnRawPhoto) {
             return $value;
         }
-        $tmpName = $this->submission->_id . '-' . $value;
-        return $value ? asset("storage/kobo-attachments/$tmpName") : asset('import/assets/post-pic-dummy.png');
+        return $value ? asset("storage/kobo-attachments/$value") : asset('import/assets/post-pic-dummy.png');
     }
 
     public function getPhotoHouseBuildingAttribute($value)
@@ -44,8 +43,7 @@ class PhotoSection extends Model
         if ($this->returnRawPhoto) {
             return $value;
         }
-        $tmpName = $this->submission->_id . '-' . $value;
-        return $value ? asset("storage/kobo-attachments/$tmpName") : asset('import/assets/post-pic-dummy.png');
+        return $value ? asset("storage/kobo-attachments/$value") : asset('import/assets/post-pic-dummy.png');
     }
 
     public function getPhotoHouseDoorAttribute($value)
@@ -53,8 +51,7 @@ class PhotoSection extends Model
         if ($this->returnRawPhoto) {
             return $value;
         }
-        $tmpName = $this->submission->_id . '-' . $value;
-        return $value ? asset("storage/kobo-attachments/$tmpName") : asset('import/assets/post-pic-dummy.png');
+        return $value ? asset("storage/kobo-attachments/$value") : asset('import/assets/post-pic-dummy.png');
     }
 
     public function getPhotoEnovirmentAttribute($value)
@@ -62,8 +59,7 @@ class PhotoSection extends Model
         if ($this->returnRawPhoto) {
             return $value;
         }
-        $tmpName = $this->submission->_id . '-' . $value;
-        return $value ? asset("storage/kobo-attachments/$tmpName") : asset('import/assets/post-pic-dummy.png');
+        return $value ? asset("storage/kobo-attachments/$value") : asset('import/assets/post-pic-dummy.png');
     }
 
     public function getPhotoOtherAttribute($value)
@@ -71,8 +67,7 @@ class PhotoSection extends Model
         if ($this->returnRawPhoto) {
             return $value;
         }
-        $tmpName = $this->submission->_id . '-' . $value;
-        return $value ? asset("storage/kobo-attachments/$tmpName") : asset('import/assets/post-pic-dummy.png');
+        return $value ? asset("storage/kobo-attachments/$value") : asset('import/assets/post-pic-dummy.png');
     }
 
 
@@ -144,17 +139,14 @@ class PhotoSection extends Model
     //     return $value ? asset("storage/kobo-attachments/$tmpName") : asset('import/assets/post-pic-dummy.png');
     // }
 
-    public function getPhotoIntervieweeAttribute($value)
+     public function getPhotoIntervieweeAttribute($value)
     {
         // 1. Handle missing value
         if (!$value) {
             return asset('import/assets/post-pic-dummy.png');
         }
-
-        // 2. Determine file paths
-        $filename = $this->submission->_id . '-' . $value;
-        $originalPath = storage_path("app/public/kobo-attachments/$filename");
-        $publicStoragePath = "storage/kobo-attachments/$filename"; // Path for asset()
+        $originalPath = storage_path("app/public/kobo-attachments/$value");
+        $publicStoragePath = "storage/kobo-attachments/$value"; // Path for asset()
 
         // 3. Check if original file exists
         if (!file_exists($originalPath)) {

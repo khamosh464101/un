@@ -50,7 +50,6 @@ class SubmissionController
                 $q->where('projects.id', $request->project_id);
             });
         }
-
         foreach ($request->search as $key => $field) {
                 
             if ($field) {
@@ -459,6 +458,7 @@ class SubmissionController
     }
 
     public function importExcel (Request $request) {
+        
         $schema = json_decode(Form::first()->raw_schema);
         $survey = $schema->asset->content->survey;
 

@@ -30,6 +30,7 @@ return new class extends Migration
             $table->string('area_representative_name');
             $table->string('area_representative_phone');
             $table->foreignId('submission_id');
+            $table->timestamps();
         });
     }
 

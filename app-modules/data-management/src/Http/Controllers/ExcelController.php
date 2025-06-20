@@ -57,7 +57,9 @@ class ExcelController
 
     public function insert(Request $request)
     {
+        
         $disk = Storage::disk('excel'); // assumes you configured this disk
+        
 
         if (!$disk->exists($request->filename)) {
             return response()->json(['message' => 'Excel file not found.'], 404);
@@ -83,6 +85,8 @@ class ExcelController
         }
         $startRow = intval($request->startRow);
         $limit = intval($request->limitRow);
+        $path = storage_path('app/private/excel/wochtangi_final.xlsx');
+
         Excel::import(new MultiTableImport($startRow, $limit), $path);
 
         return response()->json(['message' => 'Successfully inserted'], 201);

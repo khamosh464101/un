@@ -6,22 +6,21 @@ class FilterableService
     public function getFilterable(): array
     {
         return [
-        'status',
         'sourceInformation__survey_province',
-        'sourceInformation__district_name',
-        'sourceInformation__surveyors_name',
-        'sourceInformation__nahya_number',
-        'sourceInformation__kbl_guzar_number',
-        'sourceInformation__village_name',
         'sourceInformation__province_code',
         'sourceInformation__city_name',
         'sourceInformation__city_code',
+        'sourceInformation__district_name',
         'sourceInformation__district_code',
+        'sourceInformation__nahya_number',
+        'sourceInformation__kbl_guzar_number',
+        'sourceInformation__village_name',
         'sourceInformation__block_number',
         'sourceInformation__house_number',
+        'status',
+        'sourceInformation__surveyors_name',
         'sourceInformation__area_representative_name',
         'sourceInformation__area_representative_phone',
-
         'familyInformation__number_families',
         'familyInformation__household_size',
         'familyInformation__hoh_disable',

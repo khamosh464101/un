@@ -93,16 +93,43 @@ class SubmissionController
                     $location['nahya'] = $value->label[0];
                 }
             }
+            // if (isset($value->name) && $value->name === $submission->sourceInformation->kbl_guzar_number) {
+            //     if (isset($value->label[0])) {
+            //         $location['guzar'] = $value->label[0];
+            //     }
+            // }
+            if ($submission->sourceInformation->province_code) {
+
+                    $location['province_code'] = $submission->sourceInformation->province_code;
+ 
+            }
+            if ($submission->sourceInformation->city_code) {
+
+                $location['city_code'] = $submission->sourceInformation->city_code;
+            }
+            if ($submission->sourceInformation->district_code) {
+
+                $location['district_code'] = $submission->sourceInformation->district_code;
+            }
+
+            // if ($submission->sourceInformation->kbl_guzar_number) {
+
+            //     $location['guzar'] = $submission->sourceInformation->kbl_guzar_number;
+            // }
+     
             if (isset($value->name) && $value->name === $submission->sourceInformation->kbl_guzar_number) {
                 if (isset($value->label[0])) {
-                    $location['guzar'] = $value->label[0];
+                    $location['guzar'] = substr($value->label[0], 1);
                 }
             }
+
             if (isset($value->name) && $value->name === $submission->sourceInformation->block_number) {
                 if (isset($value->label[0])) {
                     $location['block'] = $value->label[0];
                 }
             }
+
+
             if (isset($value->name) && $value->name === $submission->sourceInformation->house_number) {
                 if (isset($value->label[0])) {
                     $location['house'] = $value->label[0];
@@ -136,22 +163,28 @@ class SubmissionController
                     }
                 }
             } 
-
+            
+            if (isset($value->name) && $value->name === $submission->houseLandOwnership->house_owner) {
+                if (isset($value->label[1])) {
+                    $location['house_owner'] = $value->label[1];
+                }
+            }
             if (isset($value->name) && $value->name === $submission->houseLandOwnership->type_tenure_document) {
                 if (isset($value->label[1])) {
                     $location['ownership_type'] = $value->label[1];
                 }
             }
+            if (isset($value->name) && $value->name === $submission->houseLandOwnership->duration_lived_thishouse) {
+                if (isset($value->label[1])) {
+                    $location['duration_lived_thishouse'] = $value->label[1];
+                }
+            }
 
         }
 
-
-        // return $location;
-        // return view('pdf.template', [
-        //     'submission' => $submission,
-        //     'location' => $location,
-        //     'choices' => $choices,
-        // ]);
+        // return $submission;
+        $map_path = $this->getPath($location);
+        $location['map_image'] = $map_path;
         $html = View::make('pdf.template', [
             'submission' => $submission,
             'location' => $location,
@@ -175,6 +208,7 @@ class SubmissionController
         return $submission;
 
     }
+
 
 
     public function downloadExcel(Request $request) {
@@ -289,6 +323,10 @@ class SubmissionController
             }
         }
         return $value;
+    }
+
+    private function getPath($location) {
+        return 'storage/gis/'.'W_'.$location['province_code'].'-'.$location['city_code'].'-'.$location['district_code'].'-'.$location['guzar'].'-'.$location['block'].'-'.$location['house'].'.jpg';
     }
 
     public function restore(Request $request) {

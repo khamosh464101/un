@@ -18,7 +18,7 @@ class MultiTableImport implements WithMultipleSheets
     }
     public function sheets(): array
     {
-        logger()->info("Error occured: ");
+        logger()->info("Error occured: $this->limit");
         return [
             0 => new SubmissionSheetImport($this->startRow, $this->limit), // Use sheet name instead of index
             // 'Sheet2' => new AnotherSheetImport(),
