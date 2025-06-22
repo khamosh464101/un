@@ -22,7 +22,7 @@ class Subproject extends Model
         'budget',
         'announcement_date',
         'date_of_contract',
-        'number_of_days',
+        'number_of_months',
         'description',
         'partner_id',
         'project_id',

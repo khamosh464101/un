@@ -17,7 +17,7 @@ return new class extends Migration
             $table->decimal('budget', 12, 2);
             $table->date('announcement_date');
             $table->date('date_of_contract')->nullable();
-            $table->integer('number_of_days')->nullable();
+            $table->integer('number_of_months')->nullable();
             $table->text('description')->nullable();
             $table->foreignId('partner_id');
             $table->foreignId('project_id');

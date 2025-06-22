@@ -19,14 +19,24 @@ class ProvinceSeeder extends Seeder
         $dataArray = json_decode($jsonData, true);
 
         foreach($dataArray as $key => $p) {
-           $province = Province::create([
-                'name' => $p['name'],
-                'name_fa' => $p['nameFa'],
-                'name_pa' => $p['namePa'],
-                'latitude' => $p['latitude'],
-                'longitude' => $p['longitude'],
-              
-           ]);
+            $province = Province::where('name', $p['Province_Name'])->first();
+            if (!$province) {
+                $province = Province::create([
+                    'name' => $p['Province_Name'],
+                    'name_fa' => $p['Province_Name_Dari'], 
+               ]);
+            }
+
+            if ($p['District_Type'] === 'District') {
+                $district = District::create([
+                    'name' => $p['District_Name'],
+                    'name_fa' => $p['District_Name_Dari'], 
+                    'is_urban' => true,
+                    'province_id' => $province->id,
+
+               ]);
+            }
+           
         //    foreach ($p['districts'] as $key => $d) {
         //     $district = District::create([
         //         'name' => $d['name'],

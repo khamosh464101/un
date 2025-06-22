@@ -27,7 +27,7 @@ class SubprojectRequest extends FormRequest
             'budget' => ['required', 'numeric' ],
             'announcement_date' => ['required', 'date'],
             'date_of_contract' => ['nullable', 'date'],
-            'number_of_days' => ['required', 'integer'],
+            'number_of_months' => ['required', 'numeric'],
             'description' => ['nullable'],
             'partner_id' => ['required', 'integer'],
             'project_id' => ['required', 'integer'],

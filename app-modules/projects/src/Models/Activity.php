@@ -99,13 +99,17 @@ class Activity extends Model
 
     public function getProgress()
     {
-        $total = 0;
-        $total_logged_hours = 0;
-        foreach ($this->tickets as $key => $value) {
-            $total += $value->estimation;
-            $total_logged_hours += in_array($value->ticket_status_id, [3, 4, 5]) ? $value->estimation : $value->hours->sum('value');
+        // Get all tickets through activities
+        $tickets = $this->tickets()->get();
+        if ($tickets->isEmpty()) {
+            return 0; // Or null if you prefer
         }
-        return ['total_hours' => $total > 0 ? $total : 100, 'total_logged_hours' => $total > 0 ? $total_logged_hours : 0];
+        $totalProgress = $tickets->sum(function ($ticket) {
+            return $ticket->progress_percent ?? 0;
+        });
+        $averageProgress = $totalProgress / $tickets->count();
+
+        return round($averageProgress, 2);
     }
 
     public function getStartsAtAttribute($value) {

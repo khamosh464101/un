@@ -15,9 +15,9 @@ return new class extends Migration
             $table->id();
             $table->string('name')->unique();
             $table->string('name_fa')->unique();
-            $table->string('name_pa')->unique();
-            $table->string('latitude');
-            $table->string('longitude');
+            $table->string('name_pa')->unique()->nullable();
+            $table->string('latitude')->nullabl();
+            $table->string('longitude')->nullable();
             $table->string('code')->unique()->nullable();
             $table->timestamps();
         });
