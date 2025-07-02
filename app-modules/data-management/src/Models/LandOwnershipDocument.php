@@ -5,6 +5,7 @@ namespace Modules\DataManagement\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Storage;
+use App\Helpers\AllImageFixer;
 
 class LandOwnershipDocument extends Model
 {
@@ -23,12 +24,31 @@ class LandOwnershipDocument extends Model
     }
 
     public bool $returnRawPhoto = false;
+    // public function getHouseDocumentPhotoAttribute($value)
+    // {
+    //     if ($this->returnRawPhoto) {
+    //         return $value;
+    //     }
+    //     return $value ? asset("storage/kobo-attachments/$value") : asset('import/assets/post-pic-dummy.png');
+    // }
     public function getHouseDocumentPhotoAttribute($value)
     {
         if ($this->returnRawPhoto) {
             return $value;
         }
-        return $value ? asset("storage/kobo-attachments/$value") : asset('import/assets/post-pic-dummy.png');
+        if (!$value) {
+            return asset('import/assets/post-pic-dummy.png');
+        }
+        $originalPath = storage_path("app/public/kobo-attachments/$value");
+        $publicStoragePath = "storage/kobo-attachments/$value"; 
+        if (!file_exists($originalPath)) {
+            \Log::warning("Photo file not found at: " . $originalPath);
+            return asset('import/assets/post-pic-dummy.png');
+        }
+
+
+        AllImageFixer::fixImageOrientation($originalPath);
+        return asset($publicStoragePath);
     }
 
     public function houseLandOwnership(): BelongsTo

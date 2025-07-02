@@ -35,6 +35,7 @@ use Modules\DataManagement\Models\RecentAssistance;
 use Modules\DataManagement\Models\InfrasttructureService;
 use Modules\DataManagement\Models\PhotoSection;
 use Modules\DataManagement\Models\Form;
+use Modules\DataManagement\Models\SubmissionStatus;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Imports\HeadingRowFormatter;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
@@ -390,6 +391,8 @@ class SubmissionSheetImport implements ToModel, WithStartRow, WithHeadingRow, Wi
             }
 
             $submission_data['dm_form_id'] = $form->id;
+            $defaultStatus = SubmissionStatus::where('is_default', true)->first();
+            $submission_data['submission_status_id'] = $defaultStatus ? $defaultStatus->id : 1;
             
             $submission = new Submission($submission_data);
             $submission->_id = $row['_id'];

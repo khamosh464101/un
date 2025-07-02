@@ -23,7 +23,8 @@ class Submission extends Model
         'consent',
         'status',
         'today', 
-        'dm_form_id'
+        'dm_form_id',
+        'submission_status_id'
     ];
 
     public function getIgnoreIdFillable()
@@ -49,6 +50,11 @@ class Submission extends Model
     public function form(): BelongsTo
     {
         return $this->belongsTo(Form::class);
+    }
+
+    public function dstatus(): BelongsTo
+    {
+        return $this->belongsTo(SubmissionStatus::class, 'submission_status_id');
     }
 
     public function sourceInformation(): HasOne

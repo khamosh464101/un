@@ -29,6 +29,7 @@ use Modules\DataManagement\Models\Resettlement;
 use Modules\DataManagement\Models\RecentAssistance;
 use Modules\DataManagement\Models\InfrasttructureService;
 use Modules\DataManagement\Models\PhotoSection;
+use Modules\DataManagement\Models\SubmissionStatus;
 use Illuminate\Support\Str;
 
 use DB;
@@ -115,8 +116,9 @@ class KoboSubmissionParser
             $submission,
             array_flip((new Submission)->getIgnoreIdFillable())
         );
+        $defaultStatus = SubmissionStatus::where('is_default', true)->first();
         $sub = Submission::create(
-            array_merge(['dm_form_id' => 1], $filteredData)
+            array_merge(['dm_form_id' => 1, 'dm_submission_status_id' => $defaultStatus ? $defaultStatus->id : 1], $filteredData)
         );
 
         return $sub;

@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\File;
 use Modules\DataManagement\Models\Form;
 use Modules\DataManagement\Models\Submission;
 use App\Imports\MultiTableImport;
+use App\Models\Setting;
 
 class ExcelController
 {
@@ -85,8 +86,7 @@ class ExcelController
         }
         $startRow = intval($request->startRow);
         $limit = intval($request->limitRow);
-        $path = storage_path('app/private/excel/wochtangi_final.xlsx');
-
+        // $path = public_path('wochtangi_final.xlsx'); // storage_path('app/private/excel/wochtangi_final.xlsx');
         Excel::import(new MultiTableImport($startRow, $limit), $path);
 
         return response()->json(['message' => 'Successfully inserted'], 201);

@@ -11,12 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('districts', function (Blueprint $table) {
+        Schema::create('dm_submission_statuses', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('name_fa')->nullable();
-            $table->boolean('is_urban');
-            $table->foreignId('province_id');
+            $table->string('title');
+            $table->string('color')->default('#cecece');
+            $table->boolean('is_default')->default(false);
             $table->timestamps();
         });
     }
@@ -26,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('districts');
+        Schema::dropIfExists('dm_submission_statuses');
     }
 };

@@ -11,7 +11,7 @@ class MultiTableImport implements WithMultipleSheets
     protected $startRow;
     protected $limit;
 
-    public function __construct($startRow, $limit)
+    public function __construct($startRow = 2, $limit = 5)
     {
         $this->startRow = $startRow;
         $this->limit = $limit;

@@ -162,6 +162,7 @@ class PhotoSection extends Model
         // You could maintain a flag in the database (e.g., `photo_orientation_fixed`)
         // or check if a `_fixed` version of the file exists.
         // For simplicity, `fixFaceOrientationWithVision` itself checks.
+        // ImageFixer::fixFaceOrientationWithVision($originalPath);
         ImageFixer::fixFaceOrientationWithVision($originalPath);
 
         // 5. Return the asset path to the (potentially) fixed image.

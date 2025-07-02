@@ -5,6 +5,7 @@ use Modules\DataManagement\Services\KoboService;
 use Modules\DataManagement\Services\KoboSubmissionParser;
 use Illuminate\Http\Request;
 use Modules\DataManagement\Models\Form;
+use Modules\DataManagement\Models\Submission;
 
 class SyncKoboController
 {
@@ -23,17 +24,23 @@ class SyncKoboController
         return response()->json(Form::first());
     }
 
-    public function listForms()
+    public function listForms(Request $request)
     {
-        
-        $forms = $this->kobo->getFormSubmissions();
+        $startRow = intval($request->startRow);
+        $limit = intval($request->limitRow);
+        $forms = $this->kobo->getFormSubmissions($startRow, $limit, $request->formId);
         $data = $forms; // Ensure this is a JSON-decoded array
-
         // do {
             foreach ($data['results'] as $key => $value) {
+                $submission = Submission::where('_id', $value['_id'])->first();
+                if ($submission) {
+                    continue;
+                }
                 $result = $this->cleanKoboSubmissionKeys($value);
                 $this->parser->parseAndReturn($result);
             }
+
+            return response()->json(['message' => 'Successfully inserted into the system from kobo.'], 201);
 
             // Fetch the next page using 'next' URL
         //     if (!empty($data['next'])) {

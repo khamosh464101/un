@@ -10,6 +10,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\File;
 use Modules\DataManagement\Models\Form;
 use Modules\DataManagement\Models\Submission;
+use Modules\DataManagement\Models\SubmissionStatus;
 use Modules\DataManagement\Services\CreateSubmissionParser;
 use Modules\DataManagement\Services\FilterableService;
 use Modules\DataManagement\Services\QueryService;
@@ -17,6 +18,7 @@ use Modules\DataManagement\Services\ArchiveService;
 use Modules\Projects\Models\Project;
 use Mpdf\Mpdf;
 use App\Imports\MultiTableImport;
+use App\Models\Setting;
 
 use Google\Cloud\Vision\V1\Client\ImageAnnotatorClient;
 
@@ -44,31 +46,17 @@ class SubmissionController
 
     public function index(Request $request) {
         $query = Submission::with($this->query);
-      
         if ($request->project_id) {
             $query->whereHas('projects', function ($q) use ($request) {
                 $q->where('projects.id', $request->project_id);
             });
         }
-        foreach ($request->search as $key => $field) {
-                
-            if ($field) {
-                if (Str::contains($key, '__') ) {
-                    [$relation, $column] = explode('__', $key, 2);
-
-                    $query->whereHas($relation, function ($q) use ($column, $field) {
-                        $q->where($column, $field);
-                    });
-                } else {
-                    $query->where($key, $field);
-                }
-            }
-        }
-
+        $this->getSearchData($query, $request);
         $data = $query->paginate(8);
 
-        return ["data" => $data, "filterable" => $this->filterable, "projects" => Project::select("id as value", "title as label")->get()];
+        return ["data" => $data, "filterable" => $this->filterable, "statuses" => SubmissionStatus::select('id as value', 'title as label')->get(), "projects" => Project::select("id as value", "title as label")->get()];
     }
+
     public function getForm() {
         
         return response()->json(Form::first());
@@ -312,10 +300,12 @@ class SubmissionController
             'directionality' => 'rtl', // Important for RTL
         ]);
 
+        $si = $submission->sourceInformation;
+        $name = $si->province_code.'-'.$si->city_code.'-'.$si->city_code.'-'.$si->district_code.'-'.$location['guzar'].'-'.$location['block'].'-'.$location['house'];
         $mpdf->WriteHTML($html);
         return response($mpdf->Output('', 'S'), 200)
             ->header('Content-Type', 'application/pdf')
-            ->header('Content-Disposition', 'inline; filename="report.pdf"');
+            ->header('Content-Disposition', 'inline; filename="'. $name .'.pdf"');
     
         
         return $submission;
@@ -324,25 +314,36 @@ class SubmissionController
 
     public function addAsBeneficairy(Request $request) {
         $project = Project::find($request->project_id);
-        $project->submissions()->syncWithoutDetaching($request->submissions);
+        $submissions = $request->submissions;
+        if ($request->selectAll) {
+            $query = Submission::query();
+            $this->getSearchData($query, $request);
+            $submissions = $query->pluck('id')->toArray();
+        }
+        $project->submissions()->syncWithoutDetaching($submissions);
         return response()->json(["message" => "Successfully added!", "data" => $project->load('submissions')], 201);
     }
 
     public function removeAsBeneficairy(Request $request) {
         $project = Project::find($request->project_id);
-        $project->submissions()->detach($request->submissions);
+        $submissions = $request->submissions;
+        if ($request->selectAll) {
+            $query = Submission::query();
+            $this->getSearchData($query, $request);
+            $submissions = $query->pluck('id')->toArray();
+        }
+        $project->submissions()->detach($submissions);
         return response()->json(["message" => "Successfully removed!", "data" => $project->load('submissions')], 201);
     }
 
     public function downloadExcel(Request $request) {
-        // return $request;
+        
         $fields = [];
         foreach ($request->selectedColumns as $key => $value) {
             array_push($fields, $this->filterable[$value]);
         }
 
         $groupedFields = [];
-
         foreach ($fields as $field) {
             if (str_contains($field, '__')) {
                 [$relation, $column] = explode('__', $field, 2);
@@ -363,50 +364,68 @@ class SubmissionController
         }
 
             // Handle related table fields
-    foreach ($groupedFields as $relation => $columns) {
-        if ($relation === 'submission') continue;
+        foreach ($groupedFields as $relation => $columns) {
+            if ($relation === 'submission') continue;
 
-        $foreignKey = 'submission_id'; // change if your FK is different
-        $query->with([$relation => function ($q) use ($columns, $foreignKey) {
-            $q->select(array_merge([$foreignKey], array_unique($columns)));
-        }]);
-    }
-
-    $submissions = $query->whereIn('id', $request->selects)->get();
-    $form = Form::find(1);
-    $dataObject = json_decode($form->raw_schema);
-    $survey = $dataObject->asset->content->survey;
-    $choices = $dataObject->asset->content->choices;
-
-    $header = [];
-    $result = $submissions->map(function ($submission, $index) use ($fields, $survey, $choices, &$header) {
-        $flat = [];
-        
-
-        foreach ($fields as $key => $field) {
-            if (str_contains($field, '__')) {
-                [$relation, $column] = explode('__', $field, 2);
-
-                $flat[$column] = $this->getSurvey($survey, $choices, $column, ($submission->$relation->$column ?? null));
-                if ($index === 0) {
-                    array_push($header, $this->getHeader($survey, $column));
-                }
-
-            } else {
-                $flat[$field] = $this->getSurvey($survey, $choices,  $field, $submission->$field ?? null);
-                if ($index === 0) {
-                    array_push($header, $this->getHeader($survey, $field));
-                }
-
-            }
+            $foreignKey = 'submission_id'; // change if your FK is different
+            $query->with([$relation => function ($q) use ($columns, $foreignKey) {
+                $q->select(array_merge([$foreignKey], array_unique($columns)));
+            }]);
         }
 
-        return $flat;
-    });
+        $submissions;
+        if ($request->selectAll) {
+            $this->getSearchData($query, $request);
+            $submissions = $query->get();
+        } else {
+            $submissions = $query->whereIn('id', $request->selects)->get();
+        }
+        
+        $form = Form::find(1);
+        $dataObject = json_decode($form->raw_schema);
+        $survey = $dataObject->asset->content->survey;
+        $choices = $dataObject->asset->content->choices;
 
-    return Excel::download(new SubmissionsExport($result, $request->project ? $request->project['label'] : now()->format('Y-m-d'), $header ), now()->format('Y-m-d') . 'submissions.xlsx');
+        $header = [];
+        $result = $submissions->map(function ($submission, $index) use ($fields, $survey, $choices, &$header) {
+            $flat = [];
+            
+            foreach ($fields as $key => $field) {
+                if (str_contains($field, '__')) {
+                    [$relation, $column] = explode('__', $field, 2);
+
+                    $flat[$column] = $this->getSurvey($survey, $choices, $column, ($submission->$relation->$column ?? null));
+                    if ($index === 0) {
+                        array_push($header, $this->getHeader($survey, $column));
+                    }
+
+                } else {
+                    $flat[$field] = $this->getSurvey($survey, $choices,  $field, $submission->$field ?? null);
+                    if ($index === 0) {
+                        array_push($header, $this->getHeader($survey, $field));
+                    }
+                }
+            }
+            return $flat;
+        });
+
+        return Excel::download(new SubmissionsExport($result, $request->project ? $request->project['label'] : now()->format('Y-m-d'), $header ), now()->format('Y-m-d') . 'submissions.xlsx');
     }
+    function getSearchData($query, $request) {
+        foreach ($request->search as $key => $field) {
+            if ($field) {
+                if (Str::contains($key, '__') ) {
+                    [$relation, $column] = explode('__', $key, 2);
 
+                    $query->whereHas($relation, function ($q) use ($column, $field) {
+                        $q->where($column, $field);
+                    });
+                } else {
+                    $query->where($key, $field);
+                }
+            }
+        }
+    }
     function getSurvey( $survey, $choices, $name, $value) {
         foreach ($survey as $item) {
 
@@ -449,16 +468,33 @@ class SubmissionController
     }
 
     public function moveToArchive(Request $request) {
-        foreach ($request->selects as $key => $value) {
+        $ids = $request->selects;
+        if ($request->selectAll === true) {
+            $query = Submission::query();
+            $this->getSearchData($query, $request);
+            $ids = $query->pluck('id')->toArray();
+        } 
+        foreach ($ids as $key => $value) {
             $this->archive->archiveSubmission($value, 1);
         }
-        
-        // return 
         return response()->json(['message' => 'Successfully Archived.'], 201);
     }
 
+    public function changeStatus(Request $request) {
+        $ids = $request->selects;
+        if ($request->selectAll === true) {
+            $query = Submission::query();
+            $this->getSearchData($query, $request);
+            $ids = $query->pluck('id')->toArray();
+        } 
+        Submission::whereIn('id', $ids)->update([
+            'submission_status_id' => $request->status['value'],
+        ]);
+        return $request;
+    }
+
     public function importExcel (Request $request) {
-        
+        // return Setting::where('key', 'kobo_token')->first()->value;
         $schema = json_decode(Form::first()->raw_schema);
         $survey = $schema->asset->content->survey;
 
@@ -478,8 +514,14 @@ class SubmissionController
         if (!File::exists($path)) {
             return 'File not found.';
         }
-
-        Excel::import(new MultiTableImport, $path);
+        try {
+            Excel::import(new MultiTableImport, $path);
+    
+            return response()->json(['message' => 'Import successful'], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+        
         return 'working';
         return $data[0];
         // Example: dump first sheet

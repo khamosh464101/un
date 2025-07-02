@@ -15,6 +15,9 @@ use Modules\Projects\Database\Seeders\StaffStatusSeeder;
 use Modules\Projects\Database\Seeders\TicketPrioritySeeder;
 use Modules\Projects\Database\Seeders\TicketStatusSeeder;
 use Modules\Projects\Database\Seeders\TicketTypeSeeder;
+use Modules\DataManagement\Database\Seeders\SubmissionStatusSeeder;
+use Modules\Projects\Database\Seeders\SubprojectTypeSeeder;
+use Modules\Projects\Database\Seeders\StaffContractTypeSeeder;
 use Modules\Projects\Models\Staff;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\SettingSeeder;
@@ -37,6 +40,9 @@ class DatabaseSeeder extends Seeder
         $this->call([StaffStatusSeeder::class]);
         $this->call([TicketStatusSeeder::class]);
         $this->call([TicketPrioritySeeder::class]);
+        $this->call([StaffContractTypeSeeder::class]);
+        $this->call([SubprojectTypeSeeder::class]);
+        $this->call([SubmissionStatusSeeder::class]);
        $staff = Staff::create(
             [
                 'name' => 'Azim Khamosh',

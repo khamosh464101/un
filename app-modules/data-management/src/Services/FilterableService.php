@@ -6,6 +6,7 @@ class FilterableService
     public function getFilterable(): array
     {
         return [
+            'dstatus__title',
         'sourceInformation__survey_province',
         'sourceInformation__province_code',
         'sourceInformation__city_name',

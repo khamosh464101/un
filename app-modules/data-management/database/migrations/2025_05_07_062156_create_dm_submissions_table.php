@@ -25,6 +25,7 @@ return new class extends Migration
             // 4 displacement
             $table->string('status');
             $table->foreignId('dm_form_id');
+            $table->foreignId('submission_status_id');
             $table->timestamps();
         });
        

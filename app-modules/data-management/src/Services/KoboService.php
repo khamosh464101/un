@@ -50,14 +50,12 @@ class KoboService
         return $response;
     }
 
-    public function getFormSubmissions($url = null)
+    public function getFormSubmissions($startRow, $limit, $formId)
     {
-        $formId = $this->formId;
-
         $response = Http::withHeaders([
             'Authorization' => 'Token ' . $this->token,
             'Accept' => 'application/json',
-        ])->get("{$this->baseUrl}/assets/{$formId}/data?limit=30&offset=10");
+        ])->get("{$this->baseUrl}/assets/{$formId}/data?start={$startRow}&limit={$limit}");
 
         return $response;
     }
@@ -84,7 +82,7 @@ class KoboService
 
         try {
             $response = Http::withHeaders([
-                'Authorization' => 'Token ' . $this->token,
+                'Authorization' => 'Token ' . '37505e43c62161e95c146151ad8b09810e6d3454', //$this->token,
                 'Accept' => 'application/json',
             ])->get($url); // Add auth if needed
 

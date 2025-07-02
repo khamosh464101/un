@@ -6,6 +6,7 @@ class QueryService
     public function getQuery(): array
     {
         return [
+            'dstatus:id,title,color',
             'sourceInformation:id,submission_id,survey_province,district_name,surveyors_name,nahya_number,kbl_guzar_number,village_name,province_code,city_name,city_code,district_code,block_number,house_number,area_representative_name,area_representative_phone',
             'familyInformation:id,submission_id,number_families,household_size,hoh_disable,hof_or_interviewee,hof_ethnicity,province_origin,district_origin',
             'headFamily:id,submission_id,hoh_name,hoh_father_name,hoh_grandfather_name,hoh_phone_number,does_hoh_have_nic,hoh_nic_number,hoh_nic_photo,hoh_sex,hoh_age',
