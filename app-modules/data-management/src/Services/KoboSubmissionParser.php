@@ -118,7 +118,7 @@ class KoboSubmissionParser
         );
         $defaultStatus = SubmissionStatus::where('is_default', true)->first();
         $sub = Submission::create(
-            array_merge(['dm_form_id' => 1, 'dm_submission_status_id' => $defaultStatus ? $defaultStatus->id : 1], $filteredData)
+            array_merge(['dm_form_id' => 1, 'submission_status_id' => $defaultStatus ? $defaultStatus->id : 1], $filteredData)
         );
 
         return $sub;
