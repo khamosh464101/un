@@ -52,10 +52,26 @@ class SubmissionSheetImport implements ToModel, WithStartRow, WithHeadingRow, Wi
     protected $startRow;
     protected $limit;
 
+     protected $chunkSize;
+
     public function __construct($startRow, $limit)
     {
         $this->startRow = $startRow;
         $this->limit = $limit;
+        $this->chunkSize = 100; // Default value
+    }
+
+    // Add this setter method
+    public function setChunkSize(int $chunkSize): self
+    {
+        $this->chunkSize = $chunkSize;
+        return $this;
+    }
+
+    // Keep this but now it returns the dynamic value
+    public function chunkSize(): int
+    {
+        return $this->chunkSize;
     }
     
     private const DATES = [
@@ -83,7 +99,8 @@ class SubmissionSheetImport implements ToModel, WithStartRow, WithHeadingRow, Wi
     
     public function model(array $row)
     {
-        logger()->info('test'.$this->startRow.$this->limit);
+        \DB::transaction(function () use ($row) {
+                   logger()->info('test'.$this->startRow.$this->limit);
         if (Submission::where('_id', $row['_id'])->exists()) {
             logger()->info($row['_id']);
             return null; // ❌ Don't import this row
@@ -390,13 +407,12 @@ class SubmissionSheetImport implements ToModel, WithStartRow, WithHeadingRow, Wi
                 
             }
 
-            $submission_data['dm_form_id'] = $form->id;
             $defaultStatus = SubmissionStatus::where('is_default', true)->first();
-            $submission_data['submission_status_id'] = $defaultStatus ? $defaultStatus->id : 1;
-            
-            $submission = new Submission($submission_data);
-            $submission->_id = $row['_id'];
-            $submission->save();
+            $submission = Submission::create(array_merge($submission_data, [
+                '_id' => $row['_id'],
+                'dm_form_id' => $form->id,
+                'submission_status_id' => $defaultStatus ? $defaultStatus->id : 1
+            ]));
 
             $service = new KoboService();
             $parser = new KoboSubmissionParser($service);
@@ -529,10 +545,13 @@ class SubmissionSheetImport implements ToModel, WithStartRow, WithHeadingRow, Wi
 
             $parser->createInfrasttructureService($kobo_submission, $submission);
             $parser->createPhotoSection($kobo_submission, $submission);
+            // } catch (\Exception $e) {
+            //     logger()->error("Error importing row: " . $e->getMessage());
+            // }
+        });
+ 
             
-        // } catch (\Exception $e) {
-        //     logger()->error("Error importing row: " . $e->getMessage());
-        // }
+        
     }
 
     public function startRow(): int
@@ -540,10 +559,6 @@ class SubmissionSheetImport implements ToModel, WithStartRow, WithHeadingRow, Wi
         return $this->startRow ?? 1; // Start from row 31 (skips first 30 rows)
     }
 
-    public function chunkSize(): int
-    {
-        return 1;
-    }
 
     public function limit(): int
     {
@@ -566,39 +581,76 @@ class SubmissionSheetImport implements ToModel, WithStartRow, WithHeadingRow, Wi
         
         return false;
     }
+    private function getSingleValue($surveyItem, $row, $choices, $fieldName) 
+{
+    // First check if we have a direct value
+    if (isset($row[$surveyItem->name])) {
+        $value = $row[$surveyItem->name];
+        if (in_array($fieldName, self::DATES)) {
+            return $this->getDate($value);
+        }
+        return $value;
+    }
 
-    private function getSingleValue($surveyItem, $row, $choices, $fieldName) {
-        if (isset($surveyItem->label) && isset($row[$surveyItem->label[0]])) {
-            $labelValue = $row[$surveyItem->label[0]];
-            $result = $this->checkChoice($choices, $labelValue, $surveyItem);
-            if ($result) {
-                return $result;
-            }
-
-            if (in_array($fieldName, self::PHOTOS)) {
-                return $labelValue; // FOR NOW
-            }
-            if (in_array($fieldName, self::DATES)) {
-                return $this->getDate($labelValue); 
-            }
+    // Then check labeled values
+    if (isset($surveyItem->label) && isset($row[$surveyItem->label[0]])) {
+        $labelValue = $row[$surveyItem->label[0]];
+        
+        if (in_array($fieldName, self::PHOTOS)) {
             return $labelValue;
+        }
+        
+        if (in_array($fieldName, self::DATES)) {
+            return $this->getDate($labelValue);
+        }
+        
+        if (isset($surveyItem->select_from_list_name)) {
+            foreach ($choices as $choice) {
+                if ($choice->label[0] === $labelValue && 
+                    $surveyItem->select_from_list_name === $choice->list_name) {
+                    return $choice->name;
+                }
+            }
+        }
+        
+        return $labelValue;
+    }
+    
+    return 12345; // Default value
+}
+    // THIS IS THE MAIN ONE
+    // private function getSingleValue($surveyItem, $row, $choices, $fieldName) {
+    //     if (isset($surveyItem->label) && isset($row[$surveyItem->label[0]])) {
+    //         $labelValue = $row[$surveyItem->label[0]];
+    //         $result = $this->checkChoice($choices, $labelValue, $surveyItem);
+    //         if ($result) {
+    //             return $result;
+    //         }
+
+    //         if (in_array($fieldName, self::PHOTOS)) {
+    //             return $labelValue; // FOR NOW
+    //         }
+    //         if (in_array($fieldName, self::DATES)) {
+    //             return $this->getDate($labelValue); 
+    //         }
+    //         return $labelValue;
             
 
-        } 
-        if(isset($row[$surveyItem->name])) {
-            $value = $row[$surveyItem->name];
-            if (in_array($fieldName, self::DATES)) {
-                return $this->getDate($value);
+    //     } 
+    //     if(isset($row[$surveyItem->name])) {
+    //         $value = $row[$surveyItem->name];
+    //         if (in_array($fieldName, self::DATES)) {
+    //             return $this->getDate($value);
 
                 
-            }
-            else {
-                return $value;
-            }
+    //         }
+    //         else {
+    //             return $value;
+    //         }
             
-        }
-        return 12345;
-    }
+    //     }
+    //     return 12345;
+    // }
 
     public function cleanKoboSubmissionKeys(array $submission): array
     {

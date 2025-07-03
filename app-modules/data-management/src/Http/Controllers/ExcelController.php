@@ -58,39 +58,28 @@ class ExcelController
 
     public function insert(Request $request)
     {
+        logger()->info('Memory usage: ' . (memory_get_usage(true)/1024/1024) . ' MB');
+        $disk = Storage::disk('excel');
         
-        $disk = Storage::disk('excel'); // assumes you configured this disk
-        
-
         if (!$disk->exists($request->filename)) {
             return response()->json(['message' => 'Excel file not found.'], 404);
         }
+
         $path = $disk->path($request->filename);
-        $schema = json_decode(Form::first()->raw_schema);
-        $survey = $schema->asset->content->survey;
-
-        $submission = (new Submission)->getIgnoreIdFillable();
-        $submission_labels = [];
-        foreach ($submission as $key => $value) {
-            foreach ($survey as $key => $val) {
-                if (isset($val->name) && $val->name === $value) {
-                    array_push($submission_labels, $val);
-                    break;
-                }
-            }
-        }
+        $startRow = intval($request->startRow ?? 2);
+        $limit = intval($request->limitRow ?? 100);
         
-
-        if (!File::exists($path)) {
-            return 'File not found.';
-        }
-        $startRow = intval($request->startRow);
-        $limit = intval($request->limitRow);
-        // $path = public_path('wochtangi_final.xlsx'); // storage_path('app/private/excel/wochtangi_final.xlsx');
-        Excel::import(new MultiTableImport($startRow, $limit), $path);
-
-        return response()->json(['message' => 'Successfully inserted'], 201);
+        // Configure with larger chunk size
+        $import = new MultiTableImport($startRow, $limit, 50); // Process 50 rows per chunk
+        
+        // Import with progress monitoring
+        Excel::import($import, $path);
+        logger()->info('Memory usage: ' . (memory_get_usage(true)/1024/1024) . ' MB');
+        return response()->json([
+            'message' => 'Import started successfully',
+        ], 201);
     }
+
 
     public function download($filename)
     {

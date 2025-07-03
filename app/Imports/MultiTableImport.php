@@ -10,18 +10,20 @@ class MultiTableImport implements WithMultipleSheets
 {
     protected $startRow;
     protected $limit;
+    protected $chunkSize;
 
-    public function __construct($startRow = 2, $limit = 5)
+    public function __construct($startRow = 2, $limit = 100, $chunkSize = 100)
     {
         $this->startRow = $startRow;
         $this->limit = $limit;
+        $this->chunkSize = $chunkSize;
     }
+
     public function sheets(): array
     {
-        logger()->info("Error occured: $this->limit");
         return [
-            0 => new SubmissionSheetImport($this->startRow, $this->limit), // Use sheet name instead of index
-            // 'Sheet2' => new AnotherSheetImport(),
+            0 => (new SubmissionSheetImport($this->startRow, $this->limit))
+                ->setChunkSize($this->chunkSize),
         ];
     }
 }
