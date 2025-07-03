@@ -46,6 +46,7 @@ class ExcelController
 
     public function delete(Request $request)
     {
+        
         $disk = Storage::disk('excel');
 
         if ($disk->exists($request->filename)) {
@@ -58,6 +59,7 @@ class ExcelController
 
     public function insert(Request $request)
     {
+        // return storage_path('app/private/excel/wochtangi_final.xlsx');
         logger()->info('Memory usage: ' . (memory_get_usage(true)/1024/1024) . ' MB');
         $disk = Storage::disk('excel');
         

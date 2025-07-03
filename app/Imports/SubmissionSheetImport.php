@@ -100,6 +100,7 @@ class SubmissionSheetImport implements ToModel, WithStartRow, WithHeadingRow, Wi
     public function model(array $row)
     {
         \DB::transaction(function () use ($row) {
+            logger()->info('Memory usage: ' . (memory_get_usage(true)/1024/1024) . ' MB');
                    logger()->info('test'.$this->startRow.$this->limit);
         if (Submission::where('_id', $row['_id'])->exists()) {
             logger()->info($row['_id']);
@@ -581,76 +582,40 @@ class SubmissionSheetImport implements ToModel, WithStartRow, WithHeadingRow, Wi
         
         return false;
     }
-    private function getSingleValue($surveyItem, $row, $choices, $fieldName) 
-{
-    // First check if we have a direct value
-    if (isset($row[$surveyItem->name])) {
-        $value = $row[$surveyItem->name];
-        if (in_array($fieldName, self::DATES)) {
-            return $this->getDate($value);
-        }
-        return $value;
-    }
 
-    // Then check labeled values
-    if (isset($surveyItem->label) && isset($row[$surveyItem->label[0]])) {
-        $labelValue = $row[$surveyItem->label[0]];
-        
-        if (in_array($fieldName, self::PHOTOS)) {
-            return $labelValue;
-        }
-        
-        if (in_array($fieldName, self::DATES)) {
-            return $this->getDate($labelValue);
-        }
-        
-        if (isset($surveyItem->select_from_list_name)) {
-            foreach ($choices as $choice) {
-                if ($choice->label[0] === $labelValue && 
-                    $surveyItem->select_from_list_name === $choice->list_name) {
-                    return $choice->name;
-                }
-            }
-        }
-        
-        return $labelValue;
-    }
-    
-    return 12345; // Default value
-}
     // THIS IS THE MAIN ONE
-    // private function getSingleValue($surveyItem, $row, $choices, $fieldName) {
-    //     if (isset($surveyItem->label) && isset($row[$surveyItem->label[0]])) {
-    //         $labelValue = $row[$surveyItem->label[0]];
-    //         $result = $this->checkChoice($choices, $labelValue, $surveyItem);
-    //         if ($result) {
-    //             return $result;
-    //         }
+    private function getSingleValue($surveyItem, $row, $choices, $fieldName) {
+        if (isset($surveyItem->label) && isset($row[$surveyItem->label[0]])) {
+            $labelValue = $row[$surveyItem->label[0]];
+            $result = $this->checkChoice($choices, $labelValue, $surveyItem);
+            if ($result) {
+                return $result;
+            }
 
-    //         if (in_array($fieldName, self::PHOTOS)) {
-    //             return $labelValue; // FOR NOW
-    //         }
-    //         if (in_array($fieldName, self::DATES)) {
-    //             return $this->getDate($labelValue); 
-    //         }
-    //         return $labelValue;
+            if (in_array($fieldName, self::PHOTOS)) {
+                return $labelValue; // FOR NOW
+            }
+            if (in_array($fieldName, self::DATES)) {
+                return $this->getDate($labelValue); 
+            }
+            return $labelValue;
             
 
-    //     } 
-    //     if(isset($row[$surveyItem->name])) {
-    //         $value = $row[$surveyItem->name];
-    //         if (in_array($fieldName, self::DATES)) {
-    //             return $this->getDate($value);
+        } 
+        if(isset($row[$surveyItem->name])) {
+            $value = $row[$surveyItem->name];
+            if (in_array($fieldName, self::DATES)) {
+                return $this->getDate($value);
 
                 
-    //         }
-    //         else {
-    //             return $value;
-    //         }
+            }
+            else {
+                return $value;
+            }
             
-    //     }
-    //     return 12345;
-    // }
+        }
+        return 12345;
+    }
 
     public function cleanKoboSubmissionKeys(array $submission): array
     {
