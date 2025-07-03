@@ -23,6 +23,7 @@ use DB;
 
 HeadingRowFormatter::default('none');
 
+
 class SubmissionSheetImport implements ToModel, WithStartRow, WithHeadingRow, WithChunkReading, WithLimit
 {
     protected $startRow;
@@ -42,6 +43,25 @@ class SubmissionSheetImport implements ToModel, WithStartRow, WithHeadingRow, Wi
         $this->chunkSize = $chunkSize;
         return $this;
     }
+
+    private const DATES = [
+        'today', 
+        'start',
+        'end',
+        'date_return_home_country', 
+        'type_return_document_date', 
+        'house_document_date'
+    ];
+    private const PHOTOS = [
+        'hoh_nic_photo', 
+        'inter_nic_photo', 
+        'inter_nic_photo_owner',
+        'water_point_photo',
+        'access_sanitation_photo',
+        'access_education_photo',
+        'access_health_photo',
+        'access_road_photo'
+    ];
 
     public function chunkSize(): int { return $this->chunkSize; }
     public function startRow(): int { return $this->startRow ?? 1; }
@@ -114,6 +134,28 @@ class SubmissionSheetImport implements ToModel, WithStartRow, WithHeadingRow, Wi
         $modelMappings = [
             'submission' => (new Submission)->getIgnoreIdFillable(),
             'source_information' => (new SourceInformation)->getIgnoreIdFillable(),
+            'family_information' => (new FamilyInformation)->getIgnoreIdFillable(),
+            'head_family' => (new HeadFamily)->getIgnoreIdFillable(),
+            'interviewwee' => (new Interviewwee)->getIgnoreIdFillable(),
+            'composition' => (new Composition)->getIgnoreIdFillable(),
+            'idp' => (new Idp)->getIgnoreIdFillable(),
+            'returnee' => (new Returnee)->getIgnoreIdFillable(),
+            'extremely_vulnerable_member' => (new ExtremelyVulnerableMember)->getIgnoreIdFillable(),
+            'access_civil_document_male' => (new AccessCivilDocumentMale)->getIgnoreIdFillable(),
+            'access_civil_document_female' => (new AccessCivilDocumentFemale)->getIgnoreIdFillable(),
+            'house_land_ownership' => (new HouseLandOwnership)->getIgnoreIdFillable(),
+            'house_condition' => (new HouseCondition)->getIgnoreIdFillable(),
+            'access_basic_service' => (new AccessBasicService)->getIgnoreIdFillable(),
+            'food_consumption_score' => (new FoodConsumptionScore)->getIgnoreIdFillable(),
+            'household_strategy_food' => (new HouseholdStrategyFood)->getIgnoreIdFillable(),
+            'community_availability' => (new CommunityAvailability)->getIgnoreIdFillable(),
+            'livelihood' => (new Livelihood)->getIgnoreIdFillable(),
+            'durable_solution' => (new DurableSolution)->getIgnoreIdFillable(),
+            'skill_idea' => (new SkillIdea)->getIgnoreIdFillable(),
+            'resettlement' => (new Resettlement)->getIgnoreIdFillable(),
+            'recent_assistance' => (new RecentAssistance)->getIgnoreIdFillable(),
+            'Infrasttructure_service' => (new InfrasttructureService)->getIgnoreIdFillable(),
+            'photo_section' => (new PhotoSection)->getIgnoreIdFillable(),
             // ... all other model mappings
         ];
         
@@ -130,6 +172,28 @@ class SubmissionSheetImport implements ToModel, WithStartRow, WithHeadingRow, Wi
         $models = [
             'source_information' => SourceInformation::class,
             'family_information' => FamilyInformation::class,
+            'head_family' => HeadFamily::class,
+            'interviewwee' => Interviewwee::class,
+            'composition' => Composition::class,
+            'idp' => Idp::class,
+            'returnee' => Returnee::class,
+            'extremely_vulnerable_member' => ExtremelyVulnerableMember::class,
+            'access_civil_document_male' => AccessCivilDocumentMale::class,
+            'access_civil_document_female' => AccessCivilDocumentFemale::class,
+            'house_land_ownership' => HouseLandOwnership::class,
+            'house_condition' => HouseCondition::class,
+            'access_basic_service' => AccessBasicService::class,
+            'food_consumption_score' => FoodConsumptionScore::class,
+            'household_strategy_food' => HouseholdStrategyFood::class,
+            'community_availability' => CommunityAvailability::class,
+            'livelihood' => Livelihood::class,
+            'durable_solution' => DurableSolution::class,
+            'skill_idea' => SkillIdea::class,
+            'resettlement' => Resettlement::class,
+            'recent_assistance' => RecentAssistance::class,
+            'Infrasttructure_service' => InfrasttructureService::class,
+            'photo_section' => PhotoSection::class,
+
             // ... all other models
         ];
         
@@ -185,4 +249,55 @@ class SubmissionSheetImport implements ToModel, WithStartRow, WithHeadingRow, Wi
     }
 
     // ... keep your existing helper methods (getSingleValue, cleanKoboSubmissionKeys, etc.)
+    private function getSingleValue($surveyItem, $row, $choices, $fieldName) 
+    {
+        // First check if we have a direct value
+        if (isset($row[$surveyItem->name])) {
+            $value = $row[$surveyItem->name];
+            if (in_array($fieldName, self::DATES)) {
+                return $this->getDate($value);
+            }
+            return $value;
+        }
+    
+        // Then check labeled values
+        if (isset($surveyItem->label) && isset($row[$surveyItem->label[0]])) {
+            $labelValue = $row[$surveyItem->label[0]];
+            
+            if (in_array($fieldName, self::PHOTOS)) {
+                return $labelValue;
+            }
+            
+            if (in_array($fieldName, self::DATES)) {
+                return $this->getDate($labelValue);
+            }
+            
+            if (isset($surveyItem->select_from_list_name)) {
+                foreach ($choices as $choice) {
+                    if ($choice->label[0] === $labelValue && 
+                        $surveyItem->select_from_list_name === $choice->list_name) {
+                        return $choice->name;
+                    }
+                }
+            }
+            
+            return $labelValue;
+        }
+        
+        return 12345; // Default value
+    }
+    
+    public function cleanKoboSubmissionKeys(array $submission): array
+    {
+        $cleaned = [];
+
+        foreach ($submission as $key => $value) {
+            // Get the last part after the last slash
+            $parts = explode('/', $key);
+            $attributeName = end($parts);
+            $cleaned[$attributeName] = $value;
+        }
+
+        return $cleaned;
+    }
 }
