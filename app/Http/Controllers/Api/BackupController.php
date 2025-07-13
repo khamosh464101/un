@@ -15,9 +15,24 @@ class BackupController extends Controller
      */
     public function backup()
     {
-        Artisan::call('backup:run --only-db');
-        return response()->json(['message' => "Successfully generated backup!"]);
+        try {
+            Artisan::call('backup:run', ['--only-db' => true]);
+
+            return response()->json([
+                'message' => 'Successfully generated backup!',
+                'output' => Artisan::output()
+            ], 200);
+        } catch (\Exception $e) {
+            // You can log the full error for debugging
+            \Log::error('Database backup failed: ' . $e->getMessage());
+
+            return response()->json([
+                'message' => 'Backup failed!',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
+
 
     public function uploadBackup(Request $request) {
         if ($request->hasFile('file') && $request->file('file')->isValid()) {

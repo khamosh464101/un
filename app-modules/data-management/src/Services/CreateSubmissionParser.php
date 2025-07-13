@@ -29,6 +29,7 @@ use Modules\DataManagement\Models\Resettlement;
 use Modules\DataManagement\Models\RecentAssistance;
 use Modules\DataManagement\Models\InfrasttructureService;
 use Modules\DataManagement\Models\PhotoSection;
+use Modules\DataManagement\Models\SubmissionStatus;
 use Illuminate\Support\Str;
 
 use DB;
@@ -108,10 +109,15 @@ class CreateSubmissionParser
         $fillable = (new Submission)->getIgnoreIdFillable();
         $filteredData = array_intersect_key($submission, array_flip($fillable));
     
+ 
+        $defaultStatus = SubmissionStatus::where('is_default', true)->first();
         $sub = Submission::create(
             array_merge(
-                ['dm_form_id' => 1],
-                ['today' => \Carbon\Carbon::today()->toDateString()],
+                [
+                    'dm_form_id' => 1, 
+                    'today' => \Carbon\Carbon::today()->toDateString(), 
+                    'submission_status_id' => $defaultStatus ? $defaultStatus->id : 1
+                ], 
                 $filteredData
             )
         );

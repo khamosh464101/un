@@ -31,6 +31,7 @@ Route::middleware(['auth:sanctum', 'twofactor'])->group(function () {
     Route::resource('/submission-status', SubmissionStatusController::class)->only(['store', 'edit', 'update', 'destroy']);
 
 });
+Route::get('/data-managements/submissions/edit/{id}', [SubmissionController::class, 'edit']);
 Route::post('/data-managements', [SyncKoboController::class, 'listForms'])->name('data-managements.index');
 Route::post('/data-managements/submissions/import-excel', [SubmissionController::class, 'importExcel']);
 Route::get('/data-managements/add-form-to-db', [SyncKoboController::class, 'addFormToDb']);

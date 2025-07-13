@@ -10,16 +10,17 @@ use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\File;
 use Modules\DataManagement\Models\Form;
 use Modules\DataManagement\Models\Submission;
+use Modules\DataManagement\Models\SourceInformation;
 use Modules\DataManagement\Models\SubmissionStatus;
 use Modules\DataManagement\Services\CreateSubmissionParser;
 use Modules\DataManagement\Services\FilterableService;
 use Modules\DataManagement\Services\QueryService;
+use Modules\DataManagement\Services\EditQueryService;
 use Modules\DataManagement\Services\ArchiveService;
 use Modules\Projects\Models\Project;
 use Mpdf\Mpdf;
 use App\Imports\MultiTableImport;
 use App\Models\Setting;
-
 use Google\Cloud\Vision\V1\Client\ImageAnnotatorClient;
 
 use Storage;
@@ -29,18 +30,21 @@ class SubmissionController
     protected $parser;
     protected $filterable;
     protected $query;
+    protected $editQuery;
     protected $archive;
 
     public function __construct(
         CreateSubmissionParser $submissionParser, 
         FilterableService $filterable,
         QueryService $query,
+        EditQueryService $editQuery,
         ArchiveService $archive
         )
     {
         $this->parser = $submissionParser;
         $this->filterable = $filterable->getFilterable();
         $this->query = $query->getQuery();
+        $this->editQuery = $editQuery->getQuery();
         $this->archive = $archive;
     }
 
@@ -63,6 +67,8 @@ class SubmissionController
     }
 
     public function store (Request $request) {
+    
+       
         $files = [
             'hoh_nic_photo',
             'inter_nic_photo',
@@ -87,12 +93,11 @@ class SubmissionController
             'house_document_photos',
             'house_problems_area_photos',
         ];
-        $data = $request->except(array_merge($files, $multipleFiles));
-         foreach ($data as $key => $value) {
-            if ($data[$key] == "null") {
-                $data[$key] = "";
-            }
-        }
+        $tmp = $request->except(array_merge($files, $multipleFiles));
+
+        $data = $this->cleanData($tmp);
+         $data['kbl_guzar_number'] = $tmp['kbl_guzar_number'];
+
         foreach ($files as $key => $value) {
             
             if ($request->hasFile($value) && $request->file($value)->isValid()) {
@@ -120,6 +125,108 @@ class SubmissionController
         return response()->json(["message" => $result['error']], 500);
 
     
+    }
+
+    public function edit($id) {
+        $data = Submission::with($this->editQuery)->find($id);
+        return $data;
+    }
+
+    function cleanData($data) {
+        $form = Form::first();
+         $dataObject = json_decode($form->raw_schema);
+          $survey = $dataObject->asset->content->survey;
+
+        foreach ($survey as $key => $row) {
+
+            if (
+                isset($row->relevant) && ($row->type ?? '') !== 'begin_group' && array_key_exists($row->name, $data)
+            ) {
+                $relevant = $row->relevant;
+
+                if (strpos($relevant, '!=') !== false) {
+                    
+                    $keyValue = $this->getKeyValue($relevant);
+                    if (($data[$keyValue['variable']] ?? '') === $keyValue['value']) {
+                        unset($data[$row->name]);
+                    }
+                } elseif (strpos($relevant, '=') !== false) {
+                    $keyValue = $this->getKeyValue($relevant);
+                    if (($data[$keyValue['variable']] ?? '') !== $keyValue['value'] ) {
+                        logger()->info('this is the key inside' . ++$key);
+                        unset($data[$row->name]);
+                    }
+                } else {
+                    $keyValue = $this->getKeyValueSelected($relevant);
+                    if (($data[$keyValue['variable']] ?? '') !== $keyValue['value'] ) {
+                        unset($data[$row->name]);
+                    }
+                }
+            }
+        }
+
+        $education = ['access_school',
+        'type_school',
+        'nearest_school',
+        'access_school_university',
+        'access_school_madrasa',
+        'Household_members_attend_school_present',
+        'members_attend_school_no',
+        'members_attend_school_yes_boys',
+        'members_attend_school_yes_girls',
+        'Household_members_attend_madrasa_present_howmany',
+        'members_attend_madrasa_no',
+        'members_attend_madrasa_yes_boys',
+        'members_attend_madrasa_yes_girls',
+        'Household_members_attend_university_present',
+        'litrate_Household_member',
+        'number_male_child_Household',
+        'access_education_photo'];
+
+        if ($data['access_education'] !== 'yes') {
+            foreach ($education as $value) {
+                unset($data[$value]);
+            }
+        }
+
+        foreach ($data as $key => $value) {
+            
+            if ($data[$key] == "null") {
+                $data[$key] = "";
+            }
+        }
+
+        return $data;
+    }
+
+    function getKeyValue($condition) {
+        // Match: ${variable} [operator] 'value' or "value"
+        $pattern = "/\\$\\{(\w+)\\}\\s*([!=<>]+)\\s*['\"]([^'\"]+)['\"]/";
+    
+        if (preg_match($pattern, $condition, $matches)) {
+            return [
+                'variable' => $matches[1],  // e.g., survey_province
+                'operator' => $matches[2],  // e.g., =
+                'value'    => $matches[3],  // e.g., survey_kabul
+            ];
+        }
+    
+        return false; // No match
+    }
+
+    function getKeyValueSelected($relevant) {
+        // Match: selected(${variable}, "value") or selected(${variable}, 'value')
+        $pattern = '/selected\(\$\{(\w+)\},\s*[\'"]([^\'"]+)[\'"]\)/';
+    
+        if (preg_match($pattern, $relevant, $matches)) {
+            return [
+                'variable' => $matches[1],  // e.g., survey_province
+                'value' => $matches[2],  // e.g., =
+
+            ];
+        }
+    
+        return false;
     }
 
     public static function getFileName($prefix, $file) {
