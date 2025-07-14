@@ -26,7 +26,7 @@ class TypeReturnDocumentPhoto extends Model
 
     public function getTypeReturnDocumentPhotoAttribute($value)
     {
-        if ($returnRawPhoto) {
+        if ($this->returnRawPhoto) {
             return $value;
         }
         return $value ? asset("storage/kobo-attachments/$value") : asset('import/assets/post-pic-dummy.png');

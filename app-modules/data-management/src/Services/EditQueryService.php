@@ -29,8 +29,12 @@ class EditQueryService
             'resettlement:id,submission_id,relocate_another_place_by_government,reason_notwantto_relocate,relocate_minimum_condition',
             'recentAssistance:id,submission_id,receive_assistance,type_assistance,assistance_provided_by',
             'photoSection:id,submission_id,field_name,latitude,longitude,altitude,accuracy,photo_interviewee,photo_house_building,photo_house_door,photo_enovirment,photo_other,remarks',
-            
+            'infrasttructureService:id,submission_id,infrastructure_services_settlement',
+            'returnee.typeReturnDocumentPhoto:id,dm_returnee_id,type_return_document_photo',
+            'houseLandOwnership.landOwnershipDocument:id,dm_house_land_ownership_id,house_document_photo',
+            'houseCondition.houseProblemAreaPhoto:id,dm_house_condition_id,current_house_problem_title,current_house_problem_photo'
         ];
+        
 
         // nan_guzar_number
         // ethnicity_other
