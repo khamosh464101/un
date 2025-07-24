@@ -108,7 +108,7 @@ class Project extends Model
 
     public function getLogoAttribute($value)
     {
-        return $value ? asset("storage/$value") : asset('import/assets/post-pic-dummy.png');
+        return $value ? asset("storage/$value") : null;
     }
     public function getCreatedAtAttribute($value) {
         return Carbon::parse($value)->format('M d, Y');

@@ -36,6 +36,7 @@ use Modules\DataManagement\Models\InfrasttructureService;
 use Modules\DataManagement\Models\PhotoSection;
 use Modules\DataManagement\Models\Form;
 use Modules\DataManagement\Models\SubmissionStatus;
+use Modules\Projects\Models\Project;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Imports\HeadingRowFormatter;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
@@ -51,14 +52,15 @@ class SubmissionSheetImport implements ToModel, WithStartRow, WithHeadingRow, Wi
 {
     protected $startRow;
     protected $limit;
+    protected $chunkSize;
+    protected $projectId;
 
-     protected $chunkSize;
-
-    public function __construct($startRow, $limit)
+    public function __construct($startRow, $limit, $projectId)
     {
         $this->startRow = $startRow;
         $this->limit = $limit;
-        $this->chunkSize = 100; // Default value
+        $this->chunkSize = 5; // Default value
+        $this->projectId = $projectId;
     }
 
     // Add this setter method
@@ -91,6 +93,23 @@ class SubmissionSheetImport implements ToModel, WithStartRow, WithHeadingRow, Wi
         'access_education_photo',
         'access_health_photo',
         'access_road_photo'
+    ];
+
+     private const FEMALE_ACCESS_CIVIL_DOCUMENTS_FIELDS = [
+        'access_civil_documentation_female_tazkira',
+        'access_civil_documentation_female_birthcertificate',
+        'access_civil_documentation_female_marriagecertificate',
+        'access_civil_documentation_female_departationcard',
+        'access_civil_documentation_female_drivinglicense',
+    ];
+
+    private const OTHERS = [
+        'house_adequate_family_size_no_other',
+        'members_attend_madrasa_no',
+        'members_attend_madrasa_yes_boys',
+        'members_attend_madrasa_yes_girls',
+        'Household_member_participate_yes',
+
     ];
 
     
@@ -291,13 +310,14 @@ class SubmissionSheetImport implements ToModel, WithStartRow, WithHeadingRow, Wi
                     }
                 }
 
-                if (in_array($surveyItem->name, $house_condition, true)) {
-                    $result = $this->getSingleValue($surveyItem, $row, $choices, $surveyItem->name);
+                // HOUSE CONDITION => DIRECTLY FROM KOBO
+                // if (in_array($surveyItem->name, $house_condition, true)) {
+                //     $result = $this->getSingleValue($surveyItem, $row, $choices, $surveyItem->name);
                 
-                    if ($result !== 12345) { 
-                        $house_condition_data[$surveyItem->name] = $result;
-                    }
-                }
+                //     if ($result !== 12345) { 
+                //         $house_condition_data[$surveyItem->name] = $result;
+                //     }
+                // }
 
                 if (in_array($surveyItem->name, $access_basic_service, true)) {
                     $result = $this->getSingleValue($surveyItem, $row, $choices, $surveyItem->name);
@@ -371,38 +391,9 @@ class SubmissionSheetImport implements ToModel, WithStartRow, WithHeadingRow, Wi
                     }
                 }
 
-                if (in_array($surveyItem->name, $Infrasttructure_service, true)) {
+                // INFRASTRUCTRUE SERVICE DIRECTLY FROM KOBO
+                // PHOTO SECTION DIRECTLY FROM KOBO
 
-                    if (isset($surveyItem->label)) {
-                        $filtered = [];
-                        foreach ($row as $key => $value) {
-                            if (strpos($key, $surveyItem->label[0]) === 0) { // key starts with 'kbl'
-                                $filtered[$key] = $value;
-                            }
-                        }
-                        logger()->info("this is what you got?", $filtered);
-                        // isset($row[$surveyItem->label[0]])
-                        // $labelValue = $row[$surveyItem->label[0]];
-                        // $result = $this->checkChoice($choices, $labelValue);
-                        // if ($result) {
-                        //     return $result;
-                        // }
-            
-                        // if (in_array($fieldName, self::PHOTOS)) {
-                        //     return $labelValue; // FOR NOW
-                        // }
-                        // if (in_array($fieldName, self::DATES)) {
-                        //     return $this->getDate($labelValue); 
-                        // }
-                        // return $labelValue;
-                        
-            
-                    } 
-                
-                    if ($result !== 12345) { 
-                        $Infrasttructure_service_data[$surveyItem->name] = $result;
-                    }
-                }
 
          
                 
@@ -414,6 +405,8 @@ class SubmissionSheetImport implements ToModel, WithStartRow, WithHeadingRow, Wi
                 'dm_form_id' => $form->id,
                 'submission_status_id' => $defaultStatus ? $defaultStatus->id : 1
             ]));
+            $project = Project::find($this->projectId);
+            $project->submissions()->syncWithoutDetaching([$submission->id]);
 
             $service = new KoboService();
             $parser = new KoboSubmissionParser($service);
@@ -494,18 +487,19 @@ class SubmissionSheetImport implements ToModel, WithStartRow, WithHeadingRow, Wi
                 }
             }
 
-            $house_condition_data['submission_id'] = $submission->id;
-            $house_condition = new HouseCondition($house_condition_data);
-            $house_condition->save();
-            if (isset($kobo_submission['house_problems_area_photos'])) {
-                foreach ($kobo_submission['house_problems_area_photos'] as $key => $value) {
-                    HouseProblemAreaPhoto::create([
-                        'current_house_problem_title' => $value["start_survey/house_condition/house_problems_area_photos/current_house_problem_title"],
-                        'current_house_problem_photo' => $value["start_survey/house_condition/house_problems_area_photos/current_house_problem_photo"],
-                        'dm_house_condition_id' => $house_condition->id
-                    ]);
-                }
-            }
+            $parser->createHouseCondition($kobo_submission, $submission);
+            // $house_condition_data['submission_id'] = $submission->id;
+            // $house_condition = new HouseCondition($house_condition_data);
+            // $house_condition->save();
+            // if (isset($kobo_submission['house_problems_area_photos'])) {
+            //     foreach ($kobo_submission['house_problems_area_photos'] as $key => $value) {
+            //         HouseProblemAreaPhoto::create([
+            //             'current_house_problem_title' => $value["start_survey/house_condition/house_problems_area_photos/current_house_problem_title"],
+            //             'current_house_problem_photo' => $value["start_survey/house_condition/house_problems_area_photos/current_house_problem_photo"],
+            //             'dm_house_condition_id' => $house_condition->id
+            //         ]);
+            //     }
+            // }
 
             $access_basic_service_data['submission_id'] = $submission->id;
             $access_basic_service = new AccessBasicService($access_basic_service_data);
@@ -557,7 +551,7 @@ class SubmissionSheetImport implements ToModel, WithStartRow, WithHeadingRow, Wi
 
     public function startRow(): int
     {
-        return $this->startRow ?? 1; // Start from row 31 (skips first 30 rows)
+        return $this->startRow ?? 2; // Start from row 31 (skips first 30 rows)
     }
 
 
@@ -583,25 +577,38 @@ class SubmissionSheetImport implements ToModel, WithStartRow, WithHeadingRow, Wi
         return false;
     }
 
-    // THIS IS THE MAIN ONE
+    /// THIS IS THE MAIN ONE
     private function getSingleValue($surveyItem, $row, $choices, $fieldName) {
-        if (isset($surveyItem->label) && isset($row[$surveyItem->label[0]])) {
-            $labelValue = $row[$surveyItem->label[0]];
-            $result = $this->checkChoice($choices, $labelValue, $surveyItem);
-            if ($result) {
-                return $result;
+        if (isset($surveyItem->label)) {
+            $label = $surveyItem->label[0];
+            if (in_array($fieldName, self::FEMALE_ACCESS_CIVIL_DOCUMENTS_FIELDS)) {
+                $label = $label . ' Female';
             }
 
-            if (in_array($fieldName, self::PHOTOS)) {
-                return $labelValue; // FOR NOW
+            if (in_array($fieldName, self::OTHERS)) {
+                $label = $label . ' Second';
             }
-            if (in_array($fieldName, self::DATES)) {
-                return $this->getDate($labelValue); 
-            }
-            return $labelValue;
-            
 
-        } 
+            if ( isset($row[$label])) {
+                $labelValue = $row[$label];
+                $result = $this->checkChoice($choices, $labelValue, $surveyItem);
+                if ($result) {
+                    return $result;
+                }
+
+                if (in_array($fieldName, self::PHOTOS)) {
+                    return $labelValue; // FOR NOW
+                }
+                if (in_array($fieldName, self::DATES)) {
+                    return $this->getDate($labelValue); 
+                }
+                return $labelValue;
+                
+
+            } 
+        }
+        
+        
         if(isset($row[$surveyItem->name])) {
             $value = $row[$surveyItem->name];
             if (in_array($fieldName, self::DATES)) {

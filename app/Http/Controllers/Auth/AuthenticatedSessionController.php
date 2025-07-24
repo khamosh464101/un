@@ -22,10 +22,17 @@ class AuthenticatedSessionController extends Controller
         // this partd added for 2FA
         $request->user()->generateTwoFactorCode();
         $request->user()->notify(new SendTwoFactorCode());
-        $token = $request->user()->createToken('token-name')->plainTextToken;
+        $token = $request->user()->createToken('token-name');
+
+        if (!$request->remember) {
+        // Short-lived token if not "remember me"
+        $token->accessToken->update([
+            'expires_at' => now()->addMinutes(1400)
+        ]);
+    }
         return response([
             'user' => $request->user(),
-            'access_token' => $token,
+            'access_token' => $token->plainTextToken,
             'permissions' => $request->user()->getAllPermissions()->pluck('name'),
         ]);
 

@@ -14,6 +14,7 @@ class FoodConsumptionScore extends Model
         'days_inweek_eaten_pulse',
         'days_inweek_eaten_vegetables',
         'days_inweek_eaten_fruits',
+        'days_inweek_eaten_animal',
         'days_inweek_eaten_dairy',
         'days_inweek_eaten_oil',
         'days_inweek_eaten_sugar',

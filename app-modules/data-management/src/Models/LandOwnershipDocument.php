@@ -29,7 +29,7 @@ class LandOwnershipDocument extends Model
     //     if ($this->returnRawPhoto) {
     //         return $value;
     //     }
-    //     return $value ? asset("storage/kobo-attachments/$value") : asset('import/assets/post-pic-dummy.png');
+    //     return $value ? asset("storage/kobo-attachments/$value") : null;
     // }
     public function getHouseDocumentPhotoAttribute($value)
     {
@@ -37,13 +37,13 @@ class LandOwnershipDocument extends Model
             return $value;
         }
         if (!$value) {
-            return asset('import/assets/post-pic-dummy.png');
+            return null;
         }
         $originalPath = storage_path("app/public/kobo-attachments/$value");
         $publicStoragePath = "storage/kobo-attachments/$value"; 
         if (!file_exists($originalPath)) {
             \Log::warning("Photo file not found at: " . $originalPath);
-            return asset('import/assets/post-pic-dummy.png');
+            return null;
         }
 
 

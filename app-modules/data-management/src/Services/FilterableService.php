@@ -175,6 +175,7 @@ class FilterableService
         'accessBasicService__Household_members_attend_university_present',
         'accessBasicService__litrate_Household_member',
         'accessBasicService__number_male_child_Household',
+        'accessBasicService__number_female_child_Household',
         'accessBasicService__access_education_photo',
         'accessBasicService__access_education_no',
 
@@ -197,6 +198,7 @@ class FilterableService
         'foodConsumptionScore__days_inweek_eaten_pulse',
         'foodConsumptionScore__days_inweek_eaten_vegetables',
         'foodConsumptionScore__days_inweek_eaten_fruits',
+        'foodConsumptionScore__days_inweek_eaten_animal',
         'foodConsumptionScore__days_inweek_eaten_dairy',
         'foodConsumptionScore__days_inweek_eaten_oil',
         'foodConsumptionScore__days_inweek_eaten_sugar',

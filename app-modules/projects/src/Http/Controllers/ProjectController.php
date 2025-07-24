@@ -149,6 +149,20 @@ class ProjectController
 
     }
 
+    public function editGozar(Request $request) {
+        $project = Project::find($request->id);
+        if ($request->district_id !== $request->prv_district_id) {
+            $project->districts()->detach([$request->prv_district_id]);
+            $project->districts()->syncWithoutDetaching([$request->district_id]);
+        }
+        
+        $diffs = array_diff($request->prv_gozars_id, $request->gozars_id);
+
+        $project->gozars()->detach($diffs);
+        $project->gozars()->syncWithoutDetaching($request->gozars_id);
+        return response()->json($project->load('gozars')->load('districts.province'), 201);
+    }
+
     public function removeGozar(Request $request) {
         $project = Project::find($request->id);
         $gozar = Gozar::find($request->gozar_id);

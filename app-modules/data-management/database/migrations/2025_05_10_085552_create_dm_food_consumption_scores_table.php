@@ -17,6 +17,7 @@ return new class extends Migration
             $table->tinyInteger('days_inweek_eaten_pulse');
             $table->tinyInteger('days_inweek_eaten_vegetables');
             $table->tinyInteger('days_inweek_eaten_fruits');
+            $table->tinyInteger('days_inweek_eaten_animal');
             $table->tinyInteger('days_inweek_eaten_dairy');
             $table->tinyInteger('days_inweek_eaten_oil');
             $table->tinyInteger('days_inweek_eaten_sugar');

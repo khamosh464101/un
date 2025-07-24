@@ -17,6 +17,7 @@ class TwoFactorController extends Controller
             'two_factor_code' => ['integer', 'required'],
         ]);
         $user = auth()->user();
+        // return response()->json(["front" => $request->input('two_factor_code'), 'back' => $user->two_factor_code ]);
         if ($request->input('two_factor_code') !== $user->two_factor_code) {
             return response()->json(['message' => 'Invalid 2FA code'], 401);
         }

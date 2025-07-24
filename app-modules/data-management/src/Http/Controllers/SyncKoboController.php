@@ -30,6 +30,7 @@ class SyncKoboController
         $limit = intval($request->limitRow);
         $forms = $this->kobo->getFormSubmissions($startRow, $limit, $request->formId);
         $data = $forms; // Ensure this is a JSON-decoded array
+        $projectId = $request->projectId;
         // do {
             foreach ($data['results'] as $key => $value) {
                 $submission = Submission::where('_id', $value['_id'])->first();
@@ -37,7 +38,7 @@ class SyncKoboController
                     continue;
                 }
                 $result = $this->cleanKoboSubmissionKeys($value);
-                $this->parser->parseAndReturn($result);
+                $this->parser->parseAndReturn($result, $projectId);
             }
 
             return response()->json(['message' => 'Successfully inserted into the system from kobo.'], 201);

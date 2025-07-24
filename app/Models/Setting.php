@@ -15,7 +15,7 @@ class Setting extends Model
     // public function getValueAttribute($value)
     // {
     //     if ($this->type === 'file') {
-    //         return $value ? asset("storage/$value") : asset('import/assets/post-pic-dummy.png');
+    //         return $value ? asset("storage/$value") : null;
     //     }
     //     return $value;
     // }

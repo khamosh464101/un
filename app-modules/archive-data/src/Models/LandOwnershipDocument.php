@@ -21,7 +21,7 @@ class LandOwnershipDocument extends Model
             return $value;
         }
         $tmpName = $this->houseLandOwnership->submission->_id . '-' . $value;
-        return $value ? asset("storage/kobo-attachments/$tmpName") : asset('import/assets/post-pic-dummy.png');
+        return $value ? asset("storage/kobo-attachments/$tmpName") : null;
     }
 
     public function houseLandOwnership(): BelongsTo

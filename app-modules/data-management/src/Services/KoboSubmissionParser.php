@@ -30,6 +30,7 @@ use Modules\DataManagement\Models\RecentAssistance;
 use Modules\DataManagement\Models\InfrasttructureService;
 use Modules\DataManagement\Models\PhotoSection;
 use Modules\DataManagement\Models\SubmissionStatus;
+use Modules\Projects\Models\Project;
 use Illuminate\Support\Str;
 
 use DB;
@@ -44,12 +45,13 @@ class KoboSubmissionParser
     }
 
 
-    public function parseAndReturn(array $submission)
+    public function parseAndReturn(array $submission, $projectId)
     {
+        logger()->info("thhisisss is project id start" . $projectId);
 
         try {
-           $savedSubmission = DB::transaction(function () use ($submission) {
-             $sub = $this->createSubmission($submission);
+           $savedSubmission = DB::transaction(function () use ($submission, $projectId) {
+             $sub = $this->createSubmission($submission, $projectId);
             $sourceInformation = $this->createSourceInformation($submission, $sub);
            $familyInformation = $this->createFamilyInformation($submission, $sub);
            
@@ -108,7 +110,7 @@ class KoboSubmissionParser
 
     }
 
-    function createSubmission($submission) {
+    function createSubmission($submission, $projectId) {
         $submission['start'] = $this->convertToMySQLDateTime($submission['start']);
         $submission['end'] = $this->convertToMySQLDateTime($submission['end']);
         $submission['_submission_time'] = $this->convertToMySQLDateTime($submission['_submission_time']);
@@ -120,6 +122,10 @@ class KoboSubmissionParser
         $sub = Submission::create(
             array_merge(['dm_form_id' => 1, 'submission_status_id' => $defaultStatus ? $defaultStatus->id : 1], $filteredData)
         );
+        logger()->info("thhisisss is project id" . $projectId);
+        $project = Project::find($projectId);
+        logger()->info("thhisisss is project");
+        $project->submissions()->syncWithoutDetaching([$sub->id]);
 
         return $sub;
     }

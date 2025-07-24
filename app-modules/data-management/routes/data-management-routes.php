@@ -12,13 +12,18 @@ Route::middleware(['auth:sanctum', 'twofactor'])->group(function () {
 
     Route::post('/data-managements/submissions/index', [SubmissionController::class, 'index'])->middleware('can:profile view');
     Route::post('/data-managements/submissions/store', [SubmissionController::class, 'store'])->middleware(['can:profile create']);
+    Route::post('/data-managements/submissions/update/{id}', [SubmissionController::class, 'update'])->middleware(['can:profile create']);
     Route::post('/data-managements/submissions/add-as-beneficiary', [SubmissionController::class, 'addAsBeneficairy'])->middleware(['can:add profile as beneficiary']);
     Route::post('/data-managements/submissions/remove-as-beneficiary', [SubmissionController::class, 'removeAsBeneficairy'])->middleware(['can:remove profile as beneficairy']);
     Route::post('/data-managements/submissions/download-excel', [SubmissionController::class, 'downloadExcel'])->middleware(['can:manage excel']);
     Route::post('/data-managements/submissions/import-excel', [SubmissionController::class, 'importExcel'])->middleware(['can:import excel']);
     Route::post('/data-managements/change-status', [SubmissionController::class, 'changeStatus'])->middleware('can:profile update');
     Route::post('/data-managements/submissions/move-to-archive', [SubmissionController::class, 'moveToArchive'])->middleware(['can:move profile to archive']);
+    Route::post('/data-managements/submissions/add-photo', [SubmissionController::class, 'addPhoto'])->middleware(['can:profile create']);
+    Route::post('/data-managements/submissions/remove-photo', [SubmissionController::class, 'removePhoto'])->middleware(['can:profile create']);
+    Route::post('/data-managements/submissions/update-photo', [SubmissionController::class, 'updatePhoto'])->middleware(['can:profile create']);
     Route::delete('/data-managements/submissions/{id}', [SubmissionController::class, 'destroy'])->middleware(['can:profile delete']);
+
 
     Route::get('/data-managements/excels', [ExcelController::class, 'list'])->middleware(['can:manage excel']);
     Route::post('/data-managements/uplaod-excel', [ExcelController::class, 'uploadFile'])->middleware(['can:manage excel']);

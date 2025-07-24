@@ -35,7 +35,7 @@ class PhotoSection extends Model
         if ($this->returnRawPhoto) {
             return $value;
         }
-        return $value ? asset("storage/kobo-attachments/$value") : asset('import/assets/post-pic-dummy.png');
+        return $value ? asset("storage/kobo-attachments/$value") :null;
     }
 
     public function getPhotoHouseBuildingAttribute($value)
@@ -43,7 +43,7 @@ class PhotoSection extends Model
         if ($this->returnRawPhoto) {
             return $value;
         }
-        return $value ? asset("storage/kobo-attachments/$value") : asset('import/assets/post-pic-dummy.png');
+        return $value ? asset("storage/kobo-attachments/$value") :null;
     }
 
     public function getPhotoHouseDoorAttribute($value)
@@ -51,7 +51,7 @@ class PhotoSection extends Model
         if ($this->returnRawPhoto) {
             return $value;
         }
-        return $value ? asset("storage/kobo-attachments/$value") : asset('import/assets/post-pic-dummy.png');
+        return $value ? asset("storage/kobo-attachments/$value") :null;
     }
 
     public function getPhotoEnovirmentAttribute($value)
@@ -59,7 +59,7 @@ class PhotoSection extends Model
         if ($this->returnRawPhoto) {
             return $value;
         }
-        return $value ? asset("storage/kobo-attachments/$value") : asset('import/assets/post-pic-dummy.png');
+        return $value ? asset("storage/kobo-attachments/$value") :null;
     }
 
     public function getPhotoOtherAttribute($value)
@@ -67,7 +67,7 @@ class PhotoSection extends Model
         if ($this->returnRawPhoto) {
             return $value;
         }
-        return $value ? asset("storage/kobo-attachments/$value") : asset('import/assets/post-pic-dummy.png');
+        return $value ? asset("storage/kobo-attachments/$value") :null;
     }
 
 
@@ -87,7 +87,7 @@ class PhotoSection extends Model
 // public function getPhotoIntervieweeAttribute($value)
 // {
 //     if (!$value) {
-//         return asset('import/assets/post-pic-dummy.png');
+//         returnnull;
 //     }
 
 //     $filename = $this->submission->_id . '-' . $value;
@@ -96,7 +96,7 @@ class PhotoSection extends Model
 
 //     // Check if original file exists
 //     if (!file_exists($originalPath)) {
-//         return asset('import/assets/post-pic-dummy.png');
+//         returnnull;
 //     }
 
 //     // Create tmp directory if it doesn't exist
@@ -136,14 +136,14 @@ class PhotoSection extends Model
     // public function getPhotoIntervieweeAttribute($value)
     // {
     //     $tmpName = $this->submission->_id . '-' . $value;
-    //     return $value ? asset("storage/kobo-attachments/$tmpName") : asset('import/assets/post-pic-dummy.png');
+    //     return $value ? asset("storage/kobo-attachments/$tmpName") :null;
     // }
 
      public function getPhotoIntervieweeAttribute($value)
     {
         // 1. Handle missing value
         if (!$value) {
-            return asset('import/assets/post-pic-dummy.png');
+            returnnull;
         }
         $originalPath = storage_path("app/public/kobo-attachments/$value");
         $publicStoragePath = "storage/kobo-attachments/$value"; // Path for asset()
@@ -151,7 +151,7 @@ class PhotoSection extends Model
         // 3. Check if original file exists
         if (!file_exists($originalPath)) {
             \Log::warning("Photo file not found at: " . $originalPath);
-            return asset('import/assets/post-pic-dummy.png');
+            returnnull;
         }
 
         // 4. Try to fix image orientation.

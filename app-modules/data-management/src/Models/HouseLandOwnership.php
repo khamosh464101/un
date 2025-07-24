@@ -41,7 +41,7 @@ class HouseLandOwnership extends Model
         if ($this->returnRawPhoto) {
             return $value;
         }
-        return $value ? asset("storage/kobo-attachments/$value") : asset('import/assets/post-pic-dummy.png');
+        return $value ? asset("storage/kobo-attachments/$value") : null;
     }
 
     public function submission(): BelongsTo

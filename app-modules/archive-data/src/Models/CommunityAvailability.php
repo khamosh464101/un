@@ -30,6 +30,6 @@ class CommunityAvailability extends Model
             return $value;
         }
         $tmpName = $this->submission->_id . '-' . $value;
-        return $value ? asset("storage/kobo-attachments/$tmpName") : asset('import/assets/post-pic-dummy.png');
+        return $value ? asset("storage/kobo-attachments/$tmpName") : null;
     }
 }

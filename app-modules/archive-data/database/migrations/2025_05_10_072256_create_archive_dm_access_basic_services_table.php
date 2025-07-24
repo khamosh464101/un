@@ -41,6 +41,7 @@ return new class extends Migration
             $table->string('Household_members_attend_university_present')->nullable();
             $table->string('litrate_Household_member')->nullable();
             $table->string('number_male_child_Household')->nullable();
+            $table->string('number_female_child_Household')->nullable();
             $table->string('access_education_photo')->nullable();
             $table->string('access_education_no')->nullable();
 

@@ -76,6 +76,13 @@ return [
              *
              * For a complete list of available customization options, see https://github.com/spatie/db-dumper
              */
+            'mysql' => [
+                'dump' => [
+                    'dump_binary_path' => '/Applications/XAMPP/xamppfiles/bin',
+                    'use_single_transaction' => true,
+                    'timeout' => 60 * 5,
+                ],
+            ],
             'databases' => [
                 'mysql',
             ],

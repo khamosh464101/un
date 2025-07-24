@@ -39,7 +39,7 @@ class Submission extends Model
     public function getMapImageAttribute()
     {
         $tmpName = $this->_id . '.jpg';
-        return $tmpName ? asset("storage/gis/$tmpName") : asset('import/assets/post-pic-dummy.png');
+        return $tmpName ? asset("storage/gis/$tmpName") : null;
     }
 
     public function projects(): BelongsToMany

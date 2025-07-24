@@ -39,6 +39,7 @@ class AccessBasicService extends Model
         'Household_members_attend_university_present',
         'litrate_Household_member',
         'number_male_child_Household',
+        'number_female_child_Household',
         'access_education_photo',
         'access_education_no',
 
@@ -73,7 +74,7 @@ class AccessBasicService extends Model
         if ($this->returnRawPhoto) {
             return $value;
         }
-        return $value ? asset("storage/kobo-attachments/$value") : asset('import/assets/post-pic-dummy.png');
+        return $value ? asset("storage/kobo-attachments/$value") : null;
     }
 
     public function getAccessSanitationPhotoAttribute($value)
@@ -81,7 +82,7 @@ class AccessBasicService extends Model
         if ($this->returnRawPhoto) {
             return $value;
         }
-        return $value ? asset("storage/kobo-attachments/$value") : asset('import/assets/post-pic-dummy.png');
+        return $value ? asset("storage/kobo-attachments/$value") : null;
     }
 
     public function getAccessEducationPhotoAttribute($value)
@@ -89,7 +90,7 @@ class AccessBasicService extends Model
         if ($this->returnRawPhoto) {
             return $value;
         }
-        return $value ? asset("storage/kobo-attachments/$value") : asset('import/assets/post-pic-dummy.png');
+        return $value ? asset("storage/kobo-attachments/$value") : null;
     }
 
     public function getAccessHealthPhotoAttribute($value)
@@ -97,7 +98,7 @@ class AccessBasicService extends Model
         if ($this->returnRawPhoto) {
             return $value;
         }
-        return $value ? asset("storage/kobo-attachments/$value") : asset('import/assets/post-pic-dummy.png');
+        return $value ? asset("storage/kobo-attachments/$value") : null;
     }
 
     public function getAccessRoadPhotoAttribute($value)
@@ -105,7 +106,7 @@ class AccessBasicService extends Model
         if ($this->returnRawPhoto) {
             return $value;
         }
-        return $value ? asset("storage/kobo-attachments/$value") : asset('import/assets/post-pic-dummy.png');
+        return $value ? asset("storage/kobo-attachments/$value") : null;
     }
 
     public function submission(): BelongsTo

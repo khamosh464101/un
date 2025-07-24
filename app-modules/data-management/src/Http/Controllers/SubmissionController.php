@@ -11,8 +11,9 @@ use Illuminate\Support\Facades\File;
 use Modules\DataManagement\Models\Form;
 use Modules\DataManagement\Models\Submission;
 use Modules\DataManagement\Models\SourceInformation;
+use Modules\DataManagement\Models\HouseProblemAreaPhoto;
 use Modules\DataManagement\Models\SubmissionStatus;
-use Modules\DataManagement\Services\CreateSubmissionParser;
+use Modules\DataManagement\Services\UpdateSubmissionParser;
 use Modules\DataManagement\Services\FilterableService;
 use Modules\DataManagement\Services\QueryService;
 use Modules\DataManagement\Services\EditQueryService;
@@ -22,6 +23,7 @@ use Mpdf\Mpdf;
 use App\Imports\MultiTableImport;
 use App\Models\Setting;
 use Google\Cloud\Vision\V1\Client\ImageAnnotatorClient;
+use Illuminate\Http\UploadedFile;
 
 use Storage;
 
@@ -34,7 +36,7 @@ class SubmissionController
     protected $archive;
 
     public function __construct(
-        CreateSubmissionParser $submissionParser, 
+        UpdateSubmissionParser $submissionParser, 
         FilterableService $filterable,
         QueryService $query,
         EditQueryService $editQuery,
@@ -123,14 +125,71 @@ class SubmissionController
             return response()->json(["message" => 'Successfully added!'], 201);
         }
         return response()->json(["message" => $result['error']], 500);
-
-    
     }
 
     public function edit($id) {
-        $data = Submission::with($this->editQuery)->find($id);
+        $data = Submission::with([
+            ...$this->editQuery,
+            'returnee.typeReturnDocumentPhoto' => function($query) {
+                $query->select('id', 'dm_returnee_id',  'type_return_document_photo');
+            },
+            'houseLandOwnership.landOwnershipDocument' => function($query) {
+                $query->select('id', 'dm_house_land_ownership_id',  'house_document_photo');
+            },
+            'houseCondition.houseProblemAreaPhoto' => function($query) {
+                $query->select('id', 'dm_house_condition_id',  'current_house_problem_title', 'current_house_problem_photo');
+            },
+
+        ])->find($id);
         return $data;
     }
+
+    public function update(Request $request, $id) {
+        $files = [
+            'hoh_nic_photo',
+            'inter_nic_photo',
+            'inter_nic_photo_owner',
+            'water_point_photo',
+            'access_sanitation_photo',
+            'access_education_photo',
+            'access_health_photo',
+            'access_road_photo',
+
+            'community_center_photo',
+            'photo_interviewee',
+            'photo_house_building',
+            'photo_house_door',
+            'photo_enovirment',
+            'photo_other'
+
+        ];
+        // contains multiple files
+        $multipleFiles = [
+            'type_return_document_photos',
+            'house_document_photos',
+            'house_problems_area_photos',
+        ];
+
+        $tmp = $request->except(array_merge($files, $multipleFiles));
+
+         $data = $this->cleanData($tmp);
+         $data['kbl_guzar_number'] = $tmp['kbl_guzar_number'];
+         unset($data['map_image']);
+         
+        if ($request->input('house_problems_area_photos')) {
+           $data['house_problems_area_photos'] = $this->editArrayFileWithTitle('house_problems_area_photos', $request, $id);
+            }
+        
+        
+
+        return   $result = $this->parser->parseAndReturn($data, $id);
+        if ($result['success'] === 'true') {
+            return response()->json(["message" => 'Successfully added!'], 201);
+        }
+        return response()->json(["message" => $result['error']], 500);
+    }
+
+
 
     function cleanData($data) {
         $form = Form::first();
@@ -253,26 +312,280 @@ class SubmissionController
     {
         $groupItems = $request->input($name); // usually the text part
         $files = $request->file($name); // uploaded files (if any)
-    
         $storedFiles = [];
-    
         foreach ($groupItems as $key => $row) {
             $storedFiles[$key]['current_house_problem_title'] = $row['current_house_problem_title'];
-    
             $file = $files[$key]['current_house_problem_photo'] ?? null;
-    
-                $uuidPrefix = Str::uuid();
-                $path = $file->storeAs(
-                    'kobo-attachments',
-                    $this->getFileName($uuidPrefix, $file)
-                );
-                $path_clean = str_replace('kobo-attachments/', '', $path);
+            $uuidPrefix = Str::uuid();
+            $path = $file->storeAs(
+                'kobo-attachments',
+                $this->getFileName($uuidPrefix, $file)
+            );
+            $path_clean = str_replace('kobo-attachments/', '', $path);
 
-                $storedFiles[$key]['current_house_problem_photo'] = $path_clean;
+            $storedFiles[$key]['current_house_problem_photo'] = $path_clean;
         
         }
     
         return $storedFiles;
+    }
+ 
+
+public function editArrayFileWithTitle(string $name, Request $request, $id): array
+{
+    $groupItems = $request->input($name);
+    $files = $request->file($name);
+    $storedFiles = [];
+
+    $submission = Submission::find($id);
+
+    // Delete removed records
+    foreach ($submission->houseCondition->houseProblemAreaPhoto as $photo) {
+        $exists = collect($groupItems)->contains('id', $photo->id);
+        if (!$exists) {
+            $photo->delete();
+        }
+    }
+
+    foreach ($groupItems as $key => $row) {
+        $storedFiles[$key]['current_house_problem_title'] = $row['current_house_problem_title'];
+        $file = $files[$key]['current_house_problem_photo'] ?? null;
+
+        if (!empty($row['id'])) {
+
+            // Update existing record if file is uploaded
+            if ($file instanceof UploadedFile) {
+                $record = HouseProblemAreaPhoto::find($row['id']);
+                Storage::delete("kobo-attachments/{$record->current_house_problem_photo}");
+                $uuidPrefix = Str::uuid();
+                $path = $file->storeAs('kobo-attachments', $this->getFileName($uuidPrefix, $file));
+                $path_clean = str_replace('kobo-attachments/', '', $path);
+                $storedFiles[$key]['current_house_problem_photo'] = $path_clean;
+                
+            }
+
+            $storedFiles[$key]['id'] = $row['id'];
+        } else {
+            // New record
+
+            if ($file instanceof UploadedFile) {
+                $uuidPrefix = Str::uuid();
+                $path = $file->storeAs('kobo-attachments', $this->getFileName($uuidPrefix, $file));
+                $path_clean = str_replace('kobo-attachments/', '', $path);
+                $storedFiles[$key]['current_house_problem_photo'] = $path_clean;
+            }
+        }
+    }
+
+    return $storedFiles;
+}
+
+
+    public function removePhoto(Request $request)
+{
+    $submission = Submission::find($request->submission_id);
+    if (!$submission) {
+        return response()->json(['message' => 'Submission not found'], 404);
+    }
+
+    $relation = $request->relation ? $this->snakeToCamel($request->relation) : null;
+    $table = $this->snakeToCamel($request->table);
+    $name = $request->name;
+
+    if ($relation) {
+        if (!$submission->$relation) {
+            return response()->json(['message' => "$relation not found"], 404);
+        }
+
+        // Ensure $table is a relationship method, then find the record
+        $relatedParent = $submission->$relation;
+        if (!method_exists($relatedParent, $table)) {
+            return response()->json(['message' => "$table relationship not found in $relation"], 404);
+        }
+
+        $targetRecord = $relatedParent->$table()->find($request->id);
+        if (!$targetRecord) {
+            return response()->json(['message' => "$table record not found in $relation"], 404);
+        }
+
+        if (!is_null($targetRecord->$name)) {
+            Storage::delete("kobo-attachments/{$targetRecord->$name}");
+            $targetRecord->delete(); // delete the record entirely
+        }
+    } else {
+        if (!method_exists($submission, $table)) {
+            return response()->json(['message' => "$table relationship not found"], 404);
+        }
+
+        $related = $submission->$table;
+        if (!$related) {
+            return response()->json(['message' => "$table not found"], 404);
+        }
+
+        if (!is_null($related->$name)) {
+            Storage::delete("kobo-attachments/{$related->$name}");
+            $related->$name = null;
+            $related->save(); // nullify field only
+        }
+    }
+
+    return response()->json(['message' => 'Photo removed successfully'], 200);
+}
+
+    public function updatePhoto(Request $request)
+{
+    return $request;
+    $submission = Submission::find($request->submission_id);
+    if (!$submission) {
+        return response()->json(['message' => 'Submission not found'], 404);
+    }
+
+    $relation = $request->relation ? $this->snakeToCamel($request->relation) : null;
+    $table = $this->snakeToCamel($request->table);
+    $name = $request->name;
+
+    if ($relation) {
+        if (!$submission->$relation) {
+            return response()->json(['message' => "$relation not found"], 404);
+        }
+
+        $relatedParent = $submission->$relation;
+        if (!method_exists($relatedParent, $table)) {
+            return response()->json(['message' => "$table relationship not found in $relation"], 404);
+        }
+
+        $targetRecord = $relatedParent->$table()->find($request->id);
+        if (!$targetRecord) {
+            return response()->json(['message' => "$table record not found in $relation"], 404);
+        }
+
+        // Delete old photo if exists
+        if (!is_null($targetRecord->$name)) {
+            Storage::delete("kobo-attachments/{$targetRecord->$name}");
+        }
+
+        // Upload and update new photo
+        if ($request->hasFile('photo') && $request->file('photo')->isValid()) {
+            $uuidPrefix = Str::uuid();
+            $get_file = $request->file('photo')->storeAs('kobo-attachments', $this->getFileName($uuidPrefix, $request->file('photo')));
+            $get_file_clean = str_replace('kobo-attachments/', '', $get_file);
+
+            $targetRecord->$name = $get_file_clean;
+            $targetRecord->save();
+
+            return response()->json($targetRecord, 200);
+        } else {
+            return response()->json(['message' => 'No valid photo uploaded'], 400);
+        }
+    } else {
+        if (!method_exists($submission, $table)) {
+            return response()->json(['message' => "$table relationship not found"], 404);
+        }
+
+        $related = $submission->$table;
+        if (!$related) {
+            return response()->json(['message' => "$table not found"], 404);
+        }
+
+        if (!is_null($related->$name)) {
+            Storage::delete("kobo-attachments/{$related->$name}");
+        }
+
+        if ($request->hasFile('photo') && $request->file('photo')->isValid()) {
+            $uuidPrefix = Str::uuid();
+            $get_file = $request->file('photo')->storeAs('kobo-attachments', $this->getFileName($uuidPrefix, $request->file('photo')));
+            $get_file_clean = str_replace('kobo-attachments/', '', $get_file);
+
+            $related->$name = $get_file_clean;
+            $related->save();
+
+            return response()->json($related, 200);
+        } else {
+            return response()->json(['message' => 'No valid photo uploaded'], 400);
+        }
+    }
+
+    return response()->json(['message' => 'There is a problem please try again'], 500);
+}
+
+
+    // public function updatePhoto(Request $request) {
+    //     $submission = Submission::find($request->submission_id);
+    //     if (!$submission) {
+    //         return response()->json(['message' => 'Submission not found'], 404);
+    //     }
+
+    //     $relation = $this->snakeToCamel($request->table);
+    //     $name = $request->name;
+
+    //     if ($submission->$relation) {
+    //         $related = $submission->$relation;
+
+    //         if (!is_null($related->$name)) {
+    //             Storage::delete("kobo-attachments/{$related->$name}");
+                
+    //         }
+
+    //         if ($request->hasFile('photo') && $request->file('photo')->isValid()) {
+    //             $uuidPrefix = Str::uuid();
+    //             $get_file = $request->file('photo')->storeAs('kobo-attachments', $this->getFileName($uuidPrefix, $request->file('photo')));
+    //             $get_file_clean = str_replace('kobo-attachments/', '', $get_file);
+    //             $related->$name = $get_file_clean;
+    //             $related->save(); 
+    //             return response()->json($related);
+    //         }
+            
+    //     }
+
+    //     return response()->json(['error' => 'There is a problem please try again'], 500);
+    // }
+
+    public function addPhoto(Request $request)
+{
+    $submission = Submission::find($request->submission_id);
+    if (!$submission) {
+        return response()->json(['message' => 'Submission not found'], 404);
+    }
+
+    $relation = $this->snakeToCamel($request->relation);
+    $table = $this->snakeToCamel($request->table);
+
+    if ($request->hasFile('photo') && $request->file('photo')->isValid()) {
+        $uuidPrefix = Str::uuid();
+        $get_file = $request->file('photo')->storeAs(
+            'kobo-attachments',
+            $this->getFileName($uuidPrefix, $request->file('photo'))
+        );
+        $get_file_clean = str_replace('kobo-attachments/', '', $get_file);
+
+        $relatedModel = $submission->$relation()->find($request->relation_id);
+
+        if (!$relatedModel) {
+            return response()->json(['message' => 'Related model not found'], 404);
+        }
+
+        if (!method_exists($relatedModel, $table)) {
+            return response()->json(['message' => 'Invalid table relation'], 400);
+        }
+
+        $result = $relatedModel->$table()->create([
+            $request->name => $get_file_clean,
+        ]);
+
+        return response()->json([
+            'message' => 'Photo added successfully',
+            'data' => $result,
+            'file_url' => Storage::url($get_file),
+        ]);
+    }
+
+    return response()->json(['message' => 'Invalid file upload'], 400);
+}
+
+
+
+    function snakeToCamel($string) {
+        return lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $string))));
     }
 
     public function downloadProfile($id) {

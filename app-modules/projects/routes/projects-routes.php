@@ -85,6 +85,7 @@ Route::middleware(['auth:sanctum', 'twofactor'])->group(function () {
     Route::post('/api/project/add/member', [ProjectController::class, 'addMember']);
     Route::post('/api/project/remove/member', [ProjectController::class, 'removeMember']);
     Route::post('/api/project/add/gozar', [ProjectController::class, 'addGozar']);
+    Route::post('/api/project/edit/gozar', [ProjectController::class, 'editGozar']);
     Route::post('/api/project/remove/gozar', [ProjectController::class, 'removeGozar']);
     Route::post('/api/project/remove/district', [ProjectController::class, 'removeDistrict']);
     Route::resource('/api/project', ProjectController::class)->only(['store', 'edit', 'update', 'destroy']);

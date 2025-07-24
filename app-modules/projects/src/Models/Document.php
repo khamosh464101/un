@@ -33,7 +33,7 @@ class Document extends Model
 
     // public function getPathAttribute($value)
     // {
-    //     return $value ? asset("storage/$value") : asset('import/assets/post-pic-dummy.png');
+    //     return $value ? asset("storage/$value") : null;
     // }
 
     public static function boot()

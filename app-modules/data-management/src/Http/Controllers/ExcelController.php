@@ -72,7 +72,7 @@ class ExcelController
         $limit = intval($request->limitRow ?? 100);
         
         // Configure with larger chunk size
-        $import = new MultiTableImport($startRow, $limit, 50); // Process 50 rows per chunk
+        $import = new MultiTableImport($startRow, $limit, 5, $request->projectId); // Process 50 rows per chunk
         
         // Import with progress monitoring
         Excel::import($import, $path);
