@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\MobileController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\BackupController;
 use App\Http\Controllers\SettingController;
+use App\Http\Controllers\Api\PowerbiController;
 
 Route::middleware(['auth:sanctum', 'twofactor'])->group(function () {
     Route::resource('/user', UserController::class)->only(['store']);
@@ -46,6 +47,7 @@ Route::middleware(['auth:sanctum', 'twofactor'])->group(function () {
     
 });
 
+Route::get('/powerbi-data', [PowerbiController::class, 'getBIData']);
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('verify/resend', [TwoFactorController::class, 'resend'])->name('verify.resend');
     Route::resource('verify', TwoFactorController::class)->only(['store']);
