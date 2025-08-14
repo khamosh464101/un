@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Modules\Projects\Models\Project;
+use App\Models\User;
 
 class Submission extends Model
 {
@@ -24,7 +25,8 @@ class Submission extends Model
         'status',
         'today', 
         'dm_form_id',
-        'submission_status_id'
+        'submission_status_id',
+        'user_id'
     ];
 
     public function getIgnoreIdFillable()
@@ -40,6 +42,11 @@ class Submission extends Model
     {
         $tmpName = $this->_id . '.jpg';
         return $tmpName ? asset("storage/gis/$tmpName") : null;
+    }
+
+    public function user(): BelongsTo 
+    {
+        return $this->belongsTo(User::class);
     }
 
     public function projects(): BelongsToMany

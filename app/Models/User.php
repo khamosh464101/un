@@ -10,8 +10,11 @@ use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\Activitylog\LogOptions;
 use Modules\Projects\Models\Staff;
+use Modules\DataManagement\Models\Submission;
+use Modules\ArchiveData\Models\Submission as ArchiveSubmission;
 
 
 class User extends Authenticatable
@@ -64,6 +67,16 @@ class User extends Authenticatable
     public function staff(): BelongsTo
     {
         return $this->belongsTo(Staff::class, 'staff_id');
+    }
+
+    public function submissions(): HasMany
+    {
+        return $this->hasMany(Submission::class, 'user_id');
+    }
+
+    public function archiveSubmissions(): HasMany
+    {
+        return $this->hasMany(ArchiveSubmission::class, 'user_id');
     }
 
     public function routeNotificationForFcm()

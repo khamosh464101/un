@@ -42,6 +42,8 @@ Route::middleware(['auth:sanctum', 'twofactor'])->group(function () {
     Route::get('/mobile/notifications/delete-all', [MobileController::class, 'deleteAll']);
     Route::post('/mobile/user-update', [MobileController::class, 'updateUser']);
     Route::post('/mobile/change-password', [MobileController::class, 'changePassword']);
+    Route::get('/mobile/dashboard', [MobileController::class, 'dashboard']);
+     Route::get('/mobile/submissions', [MobileController::class, 'getSubmissions']);
 
     
     

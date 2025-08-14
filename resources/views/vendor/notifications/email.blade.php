@@ -1,7 +1,7 @@
 <x-mail::message>
 {{-- Custom Logo --}}
     <div style="text-align: center;">
-    <img src="{{ $message->embed(public_path('logo-en.png')) }}" alt="Your Logo" style="max-width: 200px; height: auto;" >
+    <img src="{{ $message->embed(public_path('logos/habitat.png')) }}" alt="Your Logo" style="max-width: 100px; height: auto;" >
     </div>
 {{-- Greeting --}}
 @if (! empty($greeting))

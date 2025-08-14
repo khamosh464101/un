@@ -151,6 +151,36 @@ class MobileController extends Controller
     return response()->json([
         'message' => 'Password changed successfully'
     ]);
-}
+
+    
+    }
+
+     public function dashboard(Request $request) {
+       $statuses = TicketStatus::withCount([
+            'tickets as tickets_count' => function ($query) use ($request) {
+                $query->where('responsible_id', Auth::user()->staff_id);
+            }
+        ])->get();
+
+        $staff = Auth::user()->staff;
+
+        return response()->json([
+            'statuses' => $statuses, 
+            'submissions' => Auth::user()->submissions->count(),
+            'projects' => $staff->tickets()
+                        ->whereHas('activity', function ($query) {
+                            $query->whereNotNull('project_id');
+                        })
+                        ->with('activity:id,project_id') // optimize select
+                        ->get()
+                        ->pluck('activity.project_id')
+                        ->unique()
+                        ->count()
+        ], 201);
+    }
+
+    public function getSubmissions() {
+        return response()->json(Auth::user()->submissions->where('submission_status_id', 3));
+    }
 
 }

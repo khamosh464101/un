@@ -28,6 +28,7 @@ return new class extends Migration
             $table->date('archived_at');
             $table->foreignId('archived_by');
             $table->foreignId('submission_status_id');
+            $table->foreignId('user_id');
             $table->timestamps();
         });
        

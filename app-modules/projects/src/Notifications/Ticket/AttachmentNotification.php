@@ -104,10 +104,11 @@ class AttachmentNotification extends Notification
     {
         $frontendUrl = config('frontend.url');
             $url = $frontendUrl . '/project-management/tasks/' . $this->ticket->id;
+            $imageUrl = asset('logos/habitat.png');
         return (new FcmMessage(notification: new FcmNotification(
             title : "Task Attachement",
             body: "{$this->user->name} has {$this->action} a Attachement on \"{$this->ticket->title}\" task",
-            image : 'https://www.gstatic.com/mobilesdk/240501_mobilesdk/firebase_28dp.png', 
+            image : $imageUrl, 
             )))
             ->data(['link' => $url,
             'icon' => $this->user->photo, 'uuid' => $this->uuid, 'test' => '123456789'])

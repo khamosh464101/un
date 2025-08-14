@@ -26,6 +26,7 @@ return new class extends Migration
             $table->string('status');
             $table->foreignId('dm_form_id');
             $table->foreignId('submission_status_id');
+            $table->foreignId('user_id');
             $table->timestamps();
         });
        

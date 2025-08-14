@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Modules\Projects\Models\Project;
+use App\Models\User;
 use Modules\DataManagement\Models\SubmissionStatus;
 
 
@@ -28,7 +29,8 @@ class Submission extends Model
         'dm_form_id',
         'archived_at',
         'archived_by',
-        'submission_status_id'
+        'submission_status_id',
+        'user_id'
     ];
 
     protected $appends = ['map_image'];
@@ -48,6 +50,11 @@ class Submission extends Model
     public function form(): BelongsTo
     {
         return $this->belongsTo(Form::class);
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 
     public function dstatus(): BelongsTo
