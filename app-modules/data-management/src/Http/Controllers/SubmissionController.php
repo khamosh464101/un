@@ -953,7 +953,8 @@ public function editArrayFileWithTitle(string $name, Request $request, $id): arr
     }
 
     private function getPath($location) {
-        return 'storage/gis/'.'W_'.$location['province_code'].'-'.$location['city_code'].'-'.$location['district_code'].'-'.$location['guzar'].'-'.$location['block'].'-'.$location['house'].'.jpg';
+        $result = ucfirst($location['district']);
+        return 'storage/gis/'."{$result}_".$location['province_code'].'-'.$location['city_code'].'-'.$location['district_code'].'-'.$location['guzar'].'-'.$location['block'].'-'.$location['house'].'.jpg';
     }
 
     public function destroy($id) {

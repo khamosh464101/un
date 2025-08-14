@@ -326,7 +326,7 @@ class SubmissionController
     }
 
     private function getPath($location) {
-        return 'storage/gis/'.'W_'.$location['province_code'].'-'.$location['city_code'].'-'.$location['district_code'].'-'.$location['guzar'].'-'.$location['block'].'-'.$location['house'].'.jpg';
+        return 'storage/gis/'.'D_'.$location['province_code'].'-'.$location['city_code'].'-'.$location['district_code'].'-'.$location['guzar'].'-'.$location['block'].'-'.$location['house'].'.jpg';
     }
 
     public function restore(Request $request) {
