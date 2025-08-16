@@ -43,7 +43,9 @@ class PhotoSection extends Model
         if ($this->returnRawPhoto) {
             return $value;
         }
-        return $value ? asset("storage/kobo-attachments/$value") : null;
+        
+        $folderName = $this->submission?->projects?->first()?->id;
+        return $value ? asset("storage/kobo-attachments/$folderName/$value") : null;
     }
 
     public function getPhotoHouseBuildingAttribute($value)
@@ -51,7 +53,8 @@ class PhotoSection extends Model
         if ($this->returnRawPhoto) {
             return $value;
         }
-        return $value ? asset("storage/kobo-attachments/$value") : null;
+        $folderName = $this->submission?->projects?->first()?->id;
+        return $value ? asset("storage/kobo-attachments/$folderName/$value") : null;
     }
 
     public function getPhotoHouseDoorAttribute($value)
@@ -59,7 +62,8 @@ class PhotoSection extends Model
         if ($this->returnRawPhoto) {
             return $value;
         }
-        return $value ? asset("storage/kobo-attachments/$value") : null;
+        $folderName = $this->submission?->projects?->first()?->id;
+        return $value ? asset("storage/kobo-attachments/$folderName/$value") : null;
     }
 
     public function getPhotoEnovirmentAttribute($value)
@@ -67,7 +71,8 @@ class PhotoSection extends Model
         if ($this->returnRawPhoto) {
             return $value;
         }
-        return $value ? asset("storage/kobo-attachments/$value") : null;
+        $folderName = $this->submission?->projects?->first()?->id;
+        return $value ? asset("storage/kobo-attachments/$folderName/$value") : null;
     }
 
     public function getPhotoOtherAttribute($value)
@@ -75,7 +80,8 @@ class PhotoSection extends Model
         if ($this->returnRawPhoto) {
             return $value;
         }
-        return $value ? asset("storage/kobo-attachments/$value") : null;
+        $folderName = $this->submission?->projects?->first()?->id;
+        return $value ? asset("storage/kobo-attachments/$folderName/$value") : null;
     }
 
 
@@ -130,8 +136,8 @@ class PhotoSection extends Model
 
     // public function getPhotoIntervieweeAttribute($value)
     // {
-    //     $tmpName = $this->submission->_id . '-' . $value;
-    //     return $value ? asset("storage/kobo-attachments/$tmpName") : null;
+    //     $folderName = $this->submission?->projects?->first()?->id;
+        // return $value ? asset("storage/kobo-attachments/$folderName/$value") : null;
     // }
 
     public function getPhotoIntervieweeAttribute($value)
@@ -140,8 +146,9 @@ class PhotoSection extends Model
         if (!$value) {
             return null;
         }
-        $originalPath = storage_path("app/public/kobo-attachments/$value");
-        $publicStoragePath = "storage/kobo-attachments/$value"; // Path for asset()
+        $folderName = $this->submission?->projects?->first()?->id;
+        $originalPath = storage_path("app/public/kobo-attachments/$folderName/$value");
+        $publicStoragePath = "storage/kobo-attachments/$folderName/$value"; // Path for asset()
 
         // 3. Check if original file exists
         if (!file_exists($originalPath)) {
@@ -211,24 +218,24 @@ class PhotoSection extends Model
             $photoHouseDoor = $photoSection->getRawOriginal('photo_house_door');
             $photoEnovirment = $photoSection->getRawOriginal('photo_enovirment');
             $photoOther = $photoSection->getRawOriginal('photo_other');
-
+            $folderName = $photoSection?->submission?->projects?->first()?->id;
             if (!is_null($photoInterviewee)) {
-                Storage::delete("kobo-attachments/$photoInterviewee");
+                Storage::delete("kobo-attachments/$folderName/$photoInterviewee");
             }
 
             if (!is_null($photoHouseBuilding)) {
-                Storage::delete("kobo-attachments/$photoHouseBuilding");
+                Storage::delete("kobo-attachments/$folderName/$photoHouseBuilding");
             }
 
             if (!is_null($photoHouseDoor)) {
-                Storage::delete("kobo-attachments/$photoHouseDoor");
+                Storage::delete("kobo-attachments/$folderName/$photoHouseDoor");
             }
 
             if (!is_null($photoEnovirment)) {
-                Storage::delete("kobo-attachments/$photoEnovirment");
+                Storage::delete("kobo-attachments/$folderName/$photoEnovirment");
             }
             if (!is_null($photoOther)) {
-                Storage::delete("kobo-attachments/$photoOther");
+                Storage::delete("kobo-attachments/$folderName/$photoOther");
             }
         });
     }

@@ -36,13 +36,6 @@ class Submission extends Model
         });
     }
 
-    protected $appends = ['map_image'];
-
-    public function getMapImageAttribute()
-    {
-        $tmpName = $this->_id . '.jpg';
-        return $tmpName ? asset("storage/gis/$tmpName") : null;
-    }
 
     public function user(): BelongsTo 
     {

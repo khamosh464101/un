@@ -73,6 +73,7 @@ class SubmissionController
          $survey = $dataObject->asset->content->survey;
          $choices = $dataObject->asset->content->choices;
          $location = [];
+         $firstLetter;
 
 
         foreach ($choices as $key => $value) {
@@ -85,6 +86,11 @@ class SubmissionController
             if (isset($value->name) && $value->name === $submission->sourceInformation->district_name) {
                 if (isset($value->label[1])) {
                     $location['district'] = $value->label[1];
+                    if ($value->label[0] === 'Och Tangi') {
+                        $firstLetter = 'W';
+                    } else {
+                        $firstLetter = ucfirst($value->label[0])[0];
+                    }
 
                 }
             }
@@ -183,7 +189,7 @@ class SubmissionController
         }
 
         // return $submission;
-        $map_path = $this->getPath($location);
+        $map_path = $this->getPath($location, $firstLetter);
         $location['map_image'] = $map_path;
         $html = View::make('pdf.template', [
             'submission' => $submission,
@@ -325,8 +331,9 @@ class SubmissionController
         return $value;
     }
 
-    private function getPath($location) {
-        return 'storage/gis/'.'D_'.$location['province_code'].'-'.$location['city_code'].'-'.$location['district_code'].'-'.$location['guzar'].'-'.$location['block'].'-'.$location['house'].'.jpg';
+    private function getPath($location, $firstLetter) {
+
+        return 'storage/gis/'."{$firstLetter}_".$location['province_code'].'-'.$location['city_code'].'-'.$location['district_code'].'-'.$location['guzar'].'-'.$location['block'].'-'.$location['house'].'.jpg';
     }
 
     public function restore(Request $request) {

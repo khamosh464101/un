@@ -327,7 +327,8 @@ class SubmissionSheetImport implements ToModel, WithStartRow, WithHeadingRow, Sh
             });
             
             foreach ($attachments as $attachment) {
-                $service->downloadAttachment($attachment);
+                $folderName = $submission?->projects?->first()?->id;
+                $service->downloadAttachment($attachment, "kobo-attachments/{$folderName}");
             }
         }
     }

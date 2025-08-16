@@ -20,8 +20,8 @@ class HouseProblemAreaPhoto extends Model
         if ($returnRawPhoto) {
             return $value;
         }
-        $tmpName = $this->houseCondition->submission->_id . '-' . $value;
-        return $value ? asset("storage/kobo-attachments/$tmpName") : null;
+        $folderName = $this->houseCondition->submission?->projects?->first()?->id;
+        return $value ? asset("storage/kobo-attachments/$folderName/$value") : null;
     }
 
     public function houseCondition(): BelongsTo

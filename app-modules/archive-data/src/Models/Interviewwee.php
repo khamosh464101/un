@@ -31,8 +31,8 @@ class Interviewwee extends Model
         if ($this->returnRawPhoto) {
             return $value;
         }
-        $tmpName = $this->submission->_id . '-' . $value;
-        return $value ? asset("storage/kobo-attachments/$tmpName") : null;
+        $folderName = $this->submission?->projects?->first()?->id;
+        return $value ? asset("storage/kobo-attachments/$folderName/$value") : null;
     }
 
     public function submission(): BelongsTo

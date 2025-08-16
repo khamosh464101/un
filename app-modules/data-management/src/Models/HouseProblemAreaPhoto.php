@@ -29,7 +29,8 @@ class HouseProblemAreaPhoto extends Model
         if ($this->returnRawPhoto) {
             return $value;
         }
-        return $value ? asset("storage/kobo-attachments/$value") : null;
+        $folderName = $this->houseCondition?->submission?->projects?->first()?->id;
+        return $value ? asset("storage/kobo-attachments/$folderName/$value") : null;
     }
 
     public function houseCondition(): BelongsTo
@@ -44,7 +45,8 @@ class HouseProblemAreaPhoto extends Model
         static::deleting(function ($houseProblemAreaPhoto) {
             $photo = $houseProblemAreaPhoto->getRawOriginal('current_house_problem_photo');
             if (!is_null($photo)) {
-                Storage::delete("kobo-attachments/$photo");
+                $folderName = $houseProblemAreaPhoto?->houseCondition?->submission?->projects?->first()?->id;
+                Storage::delete("kobo-attachments/$folderName/$photo");
             }
         });
     }

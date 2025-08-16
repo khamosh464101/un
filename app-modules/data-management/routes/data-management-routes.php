@@ -8,6 +8,7 @@ use Modules\DataManagement\Http\Controllers\KoboController;
 use Modules\DataManagement\Http\Controllers\SubmissionStatusController;
 Route::middleware(['auth:sanctum', 'twofactor'])->group(function () {
     Route::get('/data-management/get-form', [SubmissionController::class, 'getForm']);
+    Route::post('/data-managements', [SyncKoboController::class, 'listForms'])->name('data-managements.index');
      Route::get('/data-management/get-open-projects', [SubmissionController::class, 'getOpenProjects']);
     Route::get('/data-management/get-sumbission', [SyncKoboController::class, 'getSubmission']);
 
@@ -38,7 +39,6 @@ Route::middleware(['auth:sanctum', 'twofactor'])->group(function () {
 
 });
 Route::get('/data-managements/submissions/edit/{id}', [SubmissionController::class, 'edit']);
-Route::post('/data-managements', [SyncKoboController::class, 'listForms'])->name('data-managements.index');
 Route::post('/data-managements/submissions/import-excel', [SubmissionController::class, 'importExcel']);
 Route::get('/data-managements/add-form-to-db', [SyncKoboController::class, 'addFormToDb']);
 Route::get('/data-managements/submissions/{id}/download-profile', [SubmissionController::class, 'downloadProfile']); //->middleware(['can:download profile']);

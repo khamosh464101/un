@@ -32,7 +32,8 @@ class CommunityAvailability extends Model
         if ($this->returnRawPhoto) {
             return $value;
         }
-        return $value ? asset("storage/kobo-attachments/$value") : null;
+        $folderName = $this->submission?->projects?->first()?->id;
+        return $value ? asset("storage/kobo-attachments/$folderName/$value") : null;
     }
 
     public function submission(): BelongsTo
@@ -47,7 +48,8 @@ class CommunityAvailability extends Model
         static::deleting(function ($communithAvailability) {
             $communityCenterPhoto = $communithAvailability->getRawOriginal('community_center_photo');
             if (!is_null($communityCenterPhoto)) {
-                Storage::delete("kobo-attachments/$communityCenterPhoto");
+                $folderName = $communithAvailability?->submission?->projects?->first()?->id;
+                Storage::delete("kobo-attachments/$folderName/$communityCenterPhoto");
             }
         });
     }

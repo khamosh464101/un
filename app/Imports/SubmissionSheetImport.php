@@ -402,6 +402,7 @@ class SubmissionSheetImport implements ToModel, WithStartRow, WithHeadingRow, Wi
             $defaultStatus = SubmissionStatus::where('is_default', true)->first();
             $submission = Submission::create(array_merge($submission_data, [
                 '_id' => $row['_id'],
+                'user_id' => auth()->user()->id,
                 'dm_form_id' => $form->id,
                 'submission_status_id' => $defaultStatus ? $defaultStatus->id : 1
             ]));
@@ -415,7 +416,8 @@ class SubmissionSheetImport implements ToModel, WithStartRow, WithHeadingRow, Wi
             if ($kobo_submission) {
                 foreach ($kobo_submission['_attachments'] as $attachment) {
                     if (Str::startsWith($attachment['mimetype'], 'image/')) {
-                        $service->downloadAttachment($attachment);
+                        $folderName = $submission?->projects?->first()?->id;
+                        $service->downloadAttachment($attachment, "kobo-attachments/{$folderName}");
                     }
                 }
             } 

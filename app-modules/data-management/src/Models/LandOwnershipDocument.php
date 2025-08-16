@@ -24,32 +24,34 @@ class LandOwnershipDocument extends Model
     }
 
     public bool $returnRawPhoto = false;
-    // public function getHouseDocumentPhotoAttribute($value)
-    // {
-    //     if ($this->returnRawPhoto) {
-    //         return $value;
-    //     }
-    //     return $value ? asset("storage/kobo-attachments/$value") : null;
-    // }
     public function getHouseDocumentPhotoAttribute($value)
     {
         if ($this->returnRawPhoto) {
             return $value;
         }
-        if (!$value) {
-            return null;
-        }
-        $originalPath = storage_path("app/public/kobo-attachments/$value");
-        $publicStoragePath = "storage/kobo-attachments/$value"; 
-        if (!file_exists($originalPath)) {
-            \Log::warning("Photo file not found at: " . $originalPath);
-            return null;
-        }
-
-
-        AllImageFixer::fixImageOrientation($originalPath);
-        return asset($publicStoragePath);
+        $folderName = $this->houseLandOwnership?->submission?->projects?->first()?->id;
+        return $value ? asset("storage/kobo-attachments/$folderName/$value") : null;
     }
+    // public function getHouseDocumentPhotoAttribute($value)
+    // {
+    //     if ($this->returnRawPhoto) {
+    //         return $value;
+    //     }
+
+    //     $folderName = $this->houseLandOwnership?->submission?->projects?->first()?->id;
+    //     return $value ? asset("storage/kobo-attachments/$folderName/$value") : null;
+
+    //     $originalPath = storage_path("app/public/kobo-attachments/$folderName/$value");
+    //     $publicStoragePath = "storage/kobo-attachments/$folderName/$value"; 
+    //     if (!file_exists($originalPath)) {
+    //         \Log::warning("Photo file not found at: " . $originalPath);
+    //         return null;
+    //     }
+
+
+    //     AllImageFixer::fixImageOrientation($originalPath);
+    //     return asset($publicStoragePath);
+    // }
 
     public function houseLandOwnership(): BelongsTo
     {
@@ -63,7 +65,8 @@ class LandOwnershipDocument extends Model
         static::deleting(function ($landOwnershipDocument) {
             $houseDocumentPhoto = $landOwnershipDocument->getRawOriginal('house_document_photo');
             if (!is_null($houseDocumentPhoto)) {
-                Storage::delete("kobo-attachments/$houseDocumentPhoto");
+                $folderName = $landOwnershipDocument?->houseLandOwnership?->submission?->projects?->first()?->id;
+                Storage::delete("kobo-attachments/$folderName/$houseDocumentPhoto");
             }
         });
     }

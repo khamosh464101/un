@@ -35,6 +35,7 @@ class SyncKoboController
             foreach ($data['results'] as $key => $value) {
                 $submission = Submission::where('_id', $value['_id'])->first();
                 if ($submission) {
+                    logger()->info('343434343434343434');
                     continue;
                 }
                 $result = $this->cleanKoboSubmissionKeys($value);
@@ -43,28 +44,6 @@ class SyncKoboController
 
             return response()->json(['message' => 'Successfully inserted into the system from kobo.'], 201);
 
-            // Fetch the next page using 'next' URL
-        //     if (!empty($data['next'])) {
-        //         $response = $this->kobo->getFormSubmissions($data['next']);
-        //         $data = $response;
-        //     } else {
-        //         $data['next'] = null; // Exit condition
-        //     }
-        //     break;
-
-        // } while (!empty($data['next']));
-
-        return 'working';
-        // $result =  $this->cleanKoboSubmissionKeys($forms['results'][1]);
-
-        // return $this->parser->parseAndReturn($result);
-
-        // $attachment = $result['_attachments'][1];
-        // $storedPath = $this->kobo->downloadAttachment($attachment);
-        // return 'workingiddd';
-        // dd($storedPath);
-         
-        return $forms['asset'];
     }
 
     public function cleanKoboSubmissionKeys(array $submission): array

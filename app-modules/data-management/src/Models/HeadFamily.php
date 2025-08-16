@@ -38,7 +38,8 @@ class HeadFamily extends Model
         if ($this->returnRawPhoto) {
             return $value;
         }
-        return $value ? asset("storage/kobo-attachments/$value") : null;
+        $folderName = $this->submission?->projects?->first()?->id;
+        return $value ? asset("storage/kobo-attachments/$folderName/$value") : null;
     }
 
     public function submission(): BelongsTo
@@ -53,7 +54,8 @@ class HeadFamily extends Model
         static::deleting(function ($headFamily) {
             $photo = $headFamily->getRawOriginal('hoh_nic_photo');
             if (!is_null($photo)) {
-                Storage::delete("kobo-attachments/$photo");
+                $folderName = $headFamily?->submission?->projects?->first()?->id;
+                Storage::delete("kobo-attachments/$folderName/$photo");
             }
         });
     }

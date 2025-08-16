@@ -17,11 +17,11 @@ class LandOwnershipDocument extends Model
     public bool $returnRawPhoto = false;
     public function getHouseDocumentPhotoAttribute($value)
     {
-        if ($returnRawPhoto) {
+        if ($this->returnRawPhoto) {
             return $value;
         }
-        $tmpName = $this->houseLandOwnership->submission->_id . '-' . $value;
-        return $value ? asset("storage/kobo-attachments/$tmpName") : null;
+        $folderName = $this->houseLandOwnership->submission?->projects?->first()?->id;
+        return $value ? asset("storage/kobo-attachments/$folderName/$value") : null;
     }
 
     public function houseLandOwnership(): BelongsTo

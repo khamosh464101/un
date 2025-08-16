@@ -33,14 +33,7 @@ class Submission extends Model
         'user_id'
     ];
 
-    protected $appends = ['map_image'];
 
-
-    public function getMapImageAttribute()
-    {
-        $tmpName = $this->_id . '.jpg';
-        return $tmpName ? asset("storage/gis/$tmpName") : null;
-    }
 
     public function projects(): BelongsToMany
     {

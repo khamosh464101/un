@@ -34,6 +34,7 @@ use Modules\Projects\Models\Project;
 use Illuminate\Support\Str;
 
 use DB;
+use Auth;
 
 class KoboSubmissionParser
 {
@@ -88,11 +89,13 @@ class KoboSubmissionParser
 
            foreach ($submission['_attachments'] as $attachment) {
                 if (Str::startsWith($attachment['mimetype'], 'image/')) {
-                    $this->koboService->downloadAttachment($attachment);
+               
+                    $folderName = $sub?->projects?->first()?->id;
+                    $this->koboService->downloadAttachment($attachment, "kobo-attachments/{$folderName}");
                 }
             }  
 
-            
+        
             });
         return [
             'success' => true,
@@ -120,7 +123,11 @@ class KoboSubmissionParser
         );
         $defaultStatus = SubmissionStatus::where('is_default', true)->first();
         $sub = Submission::create(
-            array_merge(['dm_form_id' => 1, 'submission_status_id' => $defaultStatus ? $defaultStatus->id : 1], $filteredData)
+            array_merge([
+                'dm_form_id' => 1, 
+                'user_id' => auth()->user()->id,
+                'submission_status_id' => $defaultStatus ? $defaultStatus->id : 1], 
+                $filteredData)
         );
         logger()->info("thhisisss is project id" . $projectId);
         $project = Project::find($projectId);
