@@ -255,7 +255,14 @@ class SubmissionController
             }]);
         }
 
-        $submissions = $query->whereIn('id', $request->selects)->get();
+        $submissions;
+        if ($request->selectAll) {
+            $this->getSearchData($query, $request);
+            $submissions = $query->get();
+        } else {
+            $submissions = $query->whereIn('id', $request->selects)->get();
+        }
+
         $form = Form::find(1);
         $dataObject = json_decode($form->raw_schema);
         $survey = $dataObject->asset->content->survey;
@@ -337,12 +344,36 @@ class SubmissionController
     }
 
     public function restore(Request $request) {
-        foreach ($request->selects as $key => $value) {
+        $ids = $request->selects;
+        if ($request->selectAll === true) {
+            $query = Submission::query();
+            $this->getSearchData($query, $request);
+            $ids = $query->pluck('id')->toArray();
+        } 
+
+        foreach ($ids as $key => $value) {
             $this->restore->restoreSubmission($value, 1);
         }
-        
+
         // return 
         return response()->json(['message' => 'Successfully restored.'], 201);
+    }
+
+
+    function getSearchData($query, $request) {
+        foreach ($request->search as $key => $field) {
+            if ($field) {
+                if (Str::contains($key, '__') ) {
+                    [$relation, $column] = explode('__', $key, 2);
+
+                    $query->whereHas($relation, function ($q) use ($column, $field) {
+                        $q->where($column, $field);
+                    });
+                } else {
+                    $query->where($key, $field);
+                }
+            }
+        }
     }
 
   

@@ -928,8 +928,7 @@ public function editArrayFileWithTitle(string $name, Request $request, $id): arr
     }
 
     private function getPath($location, $firstLetter) {
-       
-        
+
         return 'storage/gis/'."{$firstLetter}_".$location['province_code'].'-'.$location['city_code'].'-'.$location['district_code'].'-'.$location['guzar'].'-'.$location['block'].'-'.$location['house'].'.jpg';
     }
 
