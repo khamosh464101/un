@@ -30,7 +30,7 @@ class LandOwnershipDocument extends Model
             return $value;
         }
         $folderName = $this->houseLandOwnership?->submission?->projects?->first()?->id;
-        return $value ? asset("storage/kobo-attachments/$folderName/$value") : null;
+        return $value ? asset("storage/kobo-attachments/$folderName/$value") : asset('images/default.png');
     }
     // public function getHouseDocumentPhotoAttribute($value)
     // {

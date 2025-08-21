@@ -55,7 +55,7 @@ class PhotoSection extends Model
             return $value;
         }
         $folderName = $this->submission?->projects?->first()?->id;
-        return $value ? asset("storage/kobo-attachments/$folderName/$value") : null;
+        return $value ? asset("storage/kobo-attachments/$folderName/$value") : asset('images/default.png');
     }
 
     public function getPhotoEnovirmentAttribute($value)
@@ -158,7 +158,7 @@ class PhotoSection extends Model
         // 3. Check if original file exists
         if (!file_exists($originalPath)) {
             \Log::warning("Photo file not found at: " . $originalPath);
-            returnnull;
+            return asset('images/default.png');
         }
 
         // 4. Try to fix image orientation.

@@ -938,10 +938,14 @@ public function editArrayFileWithTitle(string $name, Request $request, $id): arr
     private function getPath($location, $firstLetter) {
         // $url = Storage::disk('gcs')->url("1/K_01_01_21_08_001_001.jpg");
         $expiration = Carbon::now()->addMinutes(10);
-        $signedUrl = Storage::disk('gcs')->temporaryUrl("{$location['folder']}/"."{$firstLetter}_".$location['province_code'].'-'.$location['city_code'].'-'.$location['district_code'].'-'.$location['guzar'].'-'.$location['block'].'-'.$location['house'].'.jpg', $expiration);
-        return $signedUrl;
+        $filePath = "{$location['folder']}/"."{$firstLetter}_".$location['province_code'].'-'.$location['city_code'].'-'.$location['district_code'].'-'.$location['guzar'].'-'.$location['block'].'-'.$location['house'].'.jpg';
+        $url = Storage::disk('gcs')->exists($filePath)
+        ? Storage::disk('gcs')->temporaryUrl($filePath, $expiration)
+        : public_path('images/default.png');
+        return $url;
         // return 'storage/gis/'."{$firstLetter}_".$location['province_code'].'-'.$location['city_code'].'-'.$location['district_code'].'-'.$location['guzar'].'-'.$location['block'].'-'.$location['house'].'.jpg';
     }
+      
 
 
     public function destroy($id) {
