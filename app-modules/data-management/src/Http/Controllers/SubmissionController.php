@@ -25,8 +25,10 @@ use App\Imports\MultiTableImport;
 use App\Models\Setting;
 use Google\Cloud\Vision\V1\Client\ImageAnnotatorClient;
 use Illuminate\Http\UploadedFile;
+ use Google\Cloud\Storage\StorageClient;
 
 use Storage;
+use Carbon\Carbon;
 
 class SubmissionController
 {
@@ -56,11 +58,7 @@ class SubmissionController
 
     public function index(Request $request) {
         $query = Submission::with($this->query);
-        if ($request->project_id) {
-            $query->whereHas('projects', function ($q) use ($request) {
-                $q->where('projects.id', $request->project_id);
-            });
-        }
+        
         $this->getSearchData($query, $request);
         $data = $query->paginate(8);
 
@@ -681,7 +679,9 @@ public function editArrayFileWithTitle(string $name, Request $request, $id): arr
 
         }
 
-       $map_path = $this->getPath($location, $firstLetter);
+        if ($submission?->projects?->first()) {
+            $location['folder'] = $submission?->projects?->first()?->google_storage_folder;
+            $map_path = $this->getPath($location, $firstLetter);
         $location['map_image'] = $map_path;
         $html = View::make('pdf.template', [
             'submission' => $submission,
@@ -703,6 +703,9 @@ public function editArrayFileWithTitle(string $name, Request $request, $id): arr
         return response($mpdf->Output('', 'S'), 200)
             ->header('Content-Type', 'application/pdf')
             ->header('Content-Disposition', 'inline; filename="'. $name .'.pdf"');
+        }
+
+       
     
         
         return $submission;
@@ -809,6 +812,11 @@ public function editArrayFileWithTitle(string $name, Request $request, $id): arr
         return Excel::download(new SubmissionsExport($result, $request->project ? $request->project['label'] : now()->format('Y-m-d'), $header ), now()->format('Y-m-d') . 'submissions.xlsx');
     }
     function getSearchData($query, $request) {
+        if ($request->project_id) {
+            $query->whereHas('projects', function ($q) use ($request) {
+                $q->where('projects.id', $request->project_id);
+            });
+        }
         foreach ($request->search as $key => $field) {
             if ($field) {
                 if (Str::contains($key, '__') ) {
@@ -928,9 +936,13 @@ public function editArrayFileWithTitle(string $name, Request $request, $id): arr
     }
 
     private function getPath($location, $firstLetter) {
-
-        return 'storage/gis/'."{$firstLetter}_".$location['province_code'].'-'.$location['city_code'].'-'.$location['district_code'].'-'.$location['guzar'].'-'.$location['block'].'-'.$location['house'].'.jpg';
+        // $url = Storage::disk('gcs')->url("1/K_01_01_21_08_001_001.jpg");
+        $expiration = Carbon::now()->addMinutes(10);
+        $signedUrl = Storage::disk('gcs')->temporaryUrl("{$location['folder']}/"."{$firstLetter}_".$location['province_code'].'-'.$location['city_code'].'-'.$location['district_code'].'-'.$location['guzar'].'-'.$location['block'].'-'.$location['house'].'.jpg', $expiration);
+        return $signedUrl;
+        // return 'storage/gis/'."{$firstLetter}_".$location['province_code'].'-'.$location['city_code'].'-'.$location['district_code'].'-'.$location['guzar'].'-'.$location['block'].'-'.$location['house'].'.jpg';
     }
+
 
     public function destroy($id) {
         $submission = Submission::find($id);

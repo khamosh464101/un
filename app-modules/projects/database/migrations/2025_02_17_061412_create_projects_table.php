@@ -26,6 +26,8 @@ return new class extends Migration
             // $table->foreignId('program_id');
             $table->foreignId('project_status_id');
             $table->foreignId('manager_id')->nullable();
+            $table->string('google_storage_folder')->nullable();
+            
             $table->timestamps();
         });
     }

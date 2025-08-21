@@ -35,6 +35,8 @@ class ProjectRequest extends FormRequest
             'donor_id' => ['required', 'integer'],
             'project_status_id' => ['required', 'integer'],
             'manager_id' => ['nullable', 'integer'],
+            'google_storage_folder' => ['nullable', 'string'],
+            
         ];
     }
 }

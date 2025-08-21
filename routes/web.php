@@ -14,6 +14,7 @@ use Google\Cloud\Storage\StorageClient;
 
 Route::get('/test', [TestController::class, 'index']);
 Route::get('/', function () {
+    Storage::disk('gcs')->put('folder/file_second.txt', 'Contents here...');
 // return $storage = new StorageClient([
 //         'keyFilePath' => env('GOOGLE_CLOUD_KEY_FILE'),
 //     ]);

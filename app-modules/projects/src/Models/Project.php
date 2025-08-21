@@ -31,6 +31,7 @@ class Project extends Model
         'open_to_survey',
         'donor_id',
         'project_status_id',
+        'google_storage_folder',
         'manager_id'
 
     ];

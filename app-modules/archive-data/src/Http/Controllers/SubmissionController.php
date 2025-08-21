@@ -14,6 +14,8 @@ use Modules\DataManagement\Services\QueryService;
 use Modules\ArchiveData\Services\RestoreArchiveService;
 use Modules\Projects\Models\Project;
 use Mpdf\Mpdf;
+use Storage;
+use Carbon\Carbon;
 
 use Google\Cloud\Vision\V1\Client\ImageAnnotatorClient;
 
@@ -38,25 +40,8 @@ class SubmissionController
     public function index(Request $request) {
         
          $query = Submission::with($this->query);
-        if ($request->project_id) {
-            $query->whereHas('projects', function ($q) use ($request) {
-                $q->where('projects.id', $request->project_id);
-            });
-        }
-        foreach ($request->search as $key => $field) {
-                
-            if ($field) {
-                if (Str::contains($key, '__') ) {
-                    [$relation, $column] = explode('__', $key, 2);
-
-                    $query->whereHas($relation, function ($q) use ($column, $field) {
-                        $q->where($column, $field);
-                    });
-                } else {
-                    $query->where($key, $field);
-                }
-            }
-        }
+        
+        $this->getSearchData($query, $request);
 
         return ["data" => $query->paginate(8), "filterable" => $this->filterable, "projects" => Project::select("id as value", "title as label")->get()];
     }
@@ -188,8 +173,9 @@ class SubmissionController
 
         }
 
-        // return $submission;
-        $map_path = $this->getPath($location, $firstLetter);
+            if ($submission?->projects?->first()) {
+            $location['folder'] = $submission?->projects?->first()?->google_storage_folder;
+            $map_path = $this->getPath($location, $firstLetter);
         $location['map_image'] = $map_path;
         $html = View::make('pdf.template', [
             'submission' => $submission,
@@ -205,10 +191,13 @@ class SubmissionController
             'directionality' => 'rtl', // Important for RTL
         ]);
 
+        $si = $submission->sourceInformation;
+        $name = $si->province_code.'-'.$si->city_code.'-'.$si->city_code.'-'.$si->district_code.'-'.$location['guzar'].'-'.$location['block'].'-'.$location['house'];
         $mpdf->WriteHTML($html);
         return response($mpdf->Output('', 'S'), 200)
             ->header('Content-Type', 'application/pdf')
-            ->header('Content-Disposition', 'inline; filename="report.pdf"');
+            ->header('Content-Disposition', 'inline; filename="'. $name .'.pdf"');
+        }
     
         
         return $submission;
@@ -338,9 +327,12 @@ class SubmissionController
         return $value;
     }
 
-    private function getPath($location, $firstLetter) {
-
-        return 'storage/gis/'."{$firstLetter}_".$location['province_code'].'-'.$location['city_code'].'-'.$location['district_code'].'-'.$location['guzar'].'-'.$location['block'].'-'.$location['house'].'.jpg';
+     private function getPath($location, $firstLetter) {
+        // $url = Storage::disk('gcs')->url("1/K_01_01_21_08_001_001.jpg");
+        $expiration = Carbon::now()->addMinutes(10);
+        $signedUrl = Storage::disk('gcs')->temporaryUrl("{$location['folder']}/"."{$firstLetter}_".$location['province_code'].'-'.$location['city_code'].'-'.$location['district_code'].'-'.$location['guzar'].'-'.$location['block'].'-'.$location['house'].'.jpg', $expiration);
+        return $signedUrl;
+        // return 'storage/gis/'."{$firstLetter}_".$location['province_code'].'-'.$location['city_code'].'-'.$location['district_code'].'-'.$location['guzar'].'-'.$location['block'].'-'.$location['house'].'.jpg';
     }
 
     public function restore(Request $request) {
@@ -361,6 +353,11 @@ class SubmissionController
 
 
     function getSearchData($query, $request) {
+        if ($request->project_id) {
+            $query->whereHas('projects', function ($q) use ($request) {
+                $q->where('projects.id', $request->project_id);
+            });
+        }
         foreach ($request->search as $key => $field) {
             if ($field) {
                 if (Str::contains($key, '__') ) {

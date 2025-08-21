@@ -79,6 +79,7 @@ Route::middleware(['auth:sanctum', 'twofactor'])->group(function () {
     Route::get('/api/donors/select2', [DonorController::class, 'select2']);
     Route::resource('/api/donor', DonorController::class)->only(['store', 'edit', 'update', 'destroy']);
 
+    Route::get('/api/google-storage-directories', [ProjectController::class, 'googleStorageDirectories']);
     Route::get('/api/projects/select2', [ProjectController::class, 'select2']);
     Route::post('/api/projects', [ProjectController::class, 'index'])->middleware(['can:project view']);
     Route::post('/api/project/{project}', [ProjectController::class, 'update']);

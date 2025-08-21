@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Modules\Projects\Http\Resources\Project\ProjectsResource;
 use Illuminate\Support\Facades\Gate;
+use Storage; 
 
 class ProjectController
 {
@@ -37,6 +38,11 @@ class ProjectController
         ->orderBy($field, $sortType)->paginate(10);
         return ProjectsResource::collection($projects);
         // return response()->json($projects, 201);
+    }
+
+    public function googleStorageDirectories() {
+        $folders = Storage::disk('gcs')->directories();
+        return response()->json($folders);
     }
     
     public function store(ProjectRequest $request) {

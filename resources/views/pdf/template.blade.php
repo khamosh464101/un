@@ -324,7 +324,7 @@
             @php
                 $map = str_replace('http://127.0.0.1:8000/', '', $location['map_image']);
             @endphp
-            <img src="{{ public_path($map) }}" alt="تصویر" style="max-width:100%; max-height:250px;">
+            <img src="{{ $location['map_image'] }}" alt="تصویر" style="max-width:100%; max-height:250px;">
         </td>
         <td style="height:250px;" class="center">
             @php
