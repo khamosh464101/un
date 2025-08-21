@@ -328,14 +328,23 @@ class SubmissionController
     }
 
      private function getPath($location, $firstLetter) {
-        // $url = Storage::disk('gcs')->url("1/K_01_01_21_08_001_001.jpg");
         $expiration = Carbon::now()->addMinutes(10);
-        $filePath = "{$location['folder']}/"."{$firstLetter}_".$location['province_code'].'-'.$location['city_code'].'-'.$location['district_code'].'-'.$location['guzar'].'-'.$location['block'].'-'.$location['house'].'.jpg';
-        $url = Storage::disk('gcs')->exists($filePath)
-        ? Storage::disk('gcs')->temporaryUrl($filePath, $expiration)
-        : public_path('images/default.png');
-        return $url;
-        // return 'storage/gis/'."{$firstLetter}_".$location['province_code'].'-'.$location['city_code'].'-'.$location['district_code'].'-'.$location['guzar'].'-'.$location['block'].'-'.$location['house'].'.jpg';
+
+        $filePath = "{$location['folder']}/"
+            ."{$firstLetter}_"
+            .$location['province_code'].'-'
+            .$location['city_code'].'-'
+            .$location['district_code'].'-'
+            .$location['guzar'].'-'
+            .$location['block'].'-'
+            .$location['house'].'.jpg';
+
+        if (Storage::disk('gcs')->exists($filePath)) {
+            return Storage::disk('gcs')->temporaryUrl($filePath, $expiration);
+        }
+
+        // ✅ use asset(), not public_path()
+        return asset('images/default.png');
     }
 
     public function restore(Request $request) {
