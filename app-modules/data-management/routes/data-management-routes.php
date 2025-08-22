@@ -6,6 +6,7 @@ use Modules\DataManagement\Http\Controllers\SubmissionController;
 use Modules\DataManagement\Http\Controllers\ExcelController;
 use Modules\DataManagement\Http\Controllers\KoboController;
 use Modules\DataManagement\Http\Controllers\SubmissionStatusController;
+use Modules\DataManagement\Http\Controllers\PdfToJpgController;
 Route::middleware(['auth:sanctum', 'twofactor'])->group(function () {
     Route::get('/data-management/get-form', [SubmissionController::class, 'getForm']);
     Route::post('/data-managements', [SyncKoboController::class, 'listForms'])->name('data-managements.index');
@@ -38,6 +39,12 @@ Route::middleware(['auth:sanctum', 'twofactor'])->group(function () {
     Route::resource('/submission-status', SubmissionStatusController::class)->only(['store', 'edit', 'update', 'destroy']);
 
 });
+// routes/api.php
+
+
+Route::get('/storage/summary', [PdfToJpgController::class, 'getFolderSummary']);
+Route::post('/storage/convert/{filename}', [PdfToJpgController::class, 'convertPdfToJpg']);
+
 Route::get('/data-managements/submissions/edit/{id}', [SubmissionController::class, 'edit']);
 Route::post('/data-managements/submissions/import-excel', [SubmissionController::class, 'importExcel']);
 Route::get('/data-managements/add-form-to-db', [SyncKoboController::class, 'addFormToDb']);
