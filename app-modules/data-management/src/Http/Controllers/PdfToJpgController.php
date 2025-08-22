@@ -5,7 +5,7 @@ namespace Modules\DataManagement\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Exception;
-use Illuminate\Support\Facades\Redis; // or use cache for progress tracking
+use Illuminate\Support\Facades\Log;
 
 class PdfToJpgController
 {
@@ -20,6 +20,7 @@ class PdfToJpgController
                 'jpg_count' => count($jpgFiles),
                 'pdf_count' => count($pdfFiles),
                 'pdf_files' => $pdfFiles,
+                'jpg_files' => $jpgFiles, // Also return JPG files to check for existing ones
                 'imagick_available' => extension_loaded('imagick'),
                 'ghostscript_available' => !empty(shell_exec('which gs'))
             ]);
@@ -34,15 +35,31 @@ class PdfToJpgController
         try {
             $batchId = uniqid(); // Unique ID for this batch
             $pdfFiles = Storage::disk('gcs')->files('pdf');
+            $jpgFiles = Storage::disk('gcs')->files('jpg');
+            
+            // Extract just the filenames without extension for comparison
+            $existingJpgs = array_map(function($file) {
+                return pathinfo($file, PATHINFO_FILENAME);
+            }, $jpgFiles);
+            
+            // Filter out PDFs that already have JPG counterparts
+            $filesToProcess = [];
+            foreach ($pdfFiles as $pdfFile) {
+                $pdfName = pathinfo($pdfFile, PATHINFO_FILENAME);
+                if (!in_array($pdfName, $existingJpgs)) {
+                    $filesToProcess[] = $pdfFile;
+                }
+            }
             
             // Limit to 100 files or all files if less than 100
-            $filesToProcess = array_slice($pdfFiles, 0, 100);
+            $filesToProcess = array_slice($filesToProcess, 0, 10);
             $totalFiles = count($filesToProcess);
             
             if ($totalFiles === 0) {
                 return response()->json([
-                    'message' => 'No PDF files found to convert',
-                    'batch_id' => $batchId
+                    'message' => 'No PDF files found to convert (all PDFs already have JPG counterparts)',
+                    'batch_id' => $batchId,
+                    'skipped' => count($pdfFiles)
                 ]);
             }
             
@@ -52,18 +69,19 @@ class PdfToJpgController
                 'processed' => 0,
                 'successful' => 0,
                 'failed' => 0,
+                'skipped' => count($pdfFiles) - $totalFiles,
                 'current_file' => '',
                 'status' => 'processing'
             ]);
             
-            // Process files in background (you might want to use queues for production)
-            // For simplicity, we'll process synchronously but you should use queues
+            // Process files in background
             $this->processBatch($batchId, $filesToProcess);
             
             return response()->json([
                 'message' => 'Started converting ' . $totalFiles . ' PDF files',
                 'batch_id' => $batchId,
-                'total_files' => $totalFiles
+                'total_files' => $totalFiles,
+                'skipped' => count($pdfFiles) - $totalFiles
             ]);
             
         } catch (Exception $e) {
@@ -76,9 +94,26 @@ class PdfToJpgController
     {
         $successful = 0;
         $failed = 0;
+        $jpgFiles = Storage::disk('gcs')->files('jpg');
+        $existingJpgs = array_map(function($file) {
+            return pathinfo($file, PATHINFO_FILENAME);
+        }, $jpgFiles);
         
         foreach ($filesToProcess as $index => $pdfFile) {
             $filename = basename($pdfFile);
+            $baseName = pathinfo($filename, PATHINFO_FILENAME);
+            
+            // Check again if JPG already exists (in case it was created during batch processing)
+            if (in_array($baseName, $existingJpgs)) {
+                // Skip this file as JPG already exists
+                $this->updateBatchProgress($batchId, [
+                    'processed' => $index + 1,
+                    'skipped' => $this->getBatchProgress($batchId)['skipped'] + 1,
+                    'current_file' => $filename,
+                    'status' => 'processing'
+                ]);
+                continue;
+            }
             
             // Update progress
             $this->updateBatchProgress($batchId, [
@@ -94,9 +129,11 @@ class PdfToJpgController
                 if (isset($result['error'])) {
                     $failed++;
                     // Log error but continue with next file
-                    \Log::error("Failed to convert $filename: " . $result['error']);
+                    Log::error("Failed to convert $filename: " . $result['error']);
                 } else {
                     $successful++;
+                    // Add to existing JPGs to prevent duplicate processing
+                    $existingJpgs[] = $baseName;
                 }
                 
                 // Update success/failure counts
@@ -110,7 +147,7 @@ class PdfToJpgController
                 $this->updateBatchProgress($batchId, [
                     'failed' => $failed
                 ]);
-                \Log::error("Failed to convert $filename: " . $e->getMessage());
+                Log::error("Failed to convert $filename: " . $e->getMessage());
             }
             
             // Small delay to prevent server overload
@@ -129,10 +166,16 @@ class PdfToJpgController
         // Remove .pdf extension if present
         $baseName = str_replace('.pdf', '', $filename);
         $pdfPath = 'pdf/' . $baseName . '.pdf';
+        $jpgPath = 'jpg/' . $baseName . '.jpg';
         
         // Check if PDF exists
         if (!Storage::disk('gcs')->exists($pdfPath)) {
             return ['error' => 'PDF file not found'];
+        }
+        
+        // Check if JPG already exists
+        if (Storage::disk('gcs')->exists($jpgPath)) {
+            return ['error' => 'JPG already exists for this PDF'];
         }
         
         // Create temporary directory if it doesn't exist
@@ -163,10 +206,9 @@ class PdfToJpgController
         return ['error' => 'No PDF conversion tool available'];
     }
     
-    // Store batch progress (using Redis as example)
+    // Store batch progress (using file-based storage)
     protected function storeBatchProgress($batchId, $data)
     {
-        // Using file-based storage for simplicity - use Redis in production
         $storagePath = storage_path('app/batch_progress/');
         if (!file_exists($storagePath)) {
             mkdir($storagePath, 0755, true);
@@ -188,8 +230,21 @@ class PdfToJpgController
         }
     }
     
-    // Get batch progress
-    public function getBatchProgress($batchId)
+    // Get batch progress data
+    protected function getBatchProgress($batchId)
+    {
+        $storagePath = storage_path('app/batch_progress/');
+        $filePath = $storagePath . $batchId . '.json';
+        
+        if (file_exists($filePath)) {
+            return json_decode(file_get_contents($filePath), true);
+        }
+        
+        return [];
+    }
+    
+    // Get batch progress via API
+    public function getBatchProgressApi($batchId)
     {
         $storagePath = storage_path('app/batch_progress/');
         $filePath = $storagePath . $batchId . '.json';
