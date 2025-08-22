@@ -52,7 +52,7 @@ class PdfToJpgController
             }
             
             // Limit to 100 files or all files if less than 100
-            $filesToProcess = array_slice($filesToProcess, 0, 100);
+            $filesToProcess = array_slice($filesToProcess, 0, 10);
             $totalFiles = count($filesToProcess);
             
             if ($totalFiles === 0) {
