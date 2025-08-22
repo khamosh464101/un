@@ -40,6 +40,15 @@ class SubmissionController
     public function index(Request $request) {
         
          $query = Submission::with($this->query);
+        if ($request->project_id) {
+            // Records attached to the given project
+            $query->whereHas('projects', function ($q) use ($request) {
+                $q->where('projects.id', $request->project_id);
+            });
+        } else {
+            // Records that are not attached to any project
+            $query->whereDoesntHave('projects');
+        }
         
         $this->getSearchData($query, $request);
 
@@ -246,6 +255,16 @@ class SubmissionController
 
         $submissions;
         if ($request->selectAll) {
+            if ($request->project_id) {
+                // Records attached to the given project
+                $query->whereHas('projects', function ($q) use ($request) {
+                    $q->where('projects.id', $request->project_id);
+                });
+            } else {
+                // Records that are not attached to any project
+                $query->whereDoesntHave('projects');
+            }
+
             $this->getSearchData($query, $request);
             $submissions = $query->get();
         } else {
@@ -351,6 +370,16 @@ class SubmissionController
         $ids = $request->selects;
         if ($request->selectAll === true) {
             $query = Submission::query();
+            if ($request->project_id) {
+                // Records attached to the given project
+                $query->whereHas('projects', function ($q) use ($request) {
+                    $q->where('projects.id', $request->project_id);
+                });
+            } else {
+                // Records that are not attached to any project
+                $query->whereDoesntHave('projects');
+            }
+
             $this->getSearchData($query, $request);
             $ids = $query->pluck('id')->toArray();
         } 
@@ -365,11 +394,6 @@ class SubmissionController
 
 
     function getSearchData($query, $request) {
-        if ($request->project_id) {
-            $query->whereHas('projects', function ($q) use ($request) {
-                $q->where('projects.id', $request->project_id);
-            });
-        }
         foreach ($request->search as $key => $field) {
             if ($field) {
                 if (Str::contains($key, '__') ) {

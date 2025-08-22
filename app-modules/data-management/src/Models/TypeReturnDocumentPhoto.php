@@ -30,8 +30,7 @@ class TypeReturnDocumentPhoto extends Model
             return $value;
         }
         
-        $folderName = $this->returnee?->submission?->projects?->first()?->id;
-        return $value ? asset("storage/kobo-attachments/$folderName/$value") : null;
+        return $value ? asset("storage/kobo-attachments/$value") : null;
     }
 
     public function returnee(): BelongsTo
@@ -45,9 +44,8 @@ class TypeReturnDocumentPhoto extends Model
 
         static::deleting(function ($typeReturnDocumentPhoto) {
             $photo = $typeReturnDocumentPhoto->getRawOriginal('type_return_document_photo');
-            $folderName = $typeReturnDocumentPhoto?->returnee?->submission?->projects?->first()?->id;
             if (!is_null($photo)) {
-                Storage::delete("kobo-attachments/$folderName/$photo");
+                Storage::delete("kobo-attachments/$photo");
             }
         });
     }

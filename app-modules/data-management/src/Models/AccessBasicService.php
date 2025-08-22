@@ -74,8 +74,8 @@ class AccessBasicService extends Model
         if ($this->returnRawPhoto) {
             return $value;
         }
-        $folderName = $this->submission?->projects?->first()?->id;
-        return $value ? asset("storage/kobo-attachments/$folderName/$value") : null;
+        
+        return $value ? asset("storage/kobo-attachments/$value") : null;
     }
 
     public function getAccessSanitationPhotoAttribute($value)
@@ -83,8 +83,8 @@ class AccessBasicService extends Model
         if ($this->returnRawPhoto) {
             return $value;
         }
-        $folderName = $this->submission?->projects?->first()?->id;
-        return $value ? asset("storage/kobo-attachments/$folderName/$value") : null;
+        
+        return $value ? asset("storage/kobo-attachments/$value") : null;
     }
 
     public function getAccessEducationPhotoAttribute($value)
@@ -92,8 +92,8 @@ class AccessBasicService extends Model
         if ($this->returnRawPhoto) {
             return $value;
         }
-        $folderName = $this->submission?->projects?->first()?->id;
-        return $value ? asset("storage/kobo-attachments/$folderName/$value") : null;
+        
+        return $value ? asset("storage/kobo-attachments/$value") : null;
     }
 
     public function getAccessHealthPhotoAttribute($value)
@@ -101,8 +101,8 @@ class AccessBasicService extends Model
         if ($this->returnRawPhoto) {
             return $value;
         }
-        $folderName = $this->submission?->projects?->first()?->id;
-        return $value ? asset("storage/kobo-attachments/$folderName/$value") : null;
+        
+        return $value ? asset("storage/kobo-attachments/$value") : null;
     }
 
     public function getAccessRoadPhotoAttribute($value)
@@ -110,8 +110,8 @@ class AccessBasicService extends Model
         if ($this->returnRawPhoto) {
             return $value;
         }
-        $folderName = $this->submission?->projects?->first()?->id;
-        return $value ? asset("storage/kobo-attachments/$folderName/$value") : null;
+        
+        return $value ? asset("storage/kobo-attachments/$value") : null;
     }
 
     public function submission(): BelongsTo
@@ -130,25 +130,24 @@ class AccessBasicService extends Model
             $accessEducationPhoto = $accessBasicService->getRawOriginal('access_education_photo');
             $accessHealthPhoto = $accessBasicService->getRawOriginal('access_health_photo');
             $accessRoadPhoto = $accessBasicService->getRawOriginal('access_road_photo');
-            $folderName = $accessBasicService->submission?->projects?->first()?->id;
             if (!is_null($waterPointPhoto)) {
-                Storage::delete("kobo-attachments/$folderName/$waterPointPhoto");
+                Storage::delete("kobo-attachments/$waterPointPhoto");
             }
 
             if (!is_null($accessSanitationPhoto)) {
-                Storage::delete("kobo-attachments/$folderName/$accessSanitationPhoto");
+                Storage::delete("kobo-attachments/$accessSanitationPhoto");
             }
 
             if (!is_null($accessEducationPhoto)) {
-                Storage::delete("kobo-attachments/$folderName/$accessEducationPhoto");
+                Storage::delete("kobo-attachments/$accessEducationPhoto");
             }
 
             if (!is_null($accessHealthPhoto)) {
-                Storage::delete("kobo-attachments/$folderName/$accessHealthPhoto");
+                Storage::delete("kobo-attachments/$accessHealthPhoto");
             }
 
             if (!is_null($accessRoadPhoto)) {
-                Storage::delete("kobo-attachments/$folderName/$accessRoadPhoto");
+                Storage::delete("kobo-attachments/$accessRoadPhoto");
             }
         });
     }

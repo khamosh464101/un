@@ -54,8 +54,7 @@ class HeadFamily extends Model
         static::deleting(function ($headFamily) {
             $photo = $headFamily->getRawOriginal('hoh_nic_photo');
             if (!is_null($photo)) {
-                $folderName = $headFamily?->submission?->projects?->first()?->id;
-                Storage::delete("kobo-attachments/$folderName/$photo");
+                Storage::delete("kobo-attachments/$photo");
             }
         });
     }

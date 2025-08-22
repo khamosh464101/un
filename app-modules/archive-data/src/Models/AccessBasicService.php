@@ -66,8 +66,8 @@ class AccessBasicService extends Model
         if ($this->returnRawPhoto) {
             return $value;
         }
-        $folderName = $this->submission?->projects?->first()?->id;
-        return $value ? asset("storage/kobo-attachments/$folderName/$value") : null;
+       
+        return $value ? asset("storage/kobo-attachments/$value") : null;
     }
 
     public function getAccessSanitationPhotoAttribute($value)
@@ -75,8 +75,8 @@ class AccessBasicService extends Model
         if ($this->returnRawPhoto) {
             return $value;
         }
-        $folderName = $this->submission?->projects?->first()?->id;
-        return $value ? asset("storage/kobo-attachments/$folderName/$value") : null;
+       
+        return $value ? asset("storage/kobo-attachments/$value") : null;
     }
 
     public function getAccessEducationPhotoAttribute($value)
@@ -84,8 +84,8 @@ class AccessBasicService extends Model
         if ($this->returnRawPhoto) {
             return $value;
         }
-        $folderName = $this->submission?->projects?->first()?->id;
-        return $value ? asset("storage/kobo-attachments/$folderName/$value") : null;
+       
+        return $value ? asset("storage/kobo-attachments/$value") : null;
     }
 
     public function getAccessHealthPhotoAttribute($value)
@@ -93,8 +93,8 @@ class AccessBasicService extends Model
         if ($this->returnRawPhoto) {
             return $value;
         }
-        $folderName = $this->submission?->projects?->first()?->id;
-        return $value ? asset("storage/kobo-attachments/$folderName/$value") : null;
+       
+        return $value ? asset("storage/kobo-attachments/$value") : null;
     }
 
     public function getAccessRoadPhotoAttribute($value)
@@ -102,8 +102,8 @@ class AccessBasicService extends Model
         if ($this->returnRawPhoto) {
             return $value;
         }
-        $folderName = $this->submission?->projects?->first()?->id;
-        return $value ? asset("storage/kobo-attachments/$folderName/$value") : null;
+       
+        return $value ? asset("storage/kobo-attachments/$value") : null;
     }
 
     public function submission(): BelongsTo

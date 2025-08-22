@@ -20,8 +20,7 @@ class LandOwnershipDocument extends Model
         if ($this->returnRawPhoto) {
             return $value;
         }
-        $folderName = $this->houseLandOwnership->submission?->projects?->first()?->id;
-        return $value ? asset("storage/kobo-attachments/$folderName/$value") : asset('images/default.png');
+        return $value ? asset("storage/kobo-attachments/$value") : asset('images/default.png');
     }
 
     public function houseLandOwnership(): BelongsTo

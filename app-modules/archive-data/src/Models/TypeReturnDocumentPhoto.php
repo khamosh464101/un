@@ -21,8 +21,8 @@ class TypeReturnDocumentPhoto extends Model
         if ($returnRawPhoto) {
             return $value;
         }
-        $folderName = $this->returnee->submission?->projects?->first()?->id;
-        return $value ? asset("storage/kobo-attachments/$folderName/$value") : null;
+        
+        return $value ? asset("storage/kobo-attachments/$value") : null;
     }
 
     public function returnee(): BelongsTo

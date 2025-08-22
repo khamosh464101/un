@@ -125,7 +125,7 @@
             @php
                 $path = str_replace('http://127.0.0.1:8000/', '', $submission->photoSection->photo_interviewee);
             @endphp
-            <img src="{{ public_path($path) }}" alt="تصویر" style="max-width: 120px; max-height: 150px;">
+            <img src="{{ $submission->photoSection->photo_interviewee }}" alt="تصویر" style="max-width: 120px; max-height: 150px;">
         </td>
     </tr>
     <tr>
@@ -318,7 +318,8 @@
             @php
             $document = str_replace('http://127.0.0.1:8000/', '', $submission->houseLandOwnership?->landOwnershipDocument?->first()?->house_document_photo);
             @endphp
-            <img src="{{ public_path($document) }}" alt="تصویر" style="max-width:100%; max-height:250px;">
+            <img src="{{ $submission->houseLandOwnership?->landOwnershipDocument?->first()?->house_document_photo ?? asset('images/default.png') }}" alt="تصویر" style="max-width:100%; max-height:250px;">
+
         </td>
         <td style="height:250px;" class="center">
             @php
@@ -330,7 +331,7 @@
             @php
                 $house = str_replace('http://127.0.0.1:8000/', '', $submission->photoSection->photo_house_building);
             @endphp
-            <img src="{{ public_path($house) }}" alt="تصویر" style="max-width:100%; max-height:250px;">
+            <img src="{{ $submission->photoSection->photo_house_building }}" alt="تصویر" style="max-width:100%; max-height:250px;">
         </td>
     </tr>
     <tr>

@@ -58,7 +58,15 @@ class SubmissionController
 
     public function index(Request $request) {
         $query = Submission::with($this->query);
-        
+        if ($request->project_id) {
+            // Records attached to the given project
+            $query->whereHas('projects', function ($q) use ($request) {
+                $q->where('projects.id', $request->project_id);
+            });
+        } else {
+            // Records that are not attached to any project
+            $query->whereDoesntHave('projects');
+        }
         $this->getSearchData($query, $request);
         $data = $query->paginate(8);
 
@@ -109,8 +117,8 @@ class SubmissionController
             
             if ($request->hasFile($value) && $request->file($value)->isValid()) {
                 $uuidPrefix = Str::uuid();
-                $get_file = $request->file($value)->storeAs("kobo-attachments/{$submission?->projects?->first()?->id}", $this->getFileName($uuidPrefix, $request->file($value)));
-                $get_file_clean = str_replace("kobo-attachments/{$submission?->projects?->first()?->id}/", '', $get_file);
+                $get_file = $request->file($value)->storeAs("kobo-attachments/", $this->getFileName($uuidPrefix, $request->file($value)));
+                $get_file_clean = str_replace("kobo-attachments/", '', $get_file);
                 $data[$value] = $get_file_clean;
             }
         }
@@ -299,10 +307,10 @@ class SubmissionController
         foreach ($request->file($name) as $file) {
                 $uuidPrefix = Str::uuid();
                 $path = $file->storeAs(
-                    "kobo-attachments/{$submission?->projects?->first()?->id}",
+                    "kobo-attachments/",
                     $this->getFileName($uuidPrefix, $file)
                 );
-                $path_clean = str_replace("kobo-attachments/{$submission?->projects?->first()?->id}/", '', $path);
+                $path_clean = str_replace("kobo-attachments/", '', $path);
                 $storedFiles[] = $path_clean;
             
         }
@@ -319,10 +327,10 @@ class SubmissionController
             $file = $files[$key]['current_house_problem_photo'] ?? null;
             $uuidPrefix = Str::uuid();
             $path = $file->storeAs(
-                "kobo-attachments/{$submission?->projects?->first()?->id}",
+                "kobo-attachments/",
                 $this->getFileName($uuidPrefix, $file)
             );
-            $path_clean = str_replace("kobo-attachments/{$submission?->projects?->first()?->id}/", '', $path);
+            $path_clean = str_replace("kobo-attachments/", '', $path);
 
             $storedFiles[$key]['current_house_problem_photo'] = $path_clean;
         
@@ -357,10 +365,10 @@ public function editArrayFileWithTitle(string $name, Request $request, $id): arr
             // Update existing record if file is uploaded
             if ($file instanceof UploadedFile) {
                 $record = HouseProblemAreaPhoto::find($row['id']);
-                Storage::delete("kobo-attachments/{$submission?->projects?->first()?->id}/{$record->current_house_problem_photo}");
+                Storage::delete("kobo-attachments/{$record->current_house_problem_photo}");
                 $uuidPrefix = Str::uuid();
-                $path = $file->storeAs("kobo-attachments/{$submission?->projects?->first()?->id}", $this->getFileName($uuidPrefix, $file));
-                $path_clean = str_replace("kobo-attachments/{$submission?->projects?->first()?->id}/", '', $path);
+                $path = $file->storeAs("kobo-attachments/", $this->getFileName($uuidPrefix, $file));
+                $path_clean = str_replace("kobo-attachments/", '', $path);
                 $storedFiles[$key]['current_house_problem_photo'] = $path_clean;
                 
             }
@@ -371,8 +379,8 @@ public function editArrayFileWithTitle(string $name, Request $request, $id): arr
 
             if ($file instanceof UploadedFile) {
                 $uuidPrefix = Str::uuid();
-                $path = $file->storeAs("kobo-attachments/{$submission?->projects?->first()?->id}", $this->getFileName($uuidPrefix, $file));
-                $path_clean = str_replace("kobo-attachments/{$submission?->projects?->first()?->id}/", '', $path);
+                $path = $file->storeAs("kobo-attachments/", $this->getFileName($uuidPrefix, $file));
+                $path_clean = str_replace("kobo-attachments/", '', $path);
                 $storedFiles[$key]['current_house_problem_photo'] = $path_clean;
             }
         }
@@ -410,7 +418,7 @@ public function editArrayFileWithTitle(string $name, Request $request, $id): arr
         }
 
         if (!is_null($targetRecord->$name)) {
-            Storage::delete("kobo-attachments/{$submission?->projects?->first()?->id}/{$targetRecord->$name}");
+            Storage::delete("kobo-attachments/{$targetRecord->$name}");
             $targetRecord->delete(); // delete the record entirely
         }
     } else {
@@ -424,7 +432,7 @@ public function editArrayFileWithTitle(string $name, Request $request, $id): arr
         }
 
         if (!is_null($related->$name)) {
-            Storage::delete("kobo-attachments/{$submission?->projects?->first()?->id}/{$related->$name}");
+            Storage::delete("kobo-attachments/{$related->$name}");
             $related->$name = null;
             $related->save(); // nullify field only
         }
@@ -461,14 +469,14 @@ public function editArrayFileWithTitle(string $name, Request $request, $id): arr
 
         // Delete old photo if exists
         if (!is_null($targetRecord->$name)) {
-            Storage::delete("kobo-attachments/{$submission?->projects?->first()?->id}/{$targetRecord->$name}");
+            Storage::delete("kobo-attachments/{$targetRecord->$name}");
         }
 
         // Upload and update new photo
         if ($request->hasFile('photo') && $request->file('photo')->isValid()) {
             $uuidPrefix = Str::uuid();
-            $get_file = $request->file('photo')->storeAs("kobo-attachments/{$submission?->projects?->first()?->id}", $this->getFileName($uuidPrefix, $request->file('photo')));
-            $get_file_clean = str_replace("kobo-attachments/{$submission?->projects?->first()?->id}/", '', $get_file);
+            $get_file = $request->file('photo')->storeAs("kobo-attachments/", $this->getFileName($uuidPrefix, $request->file('photo')));
+            $get_file_clean = str_replace("kobo-attachments/", '', $get_file);
 
             $targetRecord->$name = $get_file_clean;
             $targetRecord->save();
@@ -488,13 +496,13 @@ public function editArrayFileWithTitle(string $name, Request $request, $id): arr
         }
 
         if (!is_null($related->$name)) {
-            Storage::delete("kobo-attachments/{$submission?->projects?->first()?->id}/{$related->$name}");
+            Storage::delete("kobo-attachments/{$related->$name}");
         }
 
         if ($request->hasFile('photo') && $request->file('photo')->isValid()) {
             $uuidPrefix = Str::uuid();
-            $get_file = $request->file('photo')->storeAs("kobo-attachments/{$submission?->projects?->first()?->id}", $this->getFileName($uuidPrefix, $request->file('photo')));
-            $get_file_clean = str_replace("kobo-attachments/{$submission?->projects?->first()?->id}/", '', $get_file);
+            $get_file = $request->file('photo')->storeAs("kobo-attachments/", $this->getFileName($uuidPrefix, $request->file('photo')));
+            $get_file_clean = str_replace("kobo-attachments/", '', $get_file);
 
             $related->$name = $get_file_clean;
             $related->save();
@@ -522,10 +530,10 @@ public function editArrayFileWithTitle(string $name, Request $request, $id): arr
     if ($request->hasFile('photo') && $request->file('photo')->isValid()) {
         $uuidPrefix = Str::uuid();
         $get_file = $request->file('photo')->storeAs(
-            "kobo-attachments/{$submission?->projects?->first()?->id}",
+            "kobo-attachments/",
             $this->getFileName($uuidPrefix, $request->file('photo'))
         );
-        $get_file_clean = str_replace("kobo-attachments/{$submission?->projects?->first()?->id}/", '', $get_file);
+        $get_file_clean = str_replace("kobo-attachments/", '', $get_file);
 
         $relatedModel = $submission->$relation()->find($request->relation_id);
 
@@ -717,6 +725,9 @@ public function editArrayFileWithTitle(string $name, Request $request, $id): arr
         $submissions = $request->submissions;
         if ($request->selectAll) {
             $query = Submission::query();
+            // Records that are not attached to any project
+            $query->whereDoesntHave('projects');
+            
             $this->getSearchData($query, $request);
             $submissions = $query->pluck('id')->toArray();
         }
@@ -729,6 +740,11 @@ public function editArrayFileWithTitle(string $name, Request $request, $id): arr
         $submissions = $request->submissions;
         if ($request->selectAll) {
             $query = Submission::query();
+            // Records attached to the given project
+            $query->whereHas('projects', function ($q) use ($request) {
+                $q->where('projects.id', $request->project_id);
+            });
+
             $this->getSearchData($query, $request);
             $submissions = $query->pluck('id')->toArray();
         }
@@ -775,6 +791,15 @@ public function editArrayFileWithTitle(string $name, Request $request, $id): arr
 
         $submissions;
         if ($request->selectAll) {
+            if ($request->project_id) {
+                // Records attached to the given project
+                $query->whereHas('projects', function ($q) use ($request) {
+                    $q->where('projects.id', $request->project_id);
+                });
+            } else {
+                // Records that are not attached to any project
+                $query->whereDoesntHave('projects');
+            }
             $this->getSearchData($query, $request);
             $submissions = $query->get();
         } else {
@@ -812,11 +837,7 @@ public function editArrayFileWithTitle(string $name, Request $request, $id): arr
         return Excel::download(new SubmissionsExport($result, $request->project ? $request->project['label'] : now()->format('Y-m-d'), $header ), now()->format('Y-m-d') . 'submissions.xlsx');
     }
     function getSearchData($query, $request) {
-        if ($request->project_id) {
-            $query->whereHas('projects', function ($q) use ($request) {
-                $q->where('projects.id', $request->project_id);
-            });
-        }
+        
         foreach ($request->search as $key => $field) {
             if ($field) {
                 if (Str::contains($key, '__') ) {
@@ -876,6 +897,15 @@ public function editArrayFileWithTitle(string $name, Request $request, $id): arr
         $ids = $request->selects;
         if ($request->selectAll === true) {
             $query = Submission::query();
+            if ($request->project_id) {
+                // Records attached to the given project
+                $query->whereHas('projects', function ($q) use ($request) {
+                    $q->where('projects.id', $request->project_id);
+                });
+            } else {
+                // Records that are not attached to any project
+                $query->whereDoesntHave('projects');
+            }
             $this->getSearchData($query, $request);
             $ids = $query->pluck('id')->toArray();
         } 
@@ -889,6 +919,15 @@ public function editArrayFileWithTitle(string $name, Request $request, $id): arr
         $ids = $request->selects;
         if ($request->selectAll === true) {
             $query = Submission::query();
+            if ($request->project_id) {
+                // Records attached to the given project
+                $query->whereHas('projects', function ($q) use ($request) {
+                    $q->where('projects.id', $request->project_id);
+                });
+            } else {
+                // Records that are not attached to any project
+                $query->whereDoesntHave('projects');
+            }
             $this->getSearchData($query, $request);
             $ids = $query->pluck('id')->toArray();
         } 

@@ -39,8 +39,7 @@ class Interviewwee extends Model
         if ($this->returnRawPhoto) {
             return $value;
         }
-        $folderName = $this->submission?->projects?->first()?->id;
-        return $value ? asset("storage/kobo-attachments/$folderName/$value") : null;
+        return $value ? asset("storage/kobo-attachments/$value") : null;
     }
 
     public function submission(): BelongsTo
@@ -56,8 +55,7 @@ class Interviewwee extends Model
             $photo = $interviewwee->getRawOriginal('inter_nic_photo');
 
             if (!is_null($photo)) {
-                $folderName = $interviewwee->submission?->projects?->first()?->id;
-                Storage::delete("kobo-attachments/$folderName/$photo");
+                Storage::delete("kobo-attachments/$photo");
             }
         });
     }

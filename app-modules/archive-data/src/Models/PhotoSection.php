@@ -36,8 +36,8 @@ class PhotoSection extends Model
             return $value;
         }
         
-        $folderName = $this->submission?->projects?->first()?->id;
-        return $value ? asset("storage/kobo-attachments/$folderName/$value") : null;
+        
+        return $value ? asset("storage/kobo-attachments/$value") : null;
     }
 
     public function getPhotoHouseBuildingAttribute($value)
@@ -45,8 +45,8 @@ class PhotoSection extends Model
         if ($this->returnRawPhoto) {
             return $value;
         }
-        $folderName = $this->submission?->projects?->first()?->id;
-        return $value ? asset("storage/kobo-attachments/$folderName/$value") : asset('images/default.png');
+        
+        return $value ? asset("storage/kobo-attachments/$value") : asset('images/default.png');
     }
 
     public function getPhotoHouseDoorAttribute($value)
@@ -54,8 +54,8 @@ class PhotoSection extends Model
         if ($this->returnRawPhoto) {
             return $value;
         }
-        $folderName = $this->submission?->projects?->first()?->id;
-        return $value ? asset("storage/kobo-attachments/$folderName/$value") : asset('images/default.png');
+        
+        return $value ? asset("storage/kobo-attachments/$value") : asset('images/default.png');
     }
 
     public function getPhotoEnovirmentAttribute($value)
@@ -63,8 +63,8 @@ class PhotoSection extends Model
         if ($this->returnRawPhoto) {
             return $value;
         }
-        $folderName = $this->submission?->projects?->first()?->id;
-        return $value ? asset("storage/kobo-attachments/$folderName/$value") : null;
+        
+        return $value ? asset("storage/kobo-attachments/$value") : null;
     }
 
     public function getPhotoOtherAttribute($value)
@@ -72,8 +72,8 @@ class PhotoSection extends Model
         if ($this->returnRawPhoto) {
             return $value;
         }
-        $folderName = $this->submission?->projects?->first()?->id;
-        return $value ? asset("storage/kobo-attachments/$folderName/$value") : null;
+        
+        return $value ? asset("storage/kobo-attachments/$value") : null;
     }
 
 
@@ -141,8 +141,8 @@ class PhotoSection extends Model
 
     // public function getPhotoIntervieweeAttribute($value)
     // {
-    //    $folderName = $this->submission?->projects?->first()?->id;
-        // return $value ? asset("storage/kobo-attachments/$folderName/$value") : null;
+    //    
+        // return $value ? asset("storage/kobo-attachments/$value") : null;
     // }
 
      public function getPhotoIntervieweeAttribute($value)
@@ -151,9 +151,9 @@ class PhotoSection extends Model
         if (!$value) {
             returnnull;
         }
-         $folderName = $this->submission?->projects?->first()?->id;
-        $originalPath = storage_path("app/public/kobo-attachments/$folderName/$value");
-        $publicStoragePath = "storage/kobo-attachments/$folderName/$value"; // Path for asset()
+         
+        $originalPath = storage_path("app/public/kobo-attachments/$value");
+        $publicStoragePath = "storage/kobo-attachments/$value"; // Path for asset()
 
         // 3. Check if original file exists
         if (!file_exists($originalPath)) {
