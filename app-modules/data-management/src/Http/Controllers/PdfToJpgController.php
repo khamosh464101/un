@@ -13,8 +13,8 @@ class PdfToJpgController
     public function getFolderSummary()
     {
         try {
-            $jpgFiles = Storage::disk('google')->files('jpg');
-            $pdfFiles = Storage::disk('google')->files('pdf');
+            $jpgFiles = Storage::disk('gcs')->files('jpg');
+            $pdfFiles = Storage::disk('gcs')->files('pdf');
             
             return response()->json([
                 'jpg_count' => count($jpgFiles),
@@ -37,7 +37,7 @@ class PdfToJpgController
             $pdfPath = 'pdf/' . $baseName . '.pdf';
             
             // Check if PDF exists
-            if (!Storage::disk('google')->exists($pdfPath)) {
+            if (!Storage::disk('gcs')->exists($pdfPath)) {
                 return response()->json(['error' => 'PDF file not found'], 404);
             }
             
@@ -49,7 +49,7 @@ class PdfToJpgController
             
             // Download PDF to temporary location with proper filename
             $tempPdfPath = $tempDir . $baseName . '.pdf';
-            file_put_contents($tempPdfPath, Storage::disk('google')->get($pdfPath));
+            file_put_contents($tempPdfPath, Storage::disk('gcs')->get($pdfPath));
             
             // Verify the file was created
             if (!file_exists($tempPdfPath)) {
@@ -108,10 +108,10 @@ class PdfToJpgController
             
             // Upload JPG to storage
             $jpgPath = 'jpg/' . $baseName . '.jpg';
-            Storage::disk('google')->put($jpgPath, file_get_contents($tempJpgPath));
+            Storage::disk('gcs')->put($jpgPath, file_get_contents($tempJpgPath));
             
             // Delete the original PDF
-            Storage::disk('google')->delete($pdfPath);
+            Storage::disk('gcs')->delete($pdfPath);
             
             return response()->json([
                 'message' => 'PDF converted to JPG successfully using Imagick',
@@ -156,10 +156,10 @@ class PdfToJpgController
             
             // Upload JPG to storage
             $jpgPath = 'jpg/' . $baseName . '.jpg';
-            Storage::disk('google')->put($jpgPath, file_get_contents($tempJpgPath));
+            Storage::disk('gcs')->put($jpgPath, file_get_contents($tempJpgPath));
             
             // Delete the original PDF
-            Storage::disk('google')->delete($pdfPath);
+            Storage::disk('gcs')->delete($pdfPath);
             
             return response()->json([
                 'message' => 'PDF converted to JPG successfully using Ghostscript',
