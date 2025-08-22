@@ -43,7 +43,8 @@ Route::middleware(['auth:sanctum', 'twofactor'])->group(function () {
 
 Route::get('/storage/summary', [PdfToJpgController::class, 'getFolderSummary']);
 Route::post('/storage/convert-batch', [PdfToJpgController::class, 'convertMultiplePdfsToJpg']);
-Route::get('/storage/batch-progress/{batchId}', [PdfToJpgController::class, 'getBatchProgress']);
+Route::post('/storage/convert/{filename}', [PdfToJpgController::class, 'convertSinglePdf']);
+Route::get('/storage/batch-progress/{batchId}', [PdfToJpgController::class, 'getBatchProgressApi']);
 
 Route::get('/data-managements/submissions/edit/{id}', [SubmissionController::class, 'edit']);
 Route::post('/data-managements/submissions/import-excel', [SubmissionController::class, 'importExcel']);

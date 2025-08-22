@@ -20,7 +20,7 @@ class PdfToJpgController
                 'jpg_count' => count($jpgFiles),
                 'pdf_count' => count($pdfFiles),
                 'pdf_files' => $pdfFiles,
-                'jpg_files' => $jpgFiles, // Also return JPG files to check for existing ones
+                'jpg_files' => $jpgFiles,
                 'imagick_available' => extension_loaded('imagick'),
                 'ghostscript_available' => !empty(shell_exec('which gs'))
             ]);
@@ -52,7 +52,7 @@ class PdfToJpgController
             }
             
             // Limit to 100 files or all files if less than 100
-            $filesToProcess = array_slice($filesToProcess, 0, 10);
+            $filesToProcess = array_slice($filesToProcess, 0, 100);
             $totalFiles = count($filesToProcess);
             
             if ($totalFiles === 0) {
@@ -106,9 +106,10 @@ class PdfToJpgController
             // Check again if JPG already exists (in case it was created during batch processing)
             if (in_array($baseName, $existingJpgs)) {
                 // Skip this file as JPG already exists
+                $currentProgress = $this->getBatchProgressData($batchId);
                 $this->updateBatchProgress($batchId, [
                     'processed' => $index + 1,
-                    'skipped' => $this->getBatchProgress($batchId)['skipped'] + 1,
+                    'skipped' => ($currentProgress['skipped'] ?? 0) + 1,
                     'current_file' => $filename,
                     'status' => 'processing'
                 ]);
@@ -230,8 +231,8 @@ class PdfToJpgController
         }
     }
     
-    // Get batch progress data
-    protected function getBatchProgress($batchId)
+    // Get batch progress data (fixed to be private)
+    private function getBatchProgressData($batchId)
     {
         $storagePath = storage_path('app/batch_progress/');
         $filePath = $storagePath . $batchId . '.json';
@@ -243,7 +244,7 @@ class PdfToJpgController
         return [];
     }
     
-    // Get batch progress via API
+    // Get batch progress via API (public method)
     public function getBatchProgressApi($batchId)
     {
         $storagePath = storage_path('app/batch_progress/');
