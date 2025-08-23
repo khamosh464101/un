@@ -5,6 +5,7 @@ namespace Modules\DataManagement\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Exception;
+use Spatie\PdfToImage\Pdf;
 
 class PdfToJpgController
 {
@@ -58,6 +59,7 @@ class PdfToJpgController
             
             $successful = 0;
             $failed = 0;
+            $failedFiles = [];
             
             foreach ($filesToProcess as $pdfFile) {
                 try {
@@ -68,16 +70,25 @@ class PdfToJpgController
                         $successful++;
                     } else {
                         $failed++;
+                        $failedFiles[] = [
+                            'file' => $filename,
+                            'error' => $result['error']
+                        ];
                     }
                 } catch (Exception $e) {
                     $failed++;
+                    $failedFiles[] = [
+                        'file' => basename($pdfFile),
+                        'error' => $e->getMessage()
+                    ];
                 }
             }
             
             return response()->json([
                 'message' => "Converted $successful PDF files to JPG" . ($failed > 0 ? " ($failed failed)" : ""),
                 'successful' => $successful,
-                'failed' => $failed
+                'failed' => $failed,
+                'failed_files' => $failedFiles
             ]);
             
         } catch (Exception $e) {
@@ -85,7 +96,7 @@ class PdfToJpgController
         }
     }
     
-    // Convert single PDF to JPG
+    // Convert single PDF to JPG using Spatie package
     protected function convertSinglePdf($filename)
     {
         // Remove .pdf extension if present
@@ -109,7 +120,7 @@ class PdfToJpgController
             mkdir($tempDir, 0755, true);
         }
         
-        // Download PDF to temporary location with proper filename
+        // Download PDF to temporary location
         $tempPdfPath = $tempDir . $baseName . '.pdf';
         file_put_contents($tempPdfPath, Storage::disk('gcs')->get($pdfPath));
         
@@ -118,92 +129,39 @@ class PdfToJpgController
             return ['error' => 'Failed to create temporary PDF file'];
         }
         
-        // Check if Imagick is available
-        if (extension_loaded('imagick')) {
-            return $this->convertWithImagick($tempPdfPath, $pdfPath, $baseName, $tempDir);
-        }
-        
-        // Check if Ghostscript is available
-        if (!empty(shell_exec('which gs'))) {
-            return $this->convertWithGhostscript($tempPdfPath, $pdfPath, $baseName, $tempDir);
-        }
-        
-        return ['error' => 'No PDF conversion tool available'];
-    }
-    
-    // Convert using Imagick
-    protected function convertWithImagick($tempPdfPath, $pdfPath, $baseName, $tempDir)
-    {
         $tempJpgPath = null;
         
         try {
-            $imagick = new \Imagick();
-            $imagick->setResolution(150, 150);
-            $imagick->readImage($tempPdfPath . '[0]');
-            $imagick->setImageFormat('jpeg');
-            $imagick->setImageCompressionQuality(90);
+            // Use Spatie PDF to Image package
+            $pdf = new Pdf($tempPdfPath);
             
+            // Set output file path
             $tempJpgPath = $tempDir . $baseName . '.jpg';
-            $result = $imagick->writeImage($tempJpgPath);
+            // Set resolution (DPI)
+            $pdf->setResolution(300);
             
-            if (!$result) {
-                throw new Exception("Failed to write JPG image");
-            }
+            // Save the first page as JPG
+            $pdf->saveImage($tempJpgPath);
             
-            // Upload JPG to storage
-            $jpgPath = 'jpg/' . $baseName . '.jpg';
-            Storage::disk('gcs')->put($jpgPath, file_get_contents($tempJpgPath));
-            
-            // Delete the original PDF
-            Storage::disk('gcs')->delete($pdfPath);
-            
-            return [
-                'message' => 'PDF converted to JPG successfully',
-                'jpg_path' => $jpgPath
-            ];
-        } catch (Exception $e) {
-            return ['error' => $e->getMessage()];
-        } finally {
-            // Clean up temporary files
-            if ($tempJpgPath && file_exists($tempJpgPath)) {
-                unlink($tempJpgPath);
-            }
-            if (file_exists($tempPdfPath)) {
-                unlink($tempPdfPath);
-            }
-        }
-    }
-    
-    // Convert using Ghostscript
-    protected function convertWithGhostscript($tempPdfPath, $pdfPath, $baseName, $tempDir)
-    {
-        $tempJpgPath = null;
-        
-        try {
-            $tempJpgPath = $tempDir . $baseName . '.jpg';
-            
-            // Use Ghostscript to convert PDF to JPG
-            $command = "gs -dNOPAUSE -sDEVICE=jpeg -r150 -dFirstPage=1 -dLastPage=1 -sOutputFile='$tempJpgPath' '$tempPdfPath' -c quit 2>&1";
-            $output = shell_exec($command);
-            
-            // Check if conversion was successful
+            // Verify the JPG was created
             if (!file_exists($tempJpgPath) || filesize($tempJpgPath) === 0) {
-                throw new Exception("Ghostscript conversion failed");
+                throw new Exception("Failed to create JPG image");
             }
             
             // Upload JPG to storage
-            $jpgPath = 'jpg/' . $baseName . '.jpg';
             Storage::disk('gcs')->put($jpgPath, file_get_contents($tempJpgPath));
             
-            // Delete the original PDF
+            // Delete the original PDF (optional - you might want to keep it)
             Storage::disk('gcs')->delete($pdfPath);
             
             return [
                 'message' => 'PDF converted to JPG successfully',
-                'jpg_path' => $jpgPath
+                'jpg_path' => $jpgPath,
+                'pdf_deleted' => true
             ];
+            
         } catch (Exception $e) {
-            return ['error' => $e->getMessage()];
+            return ['error' => 'PDF conversion failed: ' . $e->getMessage()];
         } finally {
             // Clean up temporary files
             if ($tempJpgPath && file_exists($tempJpgPath)) {
