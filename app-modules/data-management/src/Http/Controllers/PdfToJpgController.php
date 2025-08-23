@@ -138,7 +138,8 @@ class PdfToJpgController
             // Set output file path
             $tempJpgPath = $tempDir . $baseName . '.jpg';
             // Set resolution (DPI)
-            $pdf->setResolution(300);
+            // $pdf->setResolution(300);
+            // $pdf->setResolution(300);
             
             // Save the first page as JPG
             $pdf->saveImage($tempJpgPath);
