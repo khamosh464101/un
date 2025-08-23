@@ -138,7 +138,7 @@ class PdfToJpgController
         
         try {
             $imagick = new \Imagick();
-            $imagick->setResolution(300);
+            $imagick->setResolution(300, 300);
             $imagick->readImage($tempPdfPath . '[0]');
             $imagick->setImageFormat('jpeg');
             
