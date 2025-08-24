@@ -184,10 +184,10 @@
         <td>
             <table style="width: 100%; border: none; padding:none;">
                 <tr style="padding:none;">
-                    <td style="text-align: right; direction: rtl; border:none; padding:none;">نوعیت ملکیت</td>
+                    <td style="text-align: right; direction: rtl; border:none; padding:none;">مالک زمین</td>
                 </tr>
                 <tr>
-                    <td style="text-align: left; direction: ltr; unicode-bidi: embed; border: none; padding:none;">Type of occupancy</td>
+                    <td style="text-align: left; direction: ltr; unicode-bidi: embed; border: none; padding:none;">House / Land Ownership</td>
                 </tr>
             </table>
         </td>
@@ -300,7 +300,7 @@
             <table style="width: 100%; border: none; padding:0; font-size: 16px;">
             <tr style="padding:0">
                 <td style="text-align: right; direction: rtl; unicode-bidi: embed; width: 40%; border:none; padding:0;">عکس فضای ملکیت</td>
-                <td style="text-align: left; direction: ltr; unicode-bidi: embed; width: 60%; border:none; padding:0;">Spatial photo</td>
+                <td style="text-align: left; direction: ltr; unicode-bidi: embed; width: 60%; border:none; padding:0;">Satellite image</td>
             </tr>
         </table>
         </td>
@@ -308,7 +308,7 @@
             <table style="width: 100%; border: none; padding:0; font-size: 16px;">
                 <tr style="padding:0">
                     <td style="text-align: right; direction: rtl; unicode-bidi: embed; width: 40%; border:none; padding:0;">عکس ملکیت</td>
-                    <td style="text-align: left; direction: ltr; unicode-bidi: embed; width: 60%; border:none; padding:0;">Property photo</td>
+                    <td style="text-align: left; direction: ltr; unicode-bidi: embed; width: 60%; border:none; padding:0;">Property image</td>
                 </tr>
             </table>
         </td>
