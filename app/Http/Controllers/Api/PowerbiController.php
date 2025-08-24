@@ -37,7 +37,7 @@ class PowerbiController extends Controller
             'returnee:id,submission_id,entry_borders,reason_return',
             'extremelyVulnerableMember:id,submission_id,disable_member,conditional_women,conditional_women_pregnant,conditional_women_breastfeeding_mother,conditional_women_widow',
             'houseLandOwnership:id,submission_id,house_owner',
-            'accessBasicService:id,submission_id,drinkingwater_main_source,water_quality,type_toilet_facilities,access_education,access_school,type_school,access_school_university,access_school_madrasa,access_health_services,health_facilities_type,health_facility_have_female_staff,type_access_road,how_access_electricity',
+            'accessBasicService:id,submission_id,drinkingwater_main_source,type_water_source,water_source_distance,water_source_route_safe,water_collect_person,water_quality,type_toilet_facilities,access_education,access_school,type_school,nearest_school,access_school_university,access_school_madrasa,Household_members_attend_school_present,Household_members_attend_university_present,litrate_Household_member,access_health_services,health_facilities_type,health_service_distance,health_facility_have_female_staff,health_challanges,type_access_road,how_access_electricity',
             'livelihood:id,submission_id,Household_main_source_income',
             'photoSection:id,submission_id,latitude,longitude',
         ])->get();
@@ -53,7 +53,7 @@ class PowerbiController extends Controller
             'returnee' => ['entry_borders', 'reason_return'],
             'extremelyVulnerableMember' => ['disable_member','conditional_women','conditional_women_pregnant','conditional_women_breastfeeding_mother','conditional_women_widow'],
             'houseLandOwnership' => ['house_owner'],
-            'accessBasicService' => ['drinkingwater_main_source', 'water_quality','type_toilet_facilities','access_education','access_school','type_school','access_school_university','access_school_madrasa','access_health_services','health_facilities_type','health_facility_have_female_staff','type_access_road','how_access_electricity'],
+            'accessBasicService' => ['drinkingwater_main_source', 'type_water_source', 'water_source_distance', 'water_source_route_safe', 'water_collect_person', 'water_quality','type_toilet_facilities','access_education','access_school','type_school','nearest_school','access_school_university','access_school_madrasa', 'Household_members_attend_school_present', 'litrate_Household_member','access_health_services','health_facilities_type', 'health_service_distance','health_facility_have_female_staff', 'health_challanges','type_access_road','how_access_electricity'],
             'livelihood' => ['Household_main_source_income'],
             'photoSection' => ['latitude', 'longitude'],
         ];
