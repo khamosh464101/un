@@ -170,6 +170,9 @@ class PhotoSection extends Model
         // or check if a `_fixed` version of the file exists.
         // For simplicity, `fixFaceOrientationWithVision` itself checks.
         // ImageFixer::fixFaceOrientationWithVision($originalPath);
+        $manager = new ImageManager(new Driver());
+        $image = $manager->read($originalPath)->orientate();
+        $image->save($originalPath);
         ImageFixer::fixFaceOrientationWithVision($originalPath);
 
         // 5. Return the asset path to the (potentially) fixed image.
