@@ -172,12 +172,14 @@ class PhotoSection extends Model
         // ImageFixer::fixFaceOrientationWithVision($originalPath);
         $manager = new ImageManager(new Driver());
         $image = $manager->read($originalPath);
+
         logger()->info('Doorking', [$image->width()]);
         if ($image->width() > $image->height()) {
             logger()->info('Still working', [$image->height()]);
-            $image->rotate(-90);
+            $image = $image->rotate(-90);
         }
         $image->save($originalPath);
+
         ImageFixer::fixFaceOrientationWithVision($originalPath);
 
         // 5. Return the asset path to the (potentially) fixed image.
