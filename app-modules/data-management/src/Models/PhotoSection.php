@@ -171,7 +171,7 @@ class PhotoSection extends Model
         // For simplicity, `fixFaceOrientationWithVision` itself checks.
         // ImageFixer::fixFaceOrientationWithVision($originalPath);
         $manager = new ImageManager(new Driver());
-        $image = $manager->read($originalPath)->orientate();
+        $image = $manager->read($originalPath)->orient();
         $image->save($originalPath);
         ImageFixer::fixFaceOrientationWithVision($originalPath);
 
