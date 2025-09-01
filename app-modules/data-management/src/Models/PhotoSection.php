@@ -5,10 +5,11 @@ namespace Modules\DataManagement\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Storage;
-use Google\Cloud\Vision\V1\Client\ImageAnnotatorClient;
-use Intervention\Image\ImageManager;
-use Intervention\Image\Drivers\Gd\Driver;
-use App\Helpers\ImageFixer;
+use Google\Cloud\Vision\V1\ImageAnnotatorClient;
+use Google\Cloud\Vision\V1\Image;
+use Google\Cloud\Vision\V1\Feature;
+use Intervention\Image\ImageManager; // If you're using Intervention Image
+use Intervention\Image\Drivers\Gd\Driver; // Or whatever driver you're using
 use App\Models\Setting;
 use Log;
 
@@ -246,7 +247,7 @@ class PhotoSection extends Model
 
         logger()->info('Google Vision client initialized successfully');
 
-        // Read image and send to Google Vision
+        // Read image
         $imageData = file_get_contents($localImagePath);
         
         if ($imageData === false) {
@@ -254,8 +255,16 @@ class PhotoSection extends Model
             return false;
         }
 
-        // Perform object localization - FIXED METHOD CALL
-        $response = $imageAnnotator->objectLocalization($imageData);
+        // Create image object
+        $image = new Image();
+        $image->setContent($imageData);
+
+        // Create feature for object localization
+        $feature = new Feature();
+        $feature->setType(Feature\Type::OBJECT_LOCALIZATION);
+
+        // Perform the request using annotateImage instead of objectLocalization
+        $response = $imageAnnotator->annotateImage($image, [$feature]);
         
         // Check if response has errors
         if ($response->getError()) {
@@ -267,8 +276,11 @@ class PhotoSection extends Model
         $personBoundingBox = null;
         $highestConfidence = 0;
 
+        // Get object annotations from the response
+        $objectAnnotations = $response->getLocalizedObjectAnnotations();
+
         // Iterate through detected objects to find a 'Person'
-        foreach ($response->getLocalizedObjectAnnotations() as $object) {
+        foreach ($objectAnnotations as $object) {
             if ($object->getName() === 'Person') {
                 $confidence = $object->getScore();
                 if ($confidence > 0.7 && $confidence > $highestConfidence) {
@@ -293,10 +305,13 @@ class PhotoSection extends Model
             list($imageWidth, $imageHeight) = getimagesize($localImagePath);
             
             // Get the bounding box coordinates
-            $minX = min(array_map(fn($v) => $v->getX(), $vertices));
-            $maxX = max(array_map(fn($v) => $v->getX(), $vertices));
-            $minY = min(array_map(fn($v) => $v->getY(), $vertices));
-            $maxY = max(array_map(fn($v) => $v->getY(), $vertices));
+            $xCoords = array_map(fn($v) => $v->getX(), $vertices);
+            $yCoords = array_map(fn($v) => $v->getY(), $vertices);
+            
+            $minX = min($xCoords);
+            $maxX = max($xCoords);
+            $minY = min($yCoords);
+            $maxY = max($yCoords);
 
             $boxWidth = $maxX - $minX;
             $boxHeight = $maxY - $minY;
@@ -308,7 +323,6 @@ class PhotoSection extends Model
             // Check if person is likely sideways (90 or 270 degrees)
             if ($boxAspectRatio > 1.2) {
                 // Person is wider than tall - likely sideways
-                // Determine if it's 90 or 270 based on position in image
                 $centerX = ($minX + $maxX) / 2;
                 
                 if ($centerX < $imageWidth / 3) {
@@ -316,12 +330,11 @@ class PhotoSection extends Model
                 } elseif ($centerX > $imageWidth * 2/3) {
                     $inferredRotationDegrees = 270; // Person on right side
                 } else {
-                    // Can't determine, use text detection as fallback or skip
                     Log::info("Person detected but orientation ambiguous");
                     return false;
                 }
             }
-            // Check for upside down (180 degrees) - this is trickier
+            // Check for upside down (180 degrees)
             elseif ($this->isPersonUpsideDown($vertices, $imageHeight)) {
                 $inferredRotationDegrees = 180;
             }
@@ -356,16 +369,19 @@ class PhotoSection extends Model
     } catch (\Exception $e) {
         Log::error("Error processing image {$localImagePath}: " . $e->getMessage());
         return false;
+    } finally {
+        if (isset($imageAnnotator)) {
+            $imageAnnotator->close();
+        }
     }
 }
 
-// Helper method to detect upside-down person (very basic heuristic)
+// Helper method to detect upside-down person
 private function isPersonUpsideDown($vertices, $imageHeight)
 {
-    // Simple heuristic: if the bottom of the bounding box is near the top of the image
-    // and top is near the bottom, person might be upside down
-    $minY = min(array_map(fn($v) => $v->getY(), $vertices));
-    $maxY = max(array_map(fn($v) => $v->getY(), $vertices));
+    $yCoords = array_map(fn($v) => $v->getY(), $vertices);
+    $minY = min($yCoords);
+    $maxY = max($yCoords);
     
     // If the top of the person is in the bottom half and bottom is in the top half
     return ($minY > $imageHeight / 2 && $maxY < $imageHeight / 2);
