@@ -220,17 +220,20 @@ class PhotoSection extends Model
     }
      public function fixOrientationWithObjectDetection(string $localImagePath)
     {
+        logger()->info('first step is working');
         $google_application_credentials = Setting::where('key', 'google_application_credentials')->first()->value;
         $google_cloud_project_id = Setting::where('key', 'google_cloud_project_id')->first()->value;
         if (!Storage::exists("$google_application_credentials")) {
-                Log::error("ImageFixer: Google credentials file not found at " . "storage/$google_application_credentials");
-                return false;
-            }
+            Log::error("ImageFixer: Google credentials file not found at " . "storage/$google_application_credentials");
+            return false;
+        }
 
             $imageAnnotator = new ImageAnnotatorClient([
                 'credentials' => json_decode(Storage::get("$google_application_credentials"), true),
                 'projectId' => $google_cloud_project_id,
             ]);
+
+            logger()->info('strill owrking');
 
         try {
             // Read image and send to Google Vision
@@ -306,15 +309,15 @@ class PhotoSection extends Model
                     $image = $manager->read($localImagePath)->rotate(180);
                     $image->save($localImagePath); // Overwrite original or save elsewhere
                     // Log or return success message
-                    error_log("Image at {$localImagePath} rotated by 180 degrees based on object detection.");
+                    Log::error("Image at {$localImagePath} rotated by 180 degrees based on object detection.");
                 }
 
             } else {
-                error_log("No high-confidence 'Person' object detected in {$localImagePath}. Cannot infer orientation using this method.");
+                Log::error("No high-confidence 'Person' object detected in {$localImagePath}. Cannot infer orientation using this method.");
             }
 
         } catch (\Exception $e) {
-            error_log("Error processing image {$localImagePath}: " . $e->getMessage());
+            Log::error("Error processing image {$localImagePath}: " . $e->getMessage());
         } finally {
             $imageAnnotator->close();
         }
