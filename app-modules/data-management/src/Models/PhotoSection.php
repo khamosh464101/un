@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Google\Cloud\Vision\V1\ImageAnnotatorClient;
 use Illuminate\Support\Facades\Storage;
+use Google\Cloud\Vision\V1\ImageAnnotatorClient;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
 use App\Helpers\ImageFixer;
@@ -173,14 +174,14 @@ class PhotoSection extends Model
         $manager = new ImageManager(new Driver());
         $image = $manager->read($originalPath);
 
-        logger()->info('Doorking', [$image->width()]);
-        if ($image->width() > $image->height()) {
-            logger()->info('Still working', [$image->height()]);
-            $image = $image->rotate(-90);
-        }
-        $image->save($originalPath);
-
-        ImageFixer::fixFaceOrientationWithVision($originalPath);
+        // logger()->info('Doorking', [$image->width()]);
+        // if ($image->width() > $image->height()) {
+        //     logger()->info('Still working', [$image->height()]);
+        //     $image = $image->rotate(-90);
+        // }
+        // $image->save($originalPath);
+        $this->fixOrientationWithObjectDetection($originalPath);
+        // ImageFixer::fixFaceOrientationWithVision($originalPath);
 
         // 5. Return the asset path to the (potentially) fixed image.
         return asset($publicStoragePath);
@@ -215,6 +216,97 @@ class PhotoSection extends Model
         }
 
         $imageAnnotator->close();
+    }
+     public function fixOrientationWithObjectDetection(string $localImagePath): void
+    {
+        $imageAnnotator = new ImageAnnotatorClient();
+
+        try {
+            // Read image and send to Google Vision
+            $imageData = file_get_contents($localImagePath);
+
+            // Perform object localization
+            $response = $imageAnnotator->objectLocalization($imageData);
+
+            $personDetected = false;
+            $personBoundingBox = null;
+
+            // Iterate through detected objects to find a 'Person'
+            foreach ($response->getLocalizedObjectAnnotations() as $object) {
+                if ($object->getName() === 'Person' && $object->getScore() > 0.7) { // Only consider high-confidence detections
+                    $personDetected = true;
+                    $personBoundingBox = $object->getBoundingPoly(); // Get the bounding polygon
+                    break; // Use the first high-confidence person detected
+                }
+            }
+
+            if ($personDetected && $personBoundingBox) {
+                $vertices = $personBoundingBox->getVertices();
+
+                // Get the bounding box coordinates (assuming 4 vertices for a rectangle)
+                // Note: The order of vertices can vary, so calculate min/max to be safe
+                $minX = min($vertices[0]->getX(), $vertices[1]->getX(), $vertices[2]->getX(), $vertices[3]->getX());
+                $maxX = max($vertices[0]->getX(), $vertices[1]->getX(), $vertices[2]->getX(), $vertices[3]->getX());
+                $minY = min($vertices[0]->getY(), $vertices[1]->getY(), $vertices[2]->getY(), $vertices[3]->getY());
+                $maxY = max($vertices[0]->getY(), $vertices[1]->getY(), $vertices[2]->getY(), $vertices[3]->getY());
+
+                $boxWidth = $maxX - $minX;
+                $boxHeight = $maxY - $minY;
+
+                // --- CUSTOM ORIENTATION INFERENCE LOGIC HERE ---
+                // This is the challenging part. There's no direct "angle" for generic objects.
+                // You'll need to develop a heuristic.
+                // Examples of heuristics:
+                // 1. Aspect Ratio: If a standing person's bounding box is significantly wider than it is tall,
+                //    it might indicate a 90 or 270 degree rotation.
+                //    e.g., if ($boxWidth > $boxHeight * 1.5) { /* potentially 90/270 deg rotation */ }
+                // 2. Relative Position (for 180 degrees): This is very tricky without knowing head/feet position.
+                //    If you also use another Vision API feature like 'Landmark detection' (though primarily for famous landmarks)
+                //    or if you could somehow infer ground plane.
+                //    For a pure 180-degree "upside down" of a person, the bounding box aspect ratio won't change,
+                //    making it hard to detect from dimensions alone.
+                //    This often requires a deeper understanding of human pose estimation, which is not
+                //    a standard output of basic object localization.
+                //    For text, `textDetection` gives block orientation, which is much more reliable for 180-deg.
+
+                // Placeholder for inferred rotation angle (e.g., 0, 90, 180, 270)
+                $inferredRotationDegrees = 0; // Default to no rotation
+
+                // Example: Very basic heuristic for 90/270 degree rotation based on aspect ratio
+                // If a "person" bounding box is landscape, it's likely a 90 or 270 deg rotation.
+                if ($boxWidth > $boxHeight * 1.5) { // Adjust factor as needed
+                    // This is a guess. You'd need more context (like image dimensions)
+                    // and possibly other cues to differentiate 90 from 270,
+                    // or to confirm it's not just a person lying down.
+                    // For the sake of demonstration, let's assume it implies a 90-degree correction is needed,
+                    // or that the image itself is landscape when it should be portrait.
+                    // THIS IS HIGHLY SIMPLISTIC AND MIGHT NOT BE ACCURATE FOR 180-DEGREE UPSIDE DOWN.
+                    // For true 180-degree detection (upside-down), text detection is often more reliable
+                    // if there's any text in the image.
+                    $inferredRotationDegrees = 180; // Assuming the original problem was about 180
+                }
+                // --- END CUSTOM ORIENTATION INFERENCE LOGIC ---
+
+
+                // Apply rotation if needed
+                // The threshold for rotation might need to be adjusted based on your heuristic
+                if ($inferredRotationDegrees === 180) { // Or other angles you infer (90, 270)
+                    $manager = new ImageManager(new Driver());
+                    $image = $manager->read($localImagePath)->rotate(180);
+                    $image->save($localImagePath); // Overwrite original or save elsewhere
+                    // Log or return success message
+                    error_log("Image at {$localImagePath} rotated by 180 degrees based on object detection.");
+                }
+
+            } else {
+                error_log("No high-confidence 'Person' object detected in {$localImagePath}. Cannot infer orientation using this method.");
+            }
+
+        } catch (\Exception $e) {
+            error_log("Error processing image {$localImagePath}: " . $e->getMessage());
+        } finally {
+            $imageAnnotator->close();
+        }
     }
 
 
