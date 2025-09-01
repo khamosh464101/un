@@ -5,7 +5,7 @@ namespace Modules\DataManagement\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Storage;
-use Google\Cloud\Vision\V1\ImageAnnotatorClient;
+use Google\Cloud\Vision\V1\Client\ImageAnnotatorClient;
 use Google\Cloud\Vision\V1\Image;
 use Google\Cloud\Vision\V1\Feature;
 use Intervention\Image\ImageManager; // If you're using Intervention Image
