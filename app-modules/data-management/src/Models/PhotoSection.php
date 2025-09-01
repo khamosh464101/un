@@ -176,7 +176,7 @@ class PhotoSection extends Model
         logger()->info('Doorking', [$image->width()]);
         if ($image->width() > $image->height()) {
             logger()->info('Still working', [$image->height()]);
-            $image = $image->rotate(-90);
+            $image = $image->rotate(90);
         }
         $image->save($originalPath);
 
