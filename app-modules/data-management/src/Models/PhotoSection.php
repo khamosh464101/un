@@ -9,6 +9,8 @@ use Google\Cloud\Vision\V1\Client\ImageAnnotatorClient;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
 use App\Helpers\ImageFixer;
+use App\Models\Setting;
+use Log;
 
 class PhotoSection extends Model
 {
@@ -216,9 +218,19 @@ class PhotoSection extends Model
 
         $imageAnnotator->close();
     }
-     public function fixOrientationWithObjectDetection(string $localImagePath): void
+     public function fixOrientationWithObjectDetection(string $localImagePath)
     {
-        $imageAnnotator = new ImageAnnotatorClient();
+        $google_application_credentials = Setting::where('key', 'google_application_credentials')->first()->value;
+        $google_cloud_project_id = Setting::where('key', 'google_cloud_project_id')->first()->value;
+        if (!Storage::exists("$google_application_credentials")) {
+                Log::error("ImageFixer: Google credentials file not found at " . "storage/$google_application_credentials");
+                return false;
+            }
+
+            $imageAnnotator = new ImageAnnotatorClient([
+                'credentials' => json_decode(Storage::get("$google_application_credentials"), true),
+                'projectId' => $google_cloud_project_id,
+            ]);
 
         try {
             // Read image and send to Google Vision
