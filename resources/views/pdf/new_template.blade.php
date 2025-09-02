@@ -9,7 +9,8 @@
             text-align: right;
             margin: 0;
             padding: 0;
-            /* font-family: 'dejavu sans', sans-serif; */
+            font-size: 14px;
+            line-height: 1.3;
         }
         table {
             table-layout: fixed;
@@ -18,7 +19,7 @@
         }
         th, td {
             border: 1px solid #aaa;
-            padding: 8px;
+            padding: 6px;
             vertical-align: middle;
         }
         img {
@@ -40,44 +41,43 @@
         .hidden-tr {
             display: none;
         }
+        .compact {
+            margin-bottom: 5px;
+        }
+        .small-text {
+            font-size: 12px;
+            line-height: 1.2;
+        }
     </style>
 </head>
 <body>
 <!-- Top Logos Horizontal Row -->
-<!-- Horizontal Logo Row for mPDF -->
-<!-- Horizontal Logo Row for mPDF (No Borders, Larger Logos) -->
-<table style="width: 100%; text-align: center; border: none;  direction: ltr;">
+<table style="width: 100%; text-align: center; border: none; direction: ltr;">
     <tr>
+        <td style="width: 80%; text-align: center; border: none;">
+            <div style="margin-bottom: 15px;">
+                @php
+                    $logo_left = 'logos/ahf_logo.png';
+                @endphp
+                <img src="{{ public_path($logo_left) }}" alt="لوگو چپ" style="max-width: 140px; max-height: 140px; display: inline-block; margin-bottom: 8px;">
 
-    <td style="width: 80%; text-align: center; border: none;">
-        <div style="margin-bottom: 20px;">
-            @php
-                $logo_left = 'logos/ahf_logo.png';
-            @endphp
-            <img src="{{ public_path($logo_left) }}" alt="لوگو چپ" style="max-width: 170px; max-height: 170px; display: inline-block; margin-bottom: 10px; ">
+                @php
+                    $logo_center = 'logos/hlp_logo.jpg';
+                @endphp
+                <img src="{{ public_path($logo_center) }}" alt="لوگو مرکز" style="max-width: 110px; max-height: 110px; display: inline-block; margin-left: 15px; margin-right: 20px;">
 
-            @php
-                $logo_center = 'logos/hlp_logo.jpg';
-            @endphp
-            <img src="{{ public_path($logo_center) }}" alt="لوگو مرکز" style="max-width: 130px; max-height: 130px; display: inline-block; margin-left: 20px; margin-right: 30px;">
+                @php
+                    $logo_right = 'logos/habitat.png';
+                @endphp
+                <img src="{{ public_path($logo_right) }}" alt="لوگو راست" style="max-width: 40px; max-height: 40px; display: inline-block; margin-bottom: 8px;">
+            </div>
 
-            @php
-                $logo_right = 'logos/habitat.png';
-            @endphp
-            <img src="{{ public_path($logo_right) }}" alt="لوگو راست" style="max-width: 50px; max-height: 50px; display: inline-block; margin-bottom: 10px;">
-        </div>
-
-        <h3 style="margin-top: 40px; display: block;">Property Information <span style="color:#00BFFF; font-size:bold;">|</span> معلومات ملکیت</h3>
-    </td>
-
-    
+            <h3 style="margin-top: 20px; display: block; margin-bottom: 15px;">Property Information <span style="color:#00BFFF; font-size:bold;">|</span> معلومات ملکیت</h3>
+        </td>
     </tr>
 </table>
 
-
-
-
-<table style="width: 100%; border: none; font-weight: 700;">
+<table style="width: 100%; border: none; font-weight: 700; margin-bottom: 10px;">
     <tr>
         <td style="text-align: right; border:none;">کود نمبر:</td>
         <td style="text-align: left; border:none;direction: ltr">
@@ -88,7 +88,7 @@
 </table>
 
 <!-- Location Table -->
-<table>
+<table style="margin-bottom: 10px;">
     <tr>
         <td>قطعه زمین-Parcel</td>
         <td>بلاک-Block</td>
@@ -107,10 +107,8 @@
     </tr>
 </table>
 
-<br>
-
 <!-- Displacement & Interviewee Info -->
-<table>
+<table style="margin-bottom: 10px;">
     <tr>
         <td style="width: 42%;">
             <table style="width: 100%; border: none; padding:0;">
@@ -125,7 +123,7 @@
             @php
                 $path = str_replace('http://127.0.0.1:8000/', '', $submission->photoSection->photo_interviewee);
             @endphp
-            <img src="{{ public_path($path) }}" alt="تصویر" style="max-width: 120px; max-height: 150px;">
+            <img src="{{ public_path($path) }}" alt="تصویر" style="max-width: 100px; max-height: 120px;">
         </td>
     </tr>
     <tr>
@@ -163,12 +161,9 @@
         </td>
         <td>{{ $submission->headFamily ? $submission->headFamily->hoh_nic_number : $submission->interviewwee->inter_nic_number }}</td>
     </tr>
-
 </table>
 
-<br>
-
-<table>
+<table style="margin-bottom: 10px;">
     <tr>
         <td>
             <table style="width: 100%; border: none; padding:none;">
@@ -279,17 +274,11 @@
     </tr>
 </table>
 
-
-
-<br>
-
 <!-- Property Images -->
-<table>
+<table style="margin-bottom: 10px;">
     <tr>
-    
-    
         <td class="center">
-            <table style="width: 100%; border: none; padding:0; font-size: 16px;">
+            <table style="width: 100%; border: none; padding:0; font-size: 14px;">
                 <tr style="padding:0">
                     <td style="text-align: right; direction: rtl; unicode-bidi: embed; width: 40%; border:none; padding:0;">عکس سند ملکیت</td>
                     <td style="text-align: left; direction: ltr; unicode-bidi: embed; width: 60%; border:none; padding:0;">Land document</td>
@@ -297,7 +286,7 @@
             </table>
         </td>
         <td class="center">
-            <table style="width: 100%; border: none; padding:0; font-size: 16px;">
+            <table style="width: 100%; border: none; padding:0; font-size: 14px;">
             <tr style="padding:0">
                 <td style="text-align: right; direction: rtl; unicode-bidi: embed; width: 40%; border:none; padding:0;">عکس فضای ملکیت</td>
                 <td style="text-align: left; direction: ltr; unicode-bidi: embed; width: 60%; border:none; padding:0;">Spatial photo</td>
@@ -305,7 +294,7 @@
         </table>
         </td>
         <td class="center">
-            <table style="width: 100%; border: none; padding:0; font-size: 16px;">
+            <table style="width: 100%; border: none; padding:0; font-size: 14px;">
                 <tr style="padding:0">
                     <td style="text-align: right; direction: rtl; unicode-bidi: embed; width: 40%; border:none; padding:0;">عکس ملکیت</td>
                     <td style="text-align: left; direction: ltr; unicode-bidi: embed; width: 60%; border:none; padding:0;">Property photo</td>
@@ -314,38 +303,44 @@
         </td>
     </tr>
     <tr>
-        <td style="height:250px; " class="center">
+        <td style="height:180px; " class="center">
             @php
             $document = str_replace('http://127.0.0.1:8000/', '', $submission->houseLandOwnership?->landOwnershipDocument?->first()?->house_document_photo);
             @endphp
-            <img src="{{ public_path($document) }}" alt="تصویر" style="max-width:100%; max-height:250px;">
+            <img src="{{ public_path($document) }}" alt="تصویر" style="max-width:100%; max-height:180px;">
         </td>
-        <td style="height:250px;" class="center">
+        <td style="height:180px;" class="center">
             @php
                 $map = str_replace('http://127.0.0.1:8000/', '', $location['map_image']);
             @endphp
-            <img src="{{ $location['map_image'] }}" alt="تصویر" style="max-width:100%; max-height:250px;">
+            <img src="{{ $location['map_image'] }}" alt="تصویر" style="max-width:100%; max-height:180px;">
         </td>
-        <td style="height:250px;" class="center">
+        <td style="height:180px;" class="center">
             @php
                 $house = str_replace('http://127.0.0.1:8000/', '', $submission->photoSection->photo_house_building);
             @endphp
-            <img src="{{ public_path($house) }}" alt="تصویر" style="max-width:100%; max-height:250px;">
+            <img src="{{ public_path($house) }}" alt="تصویر" style="max-width:100%; max-height:180px;">
+        </td>
+    </tr>
+</table>
+
+<!-- Notes Section -->
+<table style="border: none;">
+    <tr>
+        <td style="text-align: left; direction: ltr; unicode-bidi: embed; border: none; padding: 5px; font-size: 12px; line-height: 1.2;">
+            Note: This guidance note is not an official and/or legal document but provides information and analysis collected by UN-Habitat
+            on housing and land characteristics. For further information or to update the information please contact UN-Habitat. 
+            </br>Email: <span style="color:#00BFFF;">info.unhafg@un.org</span>
         </td>
     </tr>
     <tr>
-        <td colspan="3" style="text-align: left; direction: ltr; unicode-bidi: embed; border: none; padding:none; font-size: 16px;">Note: This guidance note is not an official and/or legal document but provides information and analysis collected by UN-Habitat
-on housing and land characteristics. For further information or to update the information please contact UN-Habitat. 
-    </br>Email:
-<span style="color:#00BFFF;">info.unhafg@un.org</span></td>
+        <td style="text-align: right; direction: rtl; border:none; padding: 5px; font-size: 12px; line-height: 1.2;">
+            یادداشت:
+            این ورق یک سند رسمی و یا حقوقی نمی باشد، بلکه مجموعه معلومات و تحلیل هایی است که از طرف دفتر اسکان بشر ملل متحد در رابطه به خصوصیات مسکن و زمین جمع
+            آوری گردیده است. برای دریافت معلومات بیشتر در مورد این ورق لطفآ با دفتر اسکان بشر ملل متحد تماس بیگیرید . ایمیل ادرس : <span style="color:#00BFFF;">info.unhafg@un.org</span>
+        </td>
     </tr>
-    <tr><td colspan="3" style="text-align: right; direction: rtl; border:none; padding-top: 30px; font-size: 16px;">
-    یادداشت:
-این ورق یک سند رسمی و یا حقوقی نمی باشد، بلکه مجموعه معلومات و تحلیل هایی است که از طرف دفتر اسکان بشر ملل متحد در رابطه به خصوصیات مسکن و زمین جمع
-آوری گردیده است. برای دریافت معلومات بیشتر در مورد این ورق لطفآ با دفتر اسکان بشر ملل متحد تماس بیگیرید . ایمیل ادرس : <span style="color:#00BFFF;">info.unhafg@un.org</span>
-    </td></tr>
 </table>
-
 
 </body>
 </html>

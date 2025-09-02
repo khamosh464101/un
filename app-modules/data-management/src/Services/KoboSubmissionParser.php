@@ -89,9 +89,7 @@ class KoboSubmissionParser
 
            foreach ($submission['_attachments'] as $attachment) {
                 if (Str::startsWith($attachment['mimetype'], 'image/')) {
-               
-                    $folderName = $sub?->projects?->first()?->id;
-                    $this->koboService->downloadAttachment($attachment, "kobo-attachments/{$folderName}");
+                    $this->koboService->downloadAttachment($attachment, "kobo-attachments");
                 }
             }  
 

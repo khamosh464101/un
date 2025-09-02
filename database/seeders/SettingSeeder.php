@@ -62,6 +62,12 @@ class SettingSeeder extends Seeder
                 'label' =>  'ArcGIS api key',
                 'type' => 'text'
             ],
+            [
+                'key' => 'current_project_id', 
+                'value' => '1', 
+                'label' =>  'Current Project',
+                'type' => 'select'
+            ],
         ];
 
         foreach ($settings as $key => $value) {

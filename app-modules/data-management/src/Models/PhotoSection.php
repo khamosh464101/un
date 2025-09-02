@@ -51,7 +51,23 @@ class PhotoSection extends Model
         if ($this->returnRawPhoto) {
             return $value;
         }
-        return $value ? asset("storage/kobo-attachments/$value") : null;
+        // 1. Handle missing value
+        if (!$value) {
+            return null;
+        }
+        $originalPath = storage_path("app/public/kobo-attachments/$value");
+        $publicStoragePath = "storage/kobo-attachments/$value"; // Path for asset()
+
+        if (!file_exists($originalPath)) {
+            \Log::warning("Photo file not found at: " . $originalPath);
+            return null;
+        }
+        $manager = new ImageManager(new Driver());
+        $image = $manager->read($originalPath);
+        $image->orient(); // v3 (or orientate() if using v2)
+        $image->save($originalPath);
+        return asset($publicStoragePath);
+        // return $value ? asset("storage/kobo-attachments/$value") : null;
     }
 
     public function getPhotoHouseDoorAttribute($value)
@@ -79,60 +95,8 @@ class PhotoSection extends Model
     }
 
 
-// public function getPhotoIntervieweeAttribute($value)
-// {
-//     if (!$value) {
-//         return null;
-//     }
-
-//     $filename = $this->submission->_id . '-' . $value;
-//     $originalPath = storage_path("app/public/kobo-attachments/$filename");
-//     $rotatedPath = storage_path("app/public/tmp/rotated-$filename");
-
-//     // Check if original file exists
-//     if (!file_exists($originalPath)) {
-//         return null;
-//     }
-
-//     // Create tmp directory if it doesn't exist
-//     if (!file_exists(dirname($rotatedPath))) {
-//         mkdir(dirname($rotatedPath), 0755, true);
-//     }
-
-//     // Only rotate and save once
-//     if (!file_exists($rotatedPath)) {
-//         $manager = new ImageManager(new Driver());
-//         $image = $manager->read($originalPath);
-
-//         // Try to read EXIF and rotate manually if needed
-//         $exif = @exif_read_data($originalPath);
-//         if (!empty($exif['Orientation'])) {
-//             switch ($exif['Orientation']) {
-//                 case 3:
-//                     $image = $image->rotate(180);
-//                     break;
-//                 case 6:
-//                     $image = $image->rotate(-90);
-//                     break;
-//                 case 8:
-//                     $image = $image->rotate(90);
-//                     break;
-//             }
-//         }
-
-//         // Save rotated image
-//         $image->save($rotatedPath);
-//     }
-
-//     return asset("storage/tmp/rotated-$filename");
-// }
 
 
-    // public function getPhotoIntervieweeAttribute($value)
-    // {
-    //     $tmpName = $this->submission->_id . '-' . $value;
-    //     return $value ? asset("storage/kobo-attachments/$tmpName") : null;
-    // }
 
     public function getPhotoIntervieweeAttribute($value)
     {
@@ -163,6 +127,11 @@ class PhotoSection extends Model
         // or check if a `_fixed` version of the file exists.
         // For simplicity, `fixFaceOrientationWithVision` itself checks.
         // ImageFixer::fixFaceOrientationWithVision($originalPath);
+        $manager = new ImageManager(new Driver());
+        $image = $manager->read($originalPath);
+        $image->orient(); // v3 (or orientate() if using v2)
+        $image->save($originalPath);
+        return asset($publicStoragePath);
         ImageFixer::fixFaceOrientationWithVision($originalPath);
 
         // 5. Return the asset path to the (potentially) fixed image.

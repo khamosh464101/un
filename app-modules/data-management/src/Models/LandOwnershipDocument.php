@@ -5,7 +5,11 @@ namespace Modules\DataManagement\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Storage;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver;
+use App\Helpers\ImageFixer;
 use App\Helpers\AllImageFixer;
+use Log;
 
 class LandOwnershipDocument extends Model
 {
@@ -29,6 +33,22 @@ class LandOwnershipDocument extends Model
         if ($this->returnRawPhoto) {
             return $value;
         }
+        // 1. Handle missing value
+        if (!$value) {
+            return null;
+        }
+        $originalPath = storage_path("app/public/kobo-attachments/$value");
+        $publicStoragePath = "storage/kobo-attachments/$value"; // Path for asset()
+
+        if (!file_exists($originalPath)) {
+            \Log::warning("Photo file not found at: " . $originalPath);
+            return null;
+        }
+        $manager = new ImageManager(new Driver());
+        $image = $manager->read($originalPath);
+        $image->orient(); // v3 (or orientate() if using v2)
+        $image->save($originalPath);
+        return asset($publicStoragePath);
         return $value ? asset("storage/kobo-attachments/$value") : asset('images/default.png');
     }
     // public function getHouseDocumentPhotoAttribute($value)

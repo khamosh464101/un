@@ -82,7 +82,7 @@ class KoboService
 
         try {
             $response = Http::withHeaders([
-                'Authorization' => 'Token ' . '37505e43c62161e95c146151ad8b09810e6d3454', //$this->token,
+                'Authorization' => 'Token ' . $this->token, //$this->token,
                 'Accept' => 'application/json',
             ])->get($url); // Add auth if needed
 

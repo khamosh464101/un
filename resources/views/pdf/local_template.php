@@ -125,7 +125,7 @@
             @php
                 $path = str_replace('http://127.0.0.1:8000/', '', $submission->photoSection->photo_interviewee);
             @endphp
-            <img src="{{ $submission->photoSection->photo_interviewee }}" alt="تصویر" style="max-width: 120px; max-height: 150px;">
+            <img src="{{ public_path($path) }}" alt="تصویر" style="max-width: 120px; max-height: 150px;">
         </td>
     </tr>
     <tr>
@@ -184,10 +184,10 @@
         <td>
             <table style="width: 100%; border: none; padding:none;">
                 <tr style="padding:none;">
-                    <td style="text-align: right; direction: rtl; border:none; padding:none;">مالک زمین</td>
+                    <td style="text-align: right; direction: rtl; border:none; padding:none;">نوعیت ملکیت</td>
                 </tr>
                 <tr>
-                    <td style="text-align: left; direction: ltr; unicode-bidi: embed; border: none; padding:none;">House / Land Ownership</td>
+                    <td style="text-align: left; direction: ltr; unicode-bidi: embed; border: none; padding:none;">Type of occupancy</td>
                 </tr>
             </table>
         </td>
@@ -300,7 +300,7 @@
             <table style="width: 100%; border: none; padding:0; font-size: 16px;">
             <tr style="padding:0">
                 <td style="text-align: right; direction: rtl; unicode-bidi: embed; width: 40%; border:none; padding:0;">عکس فضای ملکیت</td>
-                <td style="text-align: left; direction: ltr; unicode-bidi: embed; width: 60%; border:none; padding:0;">Satellite image</td>
+                <td style="text-align: left; direction: ltr; unicode-bidi: embed; width: 60%; border:none; padding:0;">Spatial photo</td>
             </tr>
         </table>
         </td>
@@ -308,7 +308,7 @@
             <table style="width: 100%; border: none; padding:0; font-size: 16px;">
                 <tr style="padding:0">
                     <td style="text-align: right; direction: rtl; unicode-bidi: embed; width: 40%; border:none; padding:0;">عکس ملکیت</td>
-                    <td style="text-align: left; direction: ltr; unicode-bidi: embed; width: 60%; border:none; padding:0;">Property image</td>
+                    <td style="text-align: left; direction: ltr; unicode-bidi: embed; width: 60%; border:none; padding:0;">Property photo</td>
                 </tr>
             </table>
         </td>
@@ -318,8 +318,7 @@
             @php
             $document = str_replace('http://127.0.0.1:8000/', '', $submission->houseLandOwnership?->landOwnershipDocument?->first()?->house_document_photo);
             @endphp
-            <img src="{{ $submission->houseLandOwnership?->landOwnershipDocument?->first()?->house_document_photo ?? asset('images/default.png') }}" alt="تصویر" style="max-width:100%; max-height:250px;">
-
+            <img src="{{ public_path($document) }}" alt="تصویر" style="max-width:100%; max-height:250px;">
         </td>
         <td style="height:250px;" class="center">
             @php
@@ -331,11 +330,11 @@
             @php
                 $house = str_replace('http://127.0.0.1:8000/', '', $submission->photoSection->photo_house_building);
             @endphp
-            <img src="{{ $submission->photoSection->photo_house_building }}" alt="تصویر" style="max-width:100%; max-height:250px;">
+            <img src="{{ public_path($house) }}" alt="تصویر" style="max-width:100%; max-height:250px;">
         </td>
     </tr>
-
 </table>
+
 <!-- Notes Section -->
 <table style="border: none;">
     <tr>

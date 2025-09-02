@@ -703,6 +703,12 @@ public function editArrayFileWithTitle(string $name, Request $request, $id): arr
             'default_font' => 'dejavusans',
             'default_font_size' => 9,
             'directionality' => 'rtl', // Important for RTL
+            'margin_top' => 10,      // Reduced from default 16
+            'margin_bottom' => 10,   // Reduced from default 16
+            'margin_left' => 5,     // Reduced from default 15
+            'margin_right' => 5,    // Reduced from default 15
+            'margin_header' => 2,   // Reduced from default 9
+            'margin_footer' => 2,   // Reduced from default 9
         ]);
 
         $si = $submission->sourceInformation;

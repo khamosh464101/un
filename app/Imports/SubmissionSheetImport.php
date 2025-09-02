@@ -416,8 +416,7 @@ class SubmissionSheetImport implements ToModel, WithStartRow, WithHeadingRow, Wi
             if ($kobo_submission) {
                 foreach ($kobo_submission['_attachments'] as $attachment) {
                     if (Str::startsWith($attachment['mimetype'], 'image/')) {
-                        $folderName = $submission?->projects?->first()?->id;
-                        $service->downloadAttachment($attachment, "kobo-attachments/{$folderName}");
+                        $service->downloadAttachment($attachment, "kobo-attachments");
                     }
                 }
             } 
