@@ -698,6 +698,7 @@ public function editArrayFileWithTitle(string $name, Request $request, $id): arr
         ])->render();
 
         $mpdf = new Mpdf([
+            'tempDir' => storage_path('app/mpdf-temp'),
             'format' => 'A4',
             'mode' => 'utf-8',
             'default_font' => 'dejavusans',
