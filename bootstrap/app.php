@@ -15,7 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             'http://127.0.0.1:8000/*',
             'https://un.momtazhost.com/*',
-            'http://35.211.144.31/*',
+            'https://api.unhabitat-afg.org/*',
         ]);
         $middleware->statefulApi();
         $middleware->alias([
