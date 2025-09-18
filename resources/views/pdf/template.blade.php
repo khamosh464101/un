@@ -116,7 +116,7 @@
             <table style="width: 100%; border: none; padding:0;">
                 <tr style="padding:0">
                     <td style="text-align: right; direction: rtl; unicode-bidi: embed; width: 40%; border:none; padding:0;">نام باشنده</td>
-                    <td style="text-align: left; direction: ltr; unicode-bidi: embed; width: 60%; border:none; padding:0;">Name of occupier</td>
+                    <td style="text-align: left; direction: ltr; unicode-bidi: embed; width: 60%; border:none; padding:0;">Name (of occupier)</td>
                 </tr>
             </table>
         </td>
@@ -133,7 +133,7 @@
             <table style="width: 100%; border: none; padding:0;">
                 <tr style="padding:0">
                     <td style="text-align: right; direction: rtl; unicode-bidi: embed; width: 40%; border:none; padding:0;">نام پدر باشنده</td>
-                    <td style="text-align: left; direction: ltr; unicode-bidi: embed; width: 60%; border:none; padding:0;">Father name of occupier</td>
+                    <td style="text-align: left; direction: ltr; unicode-bidi: embed; width: 60%; border:none; padding:0;">Father's name (of occupier)</td>
                 </tr>
             </table>
         </td>
@@ -146,7 +146,7 @@
             <table style="width: 100%; border: none; padding:0;">
                 <tr style="padding:0">
                     <td style="text-align: right; direction: rtl; unicode-bidi: embed; width: 40%; border:none; padding:0;">نام پدرکلان باشنده</td>
-                    <td style="text-align: left; direction: ltr; unicode-bidi: embed; width: 60%; border:none; padding:0;">Grandfather's name of occupier</td>
+                    <td style="text-align: left; direction: ltr; unicode-bidi: embed; width: 60%; border:none; padding:0;">Grandfather's name (of occupier)</td>
                 </tr>
             </table>
         </td>
