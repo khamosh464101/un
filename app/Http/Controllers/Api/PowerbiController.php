@@ -68,7 +68,7 @@ class PowerbiController extends Controller
                         
                         // Debug output
                         if ($originalValue !== $submission->$column) {
-                            \Log::debug("Replaced $column: $originalValue => {$submission->$column}");
+                            // \Log::debug("Replaced $column: $originalValue => {$submission->$column}");
                         }
                     }
                 }
@@ -86,7 +86,7 @@ class PowerbiController extends Controller
                             
                             // Debug output
                             if ($originalValue !== $submission->$relation->$column) {
-                                \Log::debug("Replaced $relation.$column: $originalValue => {$submission->$relation->$column}");
+                                // \Log::debug("Replaced $relation.$column: $originalValue => {$submission->$relation->$column}");
                             }
                         }
                     }
