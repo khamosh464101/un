@@ -40,7 +40,7 @@ class PowerbiController extends Controller
             'accessBasicService:id,submission_id,drinkingwater_main_source,type_water_source,water_source_distance,water_source_route_safe,water_collect_person,water_quality,type_toilet_facilities,access_education,access_school,type_school,nearest_school,access_school_university,access_school_madrasa,Household_members_attend_school_present,Household_members_attend_university_present,litrate_Household_member,access_health_services,health_facilities_type,health_service_distance,health_facility_have_female_staff,health_challanges,type_access_road,how_access_electricity',
             'livelihood:id,submission_id,Household_main_source_income',
             'photoSection:id,submission_id,latitude,longitude',
-        ])->limit(500)->get();
+        ])->limit(4000)->get();
 
 
 
