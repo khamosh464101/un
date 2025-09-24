@@ -7,6 +7,44 @@ use Modules\DataManagement\Http\Controllers\ExcelController;
 use Modules\DataManagement\Http\Controllers\KoboController;
 use Modules\DataManagement\Http\Controllers\SubmissionStatusController;
 use Modules\DataManagement\Http\Controllers\PdfToJpgController;
+use Modules\DataManagement\Helpers\ModelHelper;
+use Modules\DataManagement\Services\KoboService;
+
+Route::get('/fillables', function () {
+    $fillables = ModelHelper::getFillableColumns();
+    $service = new KoboService();
+    $submission = $service->getSubmission(591669186);
+    $cleaned = [];
+
+    $othercolumns = [];
+
+    foreach ($submission as $key => $value) {
+        // Get the last part after the last slash
+        $parts = explode('/', $key);
+        $attributeName = end($parts);
+        $cleaned[$attributeName] = $value;
+
+        if (!in_array($attributeName, $fillables)) {
+            $othercolumns[$attributeName] = $value;
+        }
+    }
+
+    $arrays = [];
+    $objects = [];
+    $vars = [];
+
+    foreach($othercolumns as $key => $value) {
+        if (is_array($value)) {
+            $arrays[$key] = $value;
+        }
+        if (is_string($value)) {
+            $vars[$key] = $value;
+        }
+    }
+    
+    return $arrays;
+    
+});
 Route::middleware(['auth:sanctum', 'twofactor'])->group(function () {
     Route::get('/data-management/get-form', [SubmissionController::class, 'getForm']);
     Route::post('/data-managements', [SyncKoboController::class, 'listForms'])->name('data-managements.index');

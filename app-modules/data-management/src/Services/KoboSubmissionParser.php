@@ -30,8 +30,12 @@ use Modules\DataManagement\Models\RecentAssistance;
 use Modules\DataManagement\Models\InfrasttructureService;
 use Modules\DataManagement\Models\PhotoSection;
 use Modules\DataManagement\Models\SubmissionStatus;
+use Modules\DataManagement\Models\SubmissionExtraAttribute;
+use Modules\DataManagement\Models\SubmissionRepeatableGroup;
+use Modules\DataManagement\Models\SubmissionRepeatableAttribute;
 use Modules\Projects\Models\Project;
 use Illuminate\Support\Str;
+use Modules\DataManagement\Helpers\ModelHelper;
 
 use DB;
 use Auth;
@@ -86,6 +90,7 @@ class KoboSubmissionParser
            $this->createRecentAssistance($submission, $sub);
            $this->createInfrasttructureService($submission, $sub);
           $this->createPhotoSection($submission, $sub);
+          $this->createExtraColumns($submission, $sub);
 
            foreach ($submission['_attachments'] as $attachment) {
                 if (Str::startsWith($attachment['mimetype'], 'image/')) {
@@ -370,6 +375,45 @@ class KoboSubmissionParser
         );
     }
 
+    public function createExtraColumns($submission, $sub) {
+        $fillables = ModelHelper::getFillableColumns();
+        $extraColumns = [];
+        foreach ($submission as $key => $value) {
+            if (!in_array($key, $fillables)) {
+                $extraColumns[$key] = $value;
+            }
+        }
+
+
+        foreach ($extraColumns as $key => $value) {
+            if (is_array($value)) {
+                foreach ($value as $k => $v) {
+                    logger()->info('k'.$k.'v',$v);
+                    $group = $sub->repeatableGroup()->create([
+                        'group_name'  => $key,
+                        'group_index' => $k,
+                    ]);
+
+                    // Loop through object properties and store each as an attribute
+                    foreach ($v as $prop => $propValue) {
+                        $parts = explode('/', $prop);
+                        $attributeName = end($parts);
+                        $group->attributes()->create([
+                            'attribute_name'  => $attributeName,
+                            'attribute_value' => $propValue,
+                        ]);
+                    }
+                }
+
+            } else {
+                $sub->extraAttributes()->create([
+                    'attribute_name'  => $key,
+                    'attribute_value' => $value,
+                ]);
+            }
+        }
+    }
+
     function convertToMySQLDateTime($isoDatetime) {
         try {
             $dt = new \DateTime($isoDatetime);
@@ -378,9 +422,6 @@ class KoboSubmissionParser
             return null;
         }
     }
-
-
-
 
 
 

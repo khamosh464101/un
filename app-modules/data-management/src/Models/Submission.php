@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Modules\Projects\Models\Project;
 use App\Models\User;
 
@@ -171,6 +172,16 @@ class Submission extends Model
     public function skillIdea() : HasOne
     {
         return $this->hasOne(SkillIdea::class);
+    }
+
+    public function extraAttributes() : HasMany
+    {
+        return $this->hasMany(SubmissionExtraAttribute::class);
+    }
+
+    public function repeatableGroup() : HasMany
+    {
+        return $this->hasMany(SubmissionRepeatableGroup::class);
     }
 
     public static function boot()
