@@ -10,7 +10,7 @@ use Modules\Projects\Models\Ticket;
 use App\Http\Controllers\Controller;
 use Spatie\Permission\Models\Role;
 use App\Http\Requests\UpdateProfileRequest;
-use Modules\Projects\Http\Controllers\ProgramController;
+use Modules\Projects\Http\Controllers\ProjectController;
 use Auth;
 
 class UserController extends Controller
@@ -72,7 +72,7 @@ class UserController extends Controller
         // Handle the file upload
         if ($request->hasFile('photo') && $request->file('photo')->isValid()) {
             
-            $get_file = $request->file('photo')->storeAs('project-management/staff/photo', ProgramController::getFileName($data['name'], $request->file('photo')));
+            $get_file = $request->file('photo')->storeAs('project-management/staff/photo', ProjectController::getFileName($data['name'], $request->file('photo')));
             $data['photo'] = $get_file;
         }
         $user = Auth::user();

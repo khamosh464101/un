@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\Projects\Models\TicketStatus;
 use Modules\Projects\Models\Ticket;
-use Modules\Projects\Http\Controllers\ProgramController;
+use Modules\Projects\Http\Controllers\ProjectController;
 use Auth;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
@@ -107,7 +107,7 @@ class MobileController extends Controller
         $staff = $user->staff;
         if ($request->hasFile('photo') && $request->file('photo')->isValid()) {
             
-            $get_file = $request->file('photo')->storeAs('project-management/staff/photo', ProgramController::getFileName($staff->name, $request->file('photo')));
+            $get_file = $request->file('photo')->storeAs('project-management/staff/photo', ProjectController::getFileName($staff->name, $request->file('photo')));
             $staff->update(['photo' => $get_file]);
             return response()->json($staff->photo);
         }

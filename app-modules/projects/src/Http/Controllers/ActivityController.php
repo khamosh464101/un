@@ -7,7 +7,6 @@ use Modules\Projects\Models\Province;
 use Modules\Projects\Models\District;
 use Modules\Projects\Models\Gozar;
 use Modules\Projects\Http\Requests\ActivityRequest;
-use Modules\Projects\Http\Controllers\ProgramController;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;

@@ -6,12 +6,12 @@ use Modules\Projects\Models\Staff;
 use Modules\Projects\Models\Gozar;
 use Modules\Projects\Models\District;
 use Modules\Projects\Http\Requests\ProjectRequest;
-use Modules\Projects\Http\Controllers\ProgramController;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Modules\Projects\Http\Resources\Project\ProjectsResource;
 use Illuminate\Support\Facades\Gate;
 use Storage; 
+use Illuminate\Support\Str;
 
 class ProjectController
 {
@@ -51,7 +51,7 @@ class ProjectController
         // Handle the file upload
         if ($request->hasFile('logo') && $request->file('logo')->isValid()) {
             
-            $get_file = $request->file('logo')->storeAs('project-management/project/logo', ProgramController::getFileName($data['title'], $request->file('logo')));
+            $get_file = $request->file('logo')->storeAs('project-management/project/logo', $this->getFileName($data['title'], $request->file('logo')));
             $data['logo'] = $get_file;
         }
         $project = Project::create($data);
@@ -82,7 +82,7 @@ class ProjectController
         // Handle the file upload
         if ($request->hasFile('logo') && $request->file('logo')->isValid()) {
             
-            $get_file = $request->file('logo')->storeAs('project-management/project/logo', ProgramController::getFileName($data['title'], $request->file('logo')));
+            $get_file = $request->file('logo')->storeAs('project-management/project/logo', $this->getFileName($data['title'], $request->file('logo')));
             $data['logo'] = $get_file;
         }
         
@@ -194,5 +194,15 @@ class ProjectController
         $project->districts()->detach($request->district_id);
         return response()->json(['message' => 'Successfully removed!'], 201);
 
+    }
+
+     public static function getFileName($title, $file) {
+        $sanitizedFileName = Str::of($title)
+        ->replaceMatches('/[^a-zA-Z0-9 ]/', '')
+        ->lower()
+        ->replaceMatches('/\s+/', ' ')
+        ->replace(' ', '-'); 
+
+        return  $sanitizedFileName.'-'. Carbon::now()->format('Y-m-d-H-i-s-v') . '.' . $file->getClientOriginalExtension();
     }
 }

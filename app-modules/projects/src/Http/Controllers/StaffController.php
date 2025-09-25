@@ -5,7 +5,7 @@ use Modules\Projects\Models\Staff;
 use Modules\Projects\Models\Project;
 use Modules\Projects\Models\Activity;
 use Modules\Projects\Http\Requests\StaffRequest;
-use Modules\Projects\Http\Controllers\ProgramController;
+use Modules\Projects\Http\Controllers\ProjectController;
 use Illuminate\Support\Facades\Gate;
 
 use Carbon\Carbon;
@@ -46,7 +46,7 @@ class StaffController
         // Handle the file upload
         if ($request->hasFile('photo') && $request->file('photo')->isValid()) {
             
-            $get_file = $request->file('photo')->storeAs('project-management/staff/photo', ProgramController::getFileName($data['name'], $request->file('photo')));
+            $get_file = $request->file('photo')->storeAs('project-management/staff/photo', ProjectController::getFileName($data['name'], $request->file('photo')));
             $data['photo'] = $get_file;
         }
 
@@ -78,7 +78,7 @@ class StaffController
         // Handle the file upload
         if ($request->hasFile('photo') && $request->file('photo')->isValid()) {
             
-            $get_file = $request->file('photo')->storeAs('project-management/staff/photo', ProgramController::getFileName($data['name'], $request->file('photo')));
+            $get_file = $request->file('photo')->storeAs('project-management/staff/photo', ProjectController::getFileName($data['name'], $request->file('photo')));
             $data['photo'] = $get_file;
         }
        

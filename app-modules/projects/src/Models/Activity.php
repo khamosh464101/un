@@ -53,10 +53,6 @@ class Activity extends Model
         return $this->hasMany(Actvty::class, 'subject_id')->where('log_name', 'Activity')->orderBy('id', 'desc');
     }
 
-    public function sprint(): HasOne
-    {
-        return $this->hasOne(ActivitySprint::class);
-    }
 
 
     public function project (): BelongsTo

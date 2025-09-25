@@ -90,10 +90,6 @@ class Ticket extends Model
         return $this->belongsTo(Activity::class, 'activity_id', 'id');
     }
 
-    public function type(): BelongsTo
-    {
-        return $this->belongsTo(TicketType::class, 'ticket_type_id', 'id');
-    }
 
     public function priority(): BelongsTo
     {
