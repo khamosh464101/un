@@ -761,8 +761,8 @@ public function editArrayFileWithTitle(string $name, Request $request, $id): arr
 
 public function downloadExcel(Request $request)
 {
-    ini_set('max_execution_time', 600);
-    ini_set('memory_limit', '1024M');
+    ini_set('max_execution_time', 6000);
+    ini_set('memory_limit', '2048M');
 
     // 1️⃣ Determine selected fields
     $fields = [];
