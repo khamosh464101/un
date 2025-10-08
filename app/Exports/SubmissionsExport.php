@@ -2,43 +2,80 @@
 
 namespace App\Exports;
 
-use Maatwebsite\Excel\Concerns\FromArray;
-use Maatwebsite\Excel\Concerns\FromCollection;
-use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Concerns\FromQuery;
+use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithTitle;
-use Maatwebsite\Excel\Events\AfterSheet;
+use Maatwebsite\Excel\Concerns\WithChunkReading;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
+use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Events\AfterSheet;
 
-class SubmissionsExport implements FromCollection, WithHeadings, WithTitle, WithEvents
+class SubmissionsExport implements FromQuery, WithMapping, WithHeadings, WithTitle, WithChunkReading, WithEvents
 {
-    protected $data;
-    protected $title;
+    use \Maatwebsite\Excel\Concerns\Exportable;
+
+    protected $query;
+    protected $fields;
+    protected $survey;
+    protected $choices;
     protected $header;
-    public function __construct($data, $title, $header)
+    protected $title;
+
+    public function __construct($query, $fields, $survey, $choices, $header, $title)
     {
-        $this->data = $data;
-        $this->title = $title;
-        $this->header = $header;
+        $this->query   = $query;
+        $this->fields  = $fields;
+        $this->survey  = $survey;
+        $this->choices = $choices;
+        $this->header  = $header;
+        $this->title   = $title;
+    }
+
+    public function query()
+    {
+        return $this->query;
+    }
+
+    public function map($submission): array
+    {
+        $flat = [];
+
+        foreach ($this->fields as $field) {
+            if (str_contains($field, '__')) {
+                [$relation, $column] = explode('__', $field, 2);
+                $flat[$column] = $this->getSurveyValue(
+                    $this->survey,
+                    $this->choices,
+                    $column,
+                    optional($submission->$relation)->$column
+                );
+            } else {
+                $flat[$field] = $this->getSurveyValue(
+                    $this->survey,
+                    $this->choices,
+                    $field,
+                    $submission->$field
+                );
+            }
+        }
+
+        return $flat;
     }
 
     public function headings(): array
     {
         return array_map('strtoupper', $this->header);
     }
-        public function collection()
-    {
-        return collect($this->data);
-    }
-    
-    // public function array(): array
-    // {
-    //     return $this->data;
-    // }
 
     public function title(): string
     {
-        return 'Report'; // sheet tab title
+        return $this->title ?: 'Report';
+    }
+
+    public function chunkSize(): int
+    {
+        return 500; // process 500 rows at a time
     }
 
     public function registerEvents(): array
@@ -49,38 +86,25 @@ class SubmissionsExport implements FromCollection, WithHeadings, WithTitle, With
         return [
             AfterSheet::class => function (AfterSheet $event) use ($lastColumnLetter) {
                 $sheet = $event->sheet;
-
-                // Insert 1 blank row at the top to make room for title
                 $sheet->insertNewRowBefore(1, 1);
-
-                // Merge and set title in row 1
                 $sheet->mergeCells("A1:{$lastColumnLetter}1");
                 $sheet->setCellValue('A1', $this->title);
 
-                // Style the title
                 $sheet->getStyle('A1')->applyFromArray([
-                    'font' => [
-                        'bold' => true,
-                        'size' => 14,
-                    ],
-                    'alignment' => [
-                        'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT,
-                    ],
+                    'font' => ['bold' => true, 'size' => 14],
+                    'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT],
                 ]);
             },
         ];
     }
 
-
-    // public function collection()
-    // {
-    //     return collect($this->data);
-    // }
     /**
-    * @return \Illuminate\Support\Collection
-    */
-    // public function collection()
-    // {
-    //     return Submission::all();
-    // }
+     * Optional helper for transforming survey data
+     */
+    protected function getSurveyValue($survey, $choices, $field, $value)
+    {
+        // you can keep your original getSurvey() logic here
+        // for now, just return the raw value
+        return $value ?? '';
+    }
 }

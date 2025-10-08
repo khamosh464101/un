@@ -759,90 +759,82 @@ public function editArrayFileWithTitle(string $name, Request $request, $id): arr
         return response()->json(["message" => "Successfully removed!", "data" => $project->load('submissions')], 201);
     }
 
-    public function downloadExcel(Request $request) {
-        
-        $fields = [];
-        foreach ($request->selectedColumns as $key => $value) {
-            array_push($fields, $this->filterable[$value]);
-        }
+public function downloadExcel(Request $request)
+{
+    ini_set('max_execution_time', 600);
+    ini_set('memory_limit', '1024M');
 
-        $groupedFields = [];
-        foreach ($fields as $field) {
-            if (str_contains($field, '__')) {
-                [$relation, $column] = explode('__', $field, 2);
-                $groupedFields[$relation][] = $column;
-            } else {
-                 $groupedFields['submission'][] = $field;
-            }
-        }
-
-        $query = Submission::query();
-
-        // Handle Submission fields
-        $submissionFields = $groupedFields['submission'] ?? [];
-        if (!empty($submissionFields)) {
-            $query->select(array_merge(['id'], $submissionFields)); // keep 'id' to join related tables
-        } else {
-            $query->select('id');
-        }
-
-            // Handle related table fields
-        foreach ($groupedFields as $relation => $columns) {
-            if ($relation === 'submission') continue;
-
-            $foreignKey = 'submission_id'; // change if your FK is different
-            $query->with([$relation => function ($q) use ($columns, $foreignKey) {
-                $q->select(array_merge([$foreignKey], array_unique($columns)));
-            }]);
-        }
-
-        $submissions;
-        if ($request->selectAll) {
-            if ($request->project_id) {
-                // Records attached to the given project
-                $query->whereHas('projects', function ($q) use ($request) {
-                    $q->where('projects.id', $request->project_id);
-                });
-            } else {
-                // Records that are not attached to any project
-                $query->whereDoesntHave('projects');
-            }
-            $this->getSearchData($query, $request);
-            $submissions = $query->get();
-        } else {
-            $submissions = $query->whereIn('id', $request->selects)->get();
-        }
-        
-        $form = Form::find(1);
-        $dataObject = json_decode($form->raw_schema);
-        $survey = $dataObject->asset->content->survey;
-        $choices = $dataObject->asset->content->choices;
-
-        $header = [];
-        $result = $submissions->map(function ($submission, $index) use ($fields, $survey, $choices, &$header) {
-            $flat = [];
-            
-            foreach ($fields as $key => $field) {
-                if (str_contains($field, '__')) {
-                    [$relation, $column] = explode('__', $field, 2);
-
-                    $flat[$column] = $this->getSurvey($survey, $choices, $column, ($submission->$relation->$column ?? null));
-                    if ($index === 0) {
-                        array_push($header, $this->getHeader($survey, $column));
-                    }
-
-                } else {
-                    $flat[$field] = $this->getSurvey($survey, $choices,  $field, $submission->$field ?? null);
-                    if ($index === 0) {
-                        array_push($header, $this->getHeader($survey, $field));
-                    }
-                }
-            }
-            return $flat;
-        });
-
-        return Excel::download(new SubmissionsExport($result, $request->project ? $request->project['label'] : now()->format('Y-m-d'), $header ), now()->format('Y-m-d') . 'submissions.xlsx');
+    // 1️⃣ Determine selected fields
+    $fields = [];
+    foreach ($request->selectedColumns as $key => $value) {
+        $fields[] = $this->filterable[$value];
     }
+
+    // 2️⃣ Group fields by relation
+    $groupedFields = [];
+    foreach ($fields as $field) {
+        if (str_contains($field, '__')) {
+            [$relation, $column] = explode('__', $field, 2);
+            $groupedFields[$relation][] = $column;
+        } else {
+            $groupedFields['submission'][] = $field;
+        }
+    }
+
+    // 3️⃣ Base query
+    $query = Submission::query();
+
+    // Select submission fields
+    $submissionFields = $groupedFields['submission'] ?? [];
+    $query->select(array_merge(['id'], $submissionFields));
+
+    // Handle related table fields
+    foreach ($groupedFields as $relation => $columns) {
+        if ($relation === 'submission') continue;
+
+        $foreignKey = 'submission_id';
+        $query->with([$relation => function ($q) use ($columns, $foreignKey) {
+            $q->select(array_merge([$foreignKey], array_unique($columns)));
+        }]);
+    }
+
+    // 4️⃣ Apply project filters
+    if ($request->selectAll) {
+        if ($request->project_id) {
+            $query->whereHas('projects', function ($q) use ($request) {
+                $q->where('projects.id', $request->project_id);
+            });
+        } else {
+            $query->whereDoesntHave('projects');
+        }
+
+        $this->getSearchData($query, $request);
+    } else {
+        $query->whereIn('id', $request->selects);
+    }
+
+    // 5️⃣ Load survey schema
+    $form = Form::find(1);
+    $dataObject = json_decode($form->raw_schema);
+    $survey = $dataObject->asset->content->survey;
+    $choices = $dataObject->asset->content->choices;
+
+    // 6️⃣ Generate headings
+    $header = [];
+    foreach ($fields as $field) {
+        $header[] = $this->getHeader($survey, str_contains($field, '__') ? explode('__', $field, 2)[1] : $field);
+    }
+
+    // 7️⃣ Stream the file (no queue)
+    $title = $request->project['label'] ?? now()->format('Y-m-d');
+    $filename = now()->format('Y-m-d') . '-submissions.xlsx';
+
+    return \Maatwebsite\Excel\Facades\Excel::download(
+        new \App\Exports\SubmissionsExport($query, $fields, $survey, $choices, $header, $title),
+        $filename
+    );
+}
+
     function getSearchData($query, $request) {
         
         foreach ($request->search as $key => $field) {
