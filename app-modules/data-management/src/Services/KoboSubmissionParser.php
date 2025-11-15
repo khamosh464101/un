@@ -92,11 +92,12 @@ class KoboSubmissionParser
           $this->createPhotoSection($submission, $sub);
           $this->createExtraColumns($submission, $sub);
 
-           foreach ($submission['_attachments'] as $attachment) {
-                if (Str::startsWith($attachment['mimetype'], 'image/')) {
-                    $this->koboService->downloadAttachment($attachment, "kobo-attachments");
-                }
-            }  
+        //   
+        //    foreach ($submission['_attachments'] as $attachment) {
+        //         if (Str::startsWith($attachment['mimetype'], 'image/')) {
+        //             $this->koboService->downloadAttachment($attachment, "kobo-attachments");
+        //         }
+        //     }  
 
         
             });
