@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Modules\Projects\Models\Project;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class Submission extends Model
 {
@@ -29,6 +30,8 @@ class Submission extends Model
         'submission_status_id',
         'user_id'
     ];
+
+    protected $appends = ['extra_attributes_json'];
 
     public function getIgnoreIdFillable()
     {
@@ -177,6 +180,15 @@ class Submission extends Model
     public function extraAttributes() : HasMany
     {
         return $this->hasMany(SubmissionExtraAttribute::class);
+    }
+
+    protected function extraAttributesJson(): Attribute
+    {
+        return Attribute::make(
+            get: fn() => $this->extraAttributes()
+                ->pluck('attribute_value', 'attribute_name')
+                ->toArray()
+        );
     }
 
     public function repeatableGroup() : HasMany

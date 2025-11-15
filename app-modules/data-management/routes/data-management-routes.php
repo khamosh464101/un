@@ -46,7 +46,7 @@ Route::get('/fillables', function () {
     
 });
 Route::middleware(['auth:sanctum', 'twofactor'])->group(function () {
-    Route::get('/data-management/get-form', [SubmissionController::class, 'getForm']);
+    Route::get('/data-management/{projectId}/get-form', [SubmissionController::class, 'getForm']);
     Route::post('/data-managements', [SyncKoboController::class, 'listForms'])->name('data-managements.index');
      Route::get('/data-management/get-open-projects', [SubmissionController::class, 'getOpenProjects']);
     Route::get('/data-management/get-sumbission', [SyncKoboController::class, 'getSubmission']);

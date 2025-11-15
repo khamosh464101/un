@@ -12,9 +12,17 @@ use Modules\Projects\Http\Resources\Project\ProjectsResource;
 use Illuminate\Support\Facades\Gate;
 use Storage; 
 use Illuminate\Support\Str;
+use Modules\DataManagement\Services\KoboService;
+use Modules\DataManagement\Models\Form;
 
 class ProjectController
 {
+    protected $kobo;
+
+    public function __construct(KoboService $kobo)
+    {
+        $this->kobo = $kobo;
+    }
     public function select2() {
   
         return response()->json(Project::select('id', 'title')->get(), 201);
@@ -55,6 +63,7 @@ class ProjectController
             $data['logo'] = $get_file;
         }
         $project = Project::create($data);
+        $this->addFormToDb($project->kobo_project_id);
         return response()->json(['message' => 'Sucessfully added!', 'data' => $project], 201);
     }
 
@@ -87,6 +96,7 @@ class ProjectController
         }
         
         $project->update($data);
+        $this->addFormToDb($project->kobo_project_id);
         return response()->json(['message' => 'Sucessfully updated!', 'data' => $project], 201);
     }
 
@@ -204,5 +214,18 @@ class ProjectController
         ->replace(' ', '-'); 
 
         return  $sanitizedFileName.'-'. Carbon::now()->format('Y-m-d-H-i-s-v') . '.' . $file->getClientOriginalExtension();
+    }
+
+    protected function addFormToDb($formId) {
+        $forms = $this->kobo->getFormDetails($formId);
+        if ($forms) {
+            $form = Form::where('form_id', $formId)?->first();
+            if ($form) {
+                $form->update(['raw_schema' => $forms]);
+            } else {
+                Form::create(['form_id' => $formId,'raw_schema' => $forms]);
+            }
+        }
+        
     }
 }

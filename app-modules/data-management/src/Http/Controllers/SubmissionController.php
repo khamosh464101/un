@@ -57,7 +57,7 @@ class SubmissionController
     }
 
     public function index(Request $request) {
-        $query = Submission::with($this->query);
+        $query = Submission::with($this->query)->with('extraAttributes');
         if ($request->project_id) {
             // Records attached to the given project
             $query->whereHas('projects', function ($q) use ($request) {
@@ -70,15 +70,22 @@ class SubmissionController
         $this->getSearchData($query, $request);
         $data = $query->paginate(8);
 
-        return ["data" => $data, "filterable" => $this->filterable, "statuses" => SubmissionStatus::select('id as value', 'title as label')->get(), "projects" => Project::select("id as value", "title as label")->get()];
+        return ["request" => $request->search, "data" => $data, "filterable" => $this->filterable, "statuses" => SubmissionStatus::select('id as value', 'title as label')->get(), "projects" => Project::select("id as value", "title as label")->get()];
     }
         
     public function getOpenProjects() {
         $projects = Project::select('id as value', 'title as label')->where('open_to_survey', 1)->get();
         return response()->json($projects);
     }
-    public function getForm() {
-        
+    public function getForm($projectId) {
+        $project = Project::find($projectId);
+        if ($project) {
+            $form = Form::where('form_id', $project->kobo_project_id)?->first();
+            if ($form) {
+                return response()->json($form);
+            }
+            
+        }
         return response()->json(Form::first());
     }
 
@@ -150,6 +157,7 @@ class SubmissionController
             'houseLandOwnership.landOwnershipDocument' => fn($q) => $q->select('id', 'dm_house_land_ownership_id', 'house_document_photo'),
             'houseCondition.houseProblemAreaPhoto' => fn($q) => $q->select('id', 'dm_house_condition_id', 'current_house_problem_title', 'current_house_problem_photo')
         ]);
+        $data->projects?->first();
         return $data;
     }
 
@@ -763,6 +771,7 @@ public function downloadExcel(Request $request)
 {
     ini_set('max_execution_time', 6000);
     ini_set('memory_limit', '2048M');
+    set_time_limit(1200);
 
     // 1️⃣ Determine selected fields
     $fields = [];
@@ -841,10 +850,17 @@ public function downloadExcel(Request $request)
             if ($field) {
                 if (Str::contains($key, '__') ) {
                     [$relation, $column] = explode('__', $key, 2);
-
-                    $query->whereHas($relation, function ($q) use ($column, $field) {
-                        $q->where($column, $field);
-                    });
+                    if ($relation === 'extra_attributes_json') {
+                        $query->whereHas('extraAttributes', function ($q) use ($column, $field) {
+                            $q->where('attribute_name', $column)
+                            ->where('attribute_value', $field);
+                        });
+                    } else {
+                        $query->whereHas($relation, function ($q) use ($column, $field) {
+                            $q->where($column, $field);
+                        });
+                    }
+                    
                 } else {
                     $query->where($key, $field);
                 }

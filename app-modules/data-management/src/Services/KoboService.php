@@ -46,7 +46,7 @@ class KoboService
         $response = Http::withHeaders([
             'Authorization' => 'Token ' . $this->token,
             'Accept' => 'application/json',
-        ])->get("{$this->baseUrl}/assets/{$this->copyFormId}/deployment/");
+        ])->get("{$this->baseUrl}/assets/{$formId}/deployment/");
         return $response;
     }
 

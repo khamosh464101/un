@@ -36,6 +36,7 @@ class ProjectRequest extends FormRequest
             'project_status_id' => ['required', 'integer'],
             'manager_id' => ['nullable', 'integer'],
             'google_storage_folder' => ['nullable', 'string'],
+            'kobo_project_id' => ['required', 'string'],
             
         ];
     }

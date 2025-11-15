@@ -30,6 +30,7 @@ class Project extends Model
         'description', 
         'open_to_survey',
         'donor_id',
+        'kobo_project_id',
         'project_status_id',
         'google_storage_folder',
         'manager_id'
