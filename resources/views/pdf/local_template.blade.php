@@ -124,8 +124,11 @@
         <td style="width:27%;" rowspan="4" class="center">
             @php
                 $path = str_replace('http://127.0.0.1:8000/', '', $submission->photoSection->photo_interviewee);
+                $path = str_replace('http://localhost/', '', $path);
+                
             @endphp
             <img src="{{ public_path($path) }}" alt="تصویر" style="max-width: 120px; max-height: 150px;">
+
         </td>
     </tr>
     <tr>
@@ -317,6 +320,7 @@
         <td style="height:250px; " class="center">
             @php
             $document = str_replace('http://127.0.0.1:8000/', '', $submission->houseLandOwnership?->landOwnershipDocument?->first()?->house_document_photo);
+            $document = str_replace('http://localhost/', '', $document);
             @endphp
             <img src="{{ public_path($document) }}" alt="تصویر" style="max-width:100%; max-height:250px;">
         </td>
@@ -329,6 +333,8 @@
         <td style="height:250px;" class="center">
             @php
                 $house = str_replace('http://127.0.0.1:8000/', '', $submission->photoSection->photo_house_building);
+                $house = str_replace('http://localhost/', '', $house);
+                
             @endphp
             <img src="{{ public_path($house) }}" alt="تصویر" style="max-width:100%; max-height:250px;">
         </td>

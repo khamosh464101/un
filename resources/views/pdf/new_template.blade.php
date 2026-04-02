@@ -123,7 +123,7 @@
             @php
                 $path = str_replace('http://127.0.0.1:8000/', '', $submission->photoSection->photo_interviewee);
             @endphp
-            <img src="{{ public_path($path) }}" alt="تصویر" style="max-width: 100px; max-height: 120px;">
+            <!-- <img src="{{ public_path($path) }}" alt="تصویر" style="max-width: 100px; max-height: 120px;"> -->
         </td>
     </tr>
     <tr>

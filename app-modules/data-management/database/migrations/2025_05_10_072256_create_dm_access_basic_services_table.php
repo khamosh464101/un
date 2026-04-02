@@ -20,9 +20,9 @@ return new class extends Migration
             $table->string('water_source_route_safe_no')->nullable();
             $table->string('water_collect_person')->nullable();
             $table->string('water_quality');
-            $table->string('water_point_photo');
+            $table->string('water_point_photo')->nullable();
             $table->string('type_toilet_facilities');
-            $table->string('access_sanitation_photo');
+            $table->string('access_sanitation_photo')->nullable();
             
             $table->string('access_education');
             $table->string('access_school')->nullable();
@@ -55,7 +55,7 @@ return new class extends Migration
             $table->string('access_health_photo')->nullable();
 
             $table->string('type_access_road');
-            $table->string('access_road_photo');
+            $table->string('access_road_photo')->nullable();
 
             $table->string('how_access_electricity');
             $table->string('energy_cooking')->nullable();

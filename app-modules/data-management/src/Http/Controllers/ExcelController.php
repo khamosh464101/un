@@ -9,11 +9,15 @@ use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\File;
 use Modules\DataManagement\Models\Form;
 use Modules\DataManagement\Models\Submission;
+use Modules\DataManagement\Models\ImportFormatFile;
 use App\Imports\MultiTableImport;
 use App\Models\Setting;
 
+
+
 class ExcelController
 {
+
     public function uploadFile(Request $request) {
         if ($request->hasFile('file') && $request->file('file')->isValid()) {
             $file = $request->file('file');
@@ -41,7 +45,18 @@ class ExcelController
         // Assuming you're using local disk and backups are stored in 'backups' folder
         $files = Storage::disk('excel')->files();
 
-        return response()->json($files);
+        $allFiles = [];
+
+        foreach ($files as $key => $value) {
+            $i = ImportFormatFile::where('excel_file_path', $value)?->first();
+            if ($i) {
+                $allFiles[] = ['file' => $value, 'iff_id' => $i->id, 'project_id' => $i->project_id];
+            } else {
+                $allFiles[] = ['file' => $value, 'iff_id' => null, 'project_id' => null];
+            }
+        }
+
+        return response()->json($allFiles);
     }
 
     public function delete(Request $request)

@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('does_inter_have_nic_owner')->nullable();
             $table->string('inter_nic_number_owner')->nullable();
             $table->string('inter_nic_photo_owner')->nullable();
-            $table->string('type_tenure_document');
+            $table->string('type_tenure_document')->nullable();
             $table->string('house_owner_myself')->nullable();
             $table->string('house_document_number')->nullable();
             $table->date('house_document_date')->nullable();

@@ -14,12 +14,12 @@ return new class extends Migration
         Schema::create('archive_dm_extremely_vulnerable_members', function (Blueprint $table) {
             $table->id();
             $table->string('large_Household');
-            $table->string('disable_member');
+            $table->string('disable_member')->nullable();
             $table->string('physical_disable')->nullable();
             $table->string('mental_disable')->nullable();
             $table->string('chronic_disable')->nullable();
             $table->string('drug_addicted')->nullable();
-            $table->string('conditional_women');
+            $table->string('conditional_women')->nullable();
             $table->string('conditional_women_pregnant')->nullable();
             $table->string('conditional_women_breastfeeding_mother')->nullable();
             $table->string('conditional_women_widow')->nullable();

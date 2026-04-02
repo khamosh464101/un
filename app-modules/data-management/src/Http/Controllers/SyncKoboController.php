@@ -1,11 +1,22 @@
 <?php
 
 namespace Modules\DataManagement\Http\Controllers;
+use Modules\DataManagement\Http\Controllers\FormatController;
 use Modules\DataManagement\Services\KoboService;
 use Modules\DataManagement\Services\KoboSubmissionParser;
 use Illuminate\Http\Request;
 use Modules\DataManagement\Models\Form;
 use Modules\DataManagement\Models\Submission;
+
+use App\Imports\CustomColumnsImport;
+use Maatwebsite\Excel\Facades\Excel;
+use Storage;
+use Modules\Projects\Models\Project;
+
+use PhpOffice\PhpSpreadsheet\Shared\Date;
+use Carbon\Carbon;
+
+
 
 class SyncKoboController
 {
@@ -18,11 +29,6 @@ class SyncKoboController
         $this->parser = $submissionParser;
     }
 
-    public function addFormToDb() {
-        $forms = $this->kobo->getFormDetails();
-        Form::create(['raw_schema' => $forms]);
-        return response()->json(Form::first());
-    }
 
     public function listForms(Request $request)
     {
@@ -39,11 +45,134 @@ class SyncKoboController
                     continue;
                 }
                 $result = $this->cleanKoboSubmissionKeys($value);
+                logger()->info($result);
                 $this->parser->parseAndReturn($result, $projectId);
             }
 
             return response()->json(['message' => 'Successfully inserted into the system from kobo.'], 201);
 
+    }
+
+
+    public function insertFormExcel(Request $request)
+    {
+        logger()->info('Memory usage: ' . (memory_get_usage(true) / 1024 / 1024) . ' MB');
+
+        // Validate project
+        $project = Project::find($request->projectId);
+        if (!$project) {
+            return response()->json(['message' => 'Project not found.'], 404);
+        }
+
+        $disk = Storage::disk('excel');
+
+        if (!$disk->exists($request->filename)) {
+            return response()->json(['message' => 'Excel file not found.'], 404);
+        }
+
+        $path = $disk->path($request->filename);
+
+        // Dynamic parameters
+        $startRow = (int) ($request->startRow ?? 2);
+        $limitRow = (int) ($request->limitRow ?? 100);
+
+        // Collect columns from project mapping
+        $columns = $project->importFormatMaps
+            ->pluck('excel_file_column_name')
+            ->toArray();
+
+    
+        try {
+            $formatController = new FormatController();
+            $result = $formatController->getExcelIndexColumnAndHeaderMap($path);
+            
+            $idColumn = collect($result)->firstWhere('label', '_id');
+            if (!$idColumn) {
+                return response()->json([
+                    'message' => '_id column not found in Excel file'
+                ], 400);
+            }
+
+            $columns[] = $idColumn['value'];
+
+        } catch (\Exception $exception) {
+            return response()->json([
+                'message' => $exception->getMessage()
+            ], $exception->getCode() ?: 500);
+        }
+
+        // Import Excel rows
+        $import = new CustomColumnsImport($startRow, $limitRow, $columns);
+
+        $data = $import->toArray($path);
+        $sheetData = $data[0] ?? [];
+
+
+        // Load form schema
+        $form = Form::where('form_id', $project->kobo_copy_project_id ?? $project->kobo_project_id)->first();
+
+        if (!$form) {
+            return response()->json(['message' => 'Form not found'], 404);
+        }
+
+        $schema = json_decode($form->raw_schema);
+        $choices = $schema->asset->content->choices ?? [];
+        $survey = $schema->asset->content->survey ?? [];
+
+        foreach ($sheetData as $row) {
+
+            $submissionId = $row[$idColumn['value']] ?? null;
+
+            if (!$submissionId) {
+                continue;
+            }
+
+            // Skip if submission already exists
+            $existingSubmission = Submission::where('_id', $submissionId)->first();
+            if ($existingSubmission) {
+                logger()->info("Submission already exists: {$submissionId}");
+                continue;
+            }
+
+            // Fetch submission from Kobo
+            $submissionData = $this->kobo->getSubmissionForMapImport(
+                $submissionId,
+                $project->kobo_project_id
+            );
+
+            $cleanedSubmission = $this->cleanKoboSubmissionKeys($submissionData);
+
+            // Apply field mappings
+            foreach ($project->importFormatMaps as $map) {
+
+                $surveyItem = collect($survey)->firstWhere('name', $map->kobo_form_field_name);
+
+                $labelValue = $row[$map->excel_file_column_name] ?? null;
+
+                $mappedValue = $this->checkChoice($choices, $labelValue, $surveyItem);
+
+                if ($mappedValue !== false) {
+                    $cleanedSubmission[$map->kobo_form_field_name] = $mappedValue;
+                } else {
+                    if ($surveyItem->type === 'date' && $labelValue) {
+                        $cleanedSubmission[$map->kobo_form_field_name] = $this->getDate($labelValue);
+                    } else {
+                        $cleanedSubmission[$map->kobo_form_field_name] = $labelValue;
+                    }
+
+                }
+            }
+
+            // Parse submission
+            $this->parser->parseAndReturn($cleanedSubmission, $project->id);
+        }
+
+        return response()->json([
+            'data' => $sheetData,
+            'columns_requested' => $columns,
+            'total_rows' => count($sheetData),
+            'memory_used' => (memory_get_usage(true) / 1024 / 1024) . ' MB'
+        ]);
     }
 
     public function cleanKoboSubmissionKeys(array $submission): array
@@ -64,6 +193,36 @@ class SyncKoboController
     {
         $submission = $this->kobo->getSubmission();
         return $submission;
+    }
+
+
+    private function mergeExcelAndKobo(array $koboData, array $excelRow, array $mappedColumns): array
+    {
+        foreach ($mappedColumns as $column) {
+            if (isset($excelRow[$column])) {
+                $koboData[$column] = $excelRow[$column];
+            }
+        }
+
+        return $koboData;
+    }
+
+    private function checkChoice($choices, $labelValue, $surveyItem) {
+        if (isset($surveyItem->select_from_list_name)) {
+     
+            foreach ($choices as $choice) {
+                if ($choice->label[0] == $labelValue && $surveyItem->select_from_list_name == $choice->list_name) {
+                    return $choice->name;
+                }
+            }
+        }
+        
+        return false;
+    }
+
+    private function getDate($date): Carbon
+    {
+        return Carbon::instance(Date::excelToDateTimeObject($date));
     }
     
 }

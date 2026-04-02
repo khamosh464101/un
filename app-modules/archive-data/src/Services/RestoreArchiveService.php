@@ -27,6 +27,9 @@ use Modules\DataManagement\Models\Resettlement;
 use Modules\DataManagement\Models\RecentAssistance;
 use Modules\DataManagement\Models\InfrasttructureService;
 use Modules\DataManagement\Models\PhotoSection;
+use Modules\DataManagement\Models\SubmissionExtraAttribute;
+use Modules\DataManagement\Models\SubmissionRepeatableGroup;
+use Modules\DataManagement\Models\SubmissionRepeatableAttribute;
 
 use Modules\ArchiveData\Models\Submission as ArchiveSubmission;
 use Modules\ArchiveData\Models\SourceInformation as ArchiveSourceInformation;
@@ -199,6 +202,20 @@ class RestoreArchiveService
                 if ($t->photoSection && !$sub->photoSection){
                     $tmp = $t->photoSection->getAttributes();
                     PhotoSection::create($tmp);
+                }
+
+                foreach ($t->extraAttributes as $key => $value) {
+                    $val = $value->getAttributes();
+                    SubmissionExtraAttribute::create($val);
+                }
+
+                foreach ($t->repeatableGroup as $key => $value) {
+                    $val = $value->getAttributes();
+                    SubmissionRepeatableGroup::create($val);
+                    foreach ($value->attributes as $key => $v) {
+                        $secondVal = $v->getAttributes();
+                    SubmissionRepeatableAttribute::create($secondVal);
+                    }
                 }
 
                 $t->delete();

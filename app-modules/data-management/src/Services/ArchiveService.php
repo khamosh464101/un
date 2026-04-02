@@ -55,6 +55,9 @@ use Modules\ArchiveData\Models\Resettlement as ArchiveResettlement;
 use Modules\ArchiveData\Models\RecentAssistance as ArchiveRecentAssistance;
 use Modules\ArchiveData\Models\InfrasttructureService as ArchiveInfrasttructureService;
 use Modules\ArchiveData\Models\PhotoSection as ArchivePhotoSection;
+use Modules\ArchiveData\Models\SubmissionExtraAttribute as ArchiveSubmissionExtraAttribute;
+use Modules\ArchiveData\Models\SubmissionRepeatableGroup as ArchiveSubmissionRepeatableGroup;
+use Modules\ArchiveData\Models\SubmissionRepeatableAttribute as ArchiveSubmissionRepeatableAttribute;
 use Illuminate\Support\Facades\DB;
 
 use Carbon\Carbon;
@@ -200,6 +203,22 @@ class ArchiveService
                     $tmp = $submission->photoSection->getAttributes();
                     ArchivePhotoSection::create($tmp);
                 }
+
+                foreach ($submission->extraAttributes as $key => $value) {
+                    $val = $value->getAttributes();
+                    ArchiveSubmissionExtraAttribute::create($val);
+                }
+
+                foreach ($submission->repeatableGroup as $key => $value) {
+                    $val = $value->getAttributes();
+                    ArchiveSubmissionRepeatableGroup::create($val);
+                    foreach ($value->attributes as $key => $v) {
+                        $secondVal = $v->getAttributes();
+                    ArchiveSubmissionRepeatableAttribute::create($secondVal);
+                    }
+                }
+
+                
 
                 $submission->delete();
 

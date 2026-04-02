@@ -11,6 +11,7 @@ class SubmissionRepeatableGroup extends Model
     protected $table = 'dm_submission_repeatable_groups';
 
     protected $fillable = [
+        'id',
         'group_name',
         'group_index',
         'submission_id',
@@ -24,5 +25,16 @@ class SubmissionRepeatableGroup extends Model
     public function attributes(): HasMany
     {
         return $this->hasMany(SubmissionRepeatableAttribute::class);
+    }
+
+    public static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($submission) {
+
+            $submission->attributes()->delete();
+            
+        });
     }
 }

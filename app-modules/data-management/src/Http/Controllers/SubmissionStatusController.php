@@ -14,6 +14,7 @@ class SubmissionStatusController
     }
 
     public function index(Request $request) {
+        Gate::authorize('view submission status');
         $search = $request->search;
         $statuses = SubmissionStatus::withCount('submissions')->when($search, function($query) use ($search) {
             $query->where('title', 'like', '%'.$search.'%');
@@ -23,17 +24,20 @@ class SubmissionStatusController
 
     public function store(SubmissionStatusRequest $request) {
         // Gate::authorize('create', SubmissionStatus::class);
+        Gate::authorize('manage submission status');
         $data = $request->validated();
          $status = SubmissionStatus::create($data);
         return response()->json(['message' => 'Sucessfully added!', 'data' => $data], 201);
     }
 
     public function edit($id) {
+        Gate::authorize('view submission status');
         $status = SubmissionStatus::find($id);
         return response()->json($status, 201);
     }
 
     public function update(SubmissionStatusRequest $request, $id) {
+        Gate::authorize('manage submission status');
         $status = SubmissionStatus::find($id);
         // Gate::authorize('update', $status);
         $data = $request->safe()->except(['_method']);
@@ -43,6 +47,7 @@ class SubmissionStatusController
     }
 
     public function destroy($id) {
+        Gate::authorize('manage submission status');
         $status = SubmissionStatus::find($id);
         // Gate::authorize('delete', $status);
         if (!$status) {

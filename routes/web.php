@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 use App\Http\Controllers\TestController;
+use App\Http\Controllers\MapTestController;
+use App\Http\Controllers\LeafletMapController;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\File;
 use Google\Cloud\Storage\StorageClient;
@@ -13,6 +15,15 @@ use Google\Cloud\Storage\StorageClient;
 
 
 Route::get('/test', [TestController::class, 'index']);
+
+Route::get('/test-google-map', [MapTestController::class, 'get']);
+Route::get('/house-map', function () {
+    return view('map');
+});
+
+Route::get('/osm-map', [LeafletMapController::class, 'get']);
+
+
 Route::get('/', function () {
     Storage::disk('gcs')->put('folder/file_second.txt', 'Contents here...');
 // return $storage = new StorageClient([
@@ -50,5 +61,7 @@ Route::get('/', function () {
     //  dd(count($dataArray));
     return ['Laravel' => app()->version()];
 });
+
+
 
 require __DIR__.'/auth.php';

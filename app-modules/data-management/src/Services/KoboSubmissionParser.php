@@ -33,6 +33,7 @@ use Modules\DataManagement\Models\SubmissionStatus;
 use Modules\DataManagement\Models\SubmissionExtraAttribute;
 use Modules\DataManagement\Models\SubmissionRepeatableGroup;
 use Modules\DataManagement\Models\SubmissionRepeatableAttribute;
+use Modules\DataManagement\Models\Form;
 use Modules\Projects\Models\Project;
 use Illuminate\Support\Str;
 use Modules\DataManagement\Helpers\ModelHelper;
@@ -92,12 +93,12 @@ class KoboSubmissionParser
           $this->createPhotoSection($submission, $sub);
           $this->createExtraColumns($submission, $sub);
 
-        //   
-        //    foreach ($submission['_attachments'] as $attachment) {
-        //         if (Str::startsWith($attachment['mimetype'], 'image/')) {
-        //             $this->koboService->downloadAttachment($attachment, "kobo-attachments");
-        //         }
-        //     }  
+          
+           foreach ($submission['_attachments'] as $attachment) {
+                if (Str::startsWith($attachment['mimetype'], 'image/')) {
+                    $this->koboService->downloadAttachment($attachment, "kobo-attachments");
+                }
+            }  
 
         
             });
@@ -125,17 +126,20 @@ class KoboSubmissionParser
             $submission,
             array_flip((new Submission)->getIgnoreIdFillable())
         );
+        $project = Project::find($projectId);
+        logger()->info("thhisisss is project");
         $defaultStatus = SubmissionStatus::where('is_default', true)->first();
+        $kobo_form_id = $project->kobo_copy_project_id ?? $project->kobo_project_id;
+        $formId = Form::where('form_id', $kobo_form_id)->first()->id;
         $sub = Submission::create(
             array_merge([
-                'dm_form_id' => 1, 
+                'dm_form_id' => $formId, 
                 'user_id' => auth()->user()->id,
                 'submission_status_id' => $defaultStatus ? $defaultStatus->id : 1], 
                 $filteredData)
         );
         logger()->info("thhisisss is project id" . $projectId);
-        $project = Project::find($projectId);
-        logger()->info("thhisisss is project");
+        
         $project->submissions()->syncWithoutDetaching([$sub->id]);
 
         return $sub;

@@ -42,6 +42,10 @@ return [
         'token' => env('KOBO_TOKEN'),
         'form_id' => env('KOBO_FORM_ID'),
         'copy_form_id' => env('KOBO_COPY_FORM_ID'),
-    ]
+    ],
+
+    'google' => [
+        'maps_api_key' => env('GOOGLE_MAPS_API_KEY'),
+    ],
 
 ];

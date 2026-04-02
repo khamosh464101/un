@@ -25,7 +25,12 @@ use App\Imports\MultiTableImport;
 use App\Models\Setting;
 use Google\Cloud\Vision\V1\Client\ImageAnnotatorClient;
 use Illuminate\Http\UploadedFile;
- use Google\Cloud\Storage\StorageClient;
+use Google\Cloud\Storage\StorageClient;
+use Illuminate\Support\Facades\Gate;
+use App\Models\UserFilter;
+ 
+use Symfony\Component\HttpFoundation\StreamedResponse;
+ 
 
 use Storage;
 use Carbon\Carbon;
@@ -57,6 +62,34 @@ class SubmissionController
     }
 
     public function index(Request $request) {
+        Gate::authorize('profile view');
+
+        $search = $request->input('search', []);
+
+        $filters = UserFilter::where('user_id', auth()->id())
+            ->where('page', 'submissions')
+            ->first();
+
+        $storedProjectId = $filters->filters['project_id'] ?? null;
+
+        if (
+            $request->initialLoadDone == true
+        ) {
+
+            UserFilter::updateOrCreate(
+                [
+                    'user_id' => auth()->id(),
+                    'page' => 'submissions'
+                ],
+                [
+                    'filters' => $request->all()
+                ]
+            );
+
+        } else if($storedProjectId == $request->project_id) {
+            $request->replace($filters->filters);
+        }
+        
         $query = Submission::with($this->query)->with('extraAttributes');
         if ($request->project_id) {
             // Records attached to the given project
@@ -70,7 +103,7 @@ class SubmissionController
         $this->getSearchData($query, $request);
         $data = $query->paginate(8);
 
-        return ["request" => $request->search, "data" => $data, "filterable" => $this->filterable, "statuses" => SubmissionStatus::select('id as value', 'title as label')->get(), "projects" => Project::select("id as value", "title as label")->get()];
+        return ["search" => $request->search, "data" => $data, "filterable" => $this->filterable, "statuses" => SubmissionStatus::select('id as value', 'title as label')->get(), "projects" => Project::select("id as value", "title as label")->get(), "first" => $request->first];
     }
         
     public function getOpenProjects() {
@@ -80,7 +113,7 @@ class SubmissionController
     public function getForm($projectId) {
         $project = Project::find($projectId);
         if ($project) {
-            $form = Form::where('form_id', $project->kobo_project_id)?->first();
+            $form = Form::where('form_id', $project->kobo_copy_project_id ?? $project->kobo_project_id)?->first();
             if ($form) {
                 return response()->json($form);
             }
@@ -89,8 +122,13 @@ class SubmissionController
         return response()->json(Form::first());
     }
 
+    public function getFilterable()
+    {
+        return $this->filterable;
+    }
+
     public function store (Request $request) {
-    
+        Gate::authorize('profile create');
         $files = [
             'hoh_nic_photo',
             'inter_nic_photo',
@@ -148,6 +186,7 @@ class SubmissionController
     }
 
     public function edit($id) {
+        Gate::authorize('profile update');
        // First get the submission with fast relationships
         $data = Submission::with($this->editQuery)->find($id);
 
@@ -162,6 +201,7 @@ class SubmissionController
     }
 
     public function update(Request $request, $id) {
+        Gate::authorize('profile update');
         $files = [
             'hoh_nic_photo',
             'inter_nic_photo',
@@ -195,10 +235,8 @@ class SubmissionController
          
         if ($request->input('house_problems_area_photos')) {
            $data['house_problems_area_photos'] = $this->editArrayFileWithTitle('house_problems_area_photos', $request, $id);
-            }
+        }
         
-        
-
         return   $result = $this->updateParser->parseAndReturn($data, $id);
         if ($result['success'] === 'true') {
             return response()->json(["message" => 'Successfully added!'], 201);
@@ -305,7 +343,7 @@ class SubmissionController
         return false;
     }
 
-    public static function getFileName($prefix, $file) {
+    public static function  getFileName($prefix, $file) {
         return  $prefix.'-'. \Carbon\Carbon::now()->format('Y-m-d-H-i-s-v') . '.' . $file->getClientOriginalExtension();
     }
 
@@ -348,224 +386,224 @@ class SubmissionController
     }
  
 
-public function editArrayFileWithTitle(string $name, Request $request, $id): array
-{
-    $groupItems = $request->input($name);
-    $files = $request->file($name);
-    $storedFiles = [];
+    public function editArrayFileWithTitle(string $name, Request $request, $id): array
+    {
+        $groupItems = $request->input($name);
+        $files = $request->file($name);
+        $storedFiles = [];
 
-    $submission = Submission::find($id);
+        $submission = Submission::find($id);
 
-    // Delete removed records
-    foreach ($submission->houseCondition->houseProblemAreaPhoto as $photo) {
-        $exists = collect($groupItems)->contains('id', $photo->id);
-        if (!$exists) {
-            $photo->delete();
-        }
-    }
-
-    foreach ($groupItems as $key => $row) {
-        $storedFiles[$key]['current_house_problem_title'] = $row['current_house_problem_title'];
-        $file = $files[$key]['current_house_problem_photo'] ?? null;
-
-        if (!empty($row['id'])) {
-
-            // Update existing record if file is uploaded
-            if ($file instanceof UploadedFile) {
-                $record = HouseProblemAreaPhoto::find($row['id']);
-                Storage::delete("kobo-attachments/{$record->current_house_problem_photo}");
-                $uuidPrefix = Str::uuid();
-                $path = $file->storeAs("kobo-attachments/", $this->getFileName($uuidPrefix, $file));
-                $path_clean = str_replace("kobo-attachments/", '', $path);
-                $storedFiles[$key]['current_house_problem_photo'] = $path_clean;
-                
-            }
-
-            $storedFiles[$key]['id'] = $row['id'];
-        } else {
-            // New record
-
-            if ($file instanceof UploadedFile) {
-                $uuidPrefix = Str::uuid();
-                $path = $file->storeAs("kobo-attachments/", $this->getFileName($uuidPrefix, $file));
-                $path_clean = str_replace("kobo-attachments/", '', $path);
-                $storedFiles[$key]['current_house_problem_photo'] = $path_clean;
+        // Delete removed records
+        foreach ($submission->houseCondition->houseProblemAreaPhoto as $photo) {
+            $exists = collect($groupItems)->contains('id', $photo->id);
+            if (!$exists) {
+                $photo->delete();
             }
         }
-    }
 
-    return $storedFiles;
-}
+        foreach ($groupItems as $key => $row) {
+            $storedFiles[$key]['current_house_problem_title'] = $row['current_house_problem_title'];
+            $file = $files[$key]['current_house_problem_photo'] ?? null;
+
+            if (!empty($row['id'])) {
+
+                // Update existing record if file is uploaded
+                if ($file instanceof UploadedFile) {
+                    $record = HouseProblemAreaPhoto::find($row['id']);
+                    Storage::delete("kobo-attachments/{$record->current_house_problem_photo}");
+                    $uuidPrefix = Str::uuid();
+                    $path = $file->storeAs("kobo-attachments/", $this->getFileName($uuidPrefix, $file));
+                    $path_clean = str_replace("kobo-attachments/", '', $path);
+                    $storedFiles[$key]['current_house_problem_photo'] = $path_clean;
+                    
+                }
+
+                $storedFiles[$key]['id'] = $row['id'];
+            } else {
+                // New record
+
+                if ($file instanceof UploadedFile) {
+                    $uuidPrefix = Str::uuid();
+                    $path = $file->storeAs("kobo-attachments/", $this->getFileName($uuidPrefix, $file));
+                    $path_clean = str_replace("kobo-attachments/", '', $path);
+                    $storedFiles[$key]['current_house_problem_photo'] = $path_clean;
+                }
+            }
+        }
+
+        return $storedFiles;
+    }
 
 
     public function removePhoto(Request $request)
-{
-    $submission = Submission::find($request->submission_id);
-    if (!$submission) {
-        return response()->json(['message' => 'Submission not found'], 404);
+    {
+        $submission = Submission::find($request->submission_id);
+        if (!$submission) {
+            return response()->json(['message' => 'Submission not found'], 404);
+        }
+
+        $relation = $request->relation ? $this->snakeToCamel($request->relation) : null;
+        $table = $this->snakeToCamel($request->table);
+        $name = $request->name;
+
+        if ($relation) {
+            if (!$submission->$relation) {
+                return response()->json(['message' => "$relation not found"], 404);
+            }
+
+            // Ensure $table is a relationship method, then find the record
+            $relatedParent = $submission->$relation;
+            if (!method_exists($relatedParent, $table)) {
+                return response()->json(['message' => "$table relationship not found in $relation"], 404);
+            }
+
+            $targetRecord = $relatedParent->$table()->find($request->id);
+            if (!$targetRecord) {
+                return response()->json(['message' => "$table record not found in $relation"], 404);
+            }
+
+            if (!is_null($targetRecord->$name)) {
+                Storage::delete("kobo-attachments/{$targetRecord->$name}");
+                $targetRecord->delete(); // delete the record entirely
+            }
+        } else {
+            if (!method_exists($submission, $table)) {
+                return response()->json(['message' => "$table relationship not found"], 404);
+            }
+
+            $related = $submission->$table;
+            if (!$related) {
+                return response()->json(['message' => "$table not found"], 404);
+            }
+
+            if (!is_null($related->$name)) {
+                Storage::delete("kobo-attachments/{$related->$name}");
+                $related->$name = null;
+                $related->save(); // nullify field only
+            }
+        }
+
+        return response()->json(['message' => 'Photo removed successfully'], 200);
     }
-
-    $relation = $request->relation ? $this->snakeToCamel($request->relation) : null;
-    $table = $this->snakeToCamel($request->table);
-    $name = $request->name;
-
-    if ($relation) {
-        if (!$submission->$relation) {
-            return response()->json(['message' => "$relation not found"], 404);
-        }
-
-        // Ensure $table is a relationship method, then find the record
-        $relatedParent = $submission->$relation;
-        if (!method_exists($relatedParent, $table)) {
-            return response()->json(['message' => "$table relationship not found in $relation"], 404);
-        }
-
-        $targetRecord = $relatedParent->$table()->find($request->id);
-        if (!$targetRecord) {
-            return response()->json(['message' => "$table record not found in $relation"], 404);
-        }
-
-        if (!is_null($targetRecord->$name)) {
-            Storage::delete("kobo-attachments/{$targetRecord->$name}");
-            $targetRecord->delete(); // delete the record entirely
-        }
-    } else {
-        if (!method_exists($submission, $table)) {
-            return response()->json(['message' => "$table relationship not found"], 404);
-        }
-
-        $related = $submission->$table;
-        if (!$related) {
-            return response()->json(['message' => "$table not found"], 404);
-        }
-
-        if (!is_null($related->$name)) {
-            Storage::delete("kobo-attachments/{$related->$name}");
-            $related->$name = null;
-            $related->save(); // nullify field only
-        }
-    }
-
-    return response()->json(['message' => 'Photo removed successfully'], 200);
-}
 
     public function updatePhoto(Request $request)
-{
-    $submission = Submission::find($request->submission_id);
-    if (!$submission) {
-        return response()->json(['message' => 'Submission not found'], 404);
-    }
-
-    $relation = $request->relation ? $this->snakeToCamel($request->relation) : null;
-    $table = $this->snakeToCamel($request->table);
-    $name = $request->name;
-
-    if ($relation) {
-        if (!$submission->$relation) {
-            return response()->json(['message' => "$relation not found"], 404);
+    {
+        $submission = Submission::find($request->submission_id);
+        if (!$submission) {
+            return response()->json(['message' => 'Submission not found'], 404);
         }
 
-        $relatedParent = $submission->$relation;
-        if (!method_exists($relatedParent, $table)) {
-            return response()->json(['message' => "$table relationship not found in $relation"], 404);
-        }
+        $relation = $request->relation ? $this->snakeToCamel($request->relation) : null;
+        $table = $this->snakeToCamel($request->table);
+        $name = $request->name;
 
-        $targetRecord = $relatedParent->$table()->find($request->id);
-        if (!$targetRecord) {
-            return response()->json(['message' => "$table record not found in $relation"], 404);
-        }
+        if ($relation) {
+            if (!$submission->$relation) {
+                return response()->json(['message' => "$relation not found"], 404);
+            }
 
-        // Delete old photo if exists
-        if (!is_null($targetRecord->$name)) {
-            Storage::delete("kobo-attachments/{$targetRecord->$name}");
-        }
+            $relatedParent = $submission->$relation;
+            if (!method_exists($relatedParent, $table)) {
+                return response()->json(['message' => "$table relationship not found in $relation"], 404);
+            }
 
-        // Upload and update new photo
-        if ($request->hasFile('photo') && $request->file('photo')->isValid()) {
-            $uuidPrefix = Str::uuid();
-            $get_file = $request->file('photo')->storeAs("kobo-attachments/", $this->getFileName($uuidPrefix, $request->file('photo')));
-            $get_file_clean = str_replace("kobo-attachments/", '', $get_file);
+            $targetRecord = $relatedParent->$table()->find($request->id);
+            if (!$targetRecord) {
+                return response()->json(['message' => "$table record not found in $relation"], 404);
+            }
 
-            $targetRecord->$name = $get_file_clean;
-            $targetRecord->save();
+            // Delete old photo if exists
+            if (!is_null($targetRecord->$name)) {
+                Storage::delete("kobo-attachments/{$targetRecord->$name}");
+            }
 
-            return response()->json($targetRecord, 200);
+            // Upload and update new photo
+            if ($request->hasFile('photo') && $request->file('photo')->isValid()) {
+                $uuidPrefix = Str::uuid();
+                $get_file = $request->file('photo')->storeAs("kobo-attachments/", $this->getFileName($uuidPrefix, $request->file('photo')));
+                $get_file_clean = str_replace("kobo-attachments/", '', $get_file);
+
+                $targetRecord->$name = $get_file_clean;
+                $targetRecord->save();
+
+                return response()->json($targetRecord, 200);
+            } else {
+                return response()->json(['message' => 'No valid photo uploaded'], 400);
+            }
         } else {
-            return response()->json(['message' => 'No valid photo uploaded'], 400);
-        }
-    } else {
-        if (!method_exists($submission, $table)) {
-            return response()->json(['message' => "$table relationship not found"], 404);
+            if (!method_exists($submission, $table)) {
+                return response()->json(['message' => "$table relationship not found"], 404);
+            }
+
+            $related = $submission->$table;
+            if (!$related) {
+                return response()->json(['message' => "$table not found"], 404);
+            }
+
+            if (!is_null($related->$name)) {
+                Storage::delete("kobo-attachments/{$related->$name}");
+            }
+
+            if ($request->hasFile('photo') && $request->file('photo')->isValid()) {
+                $uuidPrefix = Str::uuid();
+                $get_file = $request->file('photo')->storeAs("kobo-attachments/", $this->getFileName($uuidPrefix, $request->file('photo')));
+                $get_file_clean = str_replace("kobo-attachments/", '', $get_file);
+
+                $related->$name = $get_file_clean;
+                $related->save();
+
+                return response()->json($related, 200);
+            } else {
+                return response()->json(['message' => 'No valid photo uploaded'], 400);
+            }
         }
 
-        $related = $submission->$table;
-        if (!$related) {
-            return response()->json(['message' => "$table not found"], 404);
-        }
-
-        if (!is_null($related->$name)) {
-            Storage::delete("kobo-attachments/{$related->$name}");
-        }
-
-        if ($request->hasFile('photo') && $request->file('photo')->isValid()) {
-            $uuidPrefix = Str::uuid();
-            $get_file = $request->file('photo')->storeAs("kobo-attachments/", $this->getFileName($uuidPrefix, $request->file('photo')));
-            $get_file_clean = str_replace("kobo-attachments/", '', $get_file);
-
-            $related->$name = $get_file_clean;
-            $related->save();
-
-            return response()->json($related, 200);
-        } else {
-            return response()->json(['message' => 'No valid photo uploaded'], 400);
-        }
+        return response()->json(['message' => 'There is a problem please try again'], 500);
     }
-
-    return response()->json(['message' => 'There is a problem please try again'], 500);
-}
 
 
     public function addPhoto(Request $request)
-{
-    $submission = Submission::find($request->submission_id);
-    if (!$submission) {
-        return response()->json(['message' => 'Submission not found'], 404);
-    }
-
-    $relation = $this->snakeToCamel($request->relation);
-    $table = $this->snakeToCamel($request->table);
-
-    if ($request->hasFile('photo') && $request->file('photo')->isValid()) {
-        $uuidPrefix = Str::uuid();
-        $get_file = $request->file('photo')->storeAs(
-            "kobo-attachments/",
-            $this->getFileName($uuidPrefix, $request->file('photo'))
-        );
-        $get_file_clean = str_replace("kobo-attachments/", '', $get_file);
-
-        $relatedModel = $submission->$relation()->find($request->relation_id);
-
-        if (!$relatedModel) {
-            return response()->json(['message' => 'Related model not found'], 404);
+    {
+        $submission = Submission::find($request->submission_id);
+        if (!$submission) {
+            return response()->json(['message' => 'Submission not found'], 404);
         }
 
-        if (!method_exists($relatedModel, $table)) {
-            return response()->json(['message' => 'Invalid table relation'], 400);
+        $relation = $this->snakeToCamel($request->relation);
+        $table = $this->snakeToCamel($request->table);
+
+        if ($request->hasFile('photo') && $request->file('photo')->isValid()) {
+            $uuidPrefix = Str::uuid();
+            $get_file = $request->file('photo')->storeAs(
+                "kobo-attachments/",
+                $this->getFileName($uuidPrefix, $request->file('photo'))
+            );
+            $get_file_clean = str_replace("kobo-attachments/", '', $get_file);
+
+            $relatedModel = $submission->$relation()->find($request->relation_id);
+
+            if (!$relatedModel) {
+                return response()->json(['message' => 'Related model not found'], 404);
+            }
+
+            if (!method_exists($relatedModel, $table)) {
+                return response()->json(['message' => 'Invalid table relation'], 400);
+            }
+
+            $result = $relatedModel->$table()->create([
+                $request->name => $get_file_clean,
+            ]);
+
+            return response()->json([
+                'message' => 'Photo added successfully',
+                'data' => $result,
+                'file_url' => Storage::url($get_file),
+            ]);
         }
 
-        $result = $relatedModel->$table()->create([
-            $request->name => $get_file_clean,
-        ]);
-
-        return response()->json([
-            'message' => 'Photo added successfully',
-            'data' => $result,
-            'file_url' => Storage::url($get_file),
-        ]);
+        return response()->json(['message' => 'Invalid file upload'], 400);
     }
-
-    return response()->json(['message' => 'Invalid file upload'], 400);
-}
 
 
 
@@ -573,32 +611,36 @@ public function editArrayFileWithTitle(string $name, Request $request, $id): arr
         return lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $string))));
     }
 
+   
+
+
     public function downloadProfile($id) {
-         $submission = Submission::with(['sourceInformation', 'familyInformation', 'headFamily', 'idp', 'returnee', 'interviewwee', 'photoSection', 'houseLandOwnership'])->find($id);
-         $form = Form::find($submission->dm_form_id);
-         $dataObject = json_decode($form->raw_schema);
-         $survey = $dataObject->asset->content->survey;
-         $choices = $dataObject->asset->content->choices;
-         $location = [];
-         $firstLetter;
+        ini_set('memory_limit', '512M');
+        ini_set('max_execution_time', 300);
+        $submission = Submission::with(['sourceInformation', 'familyInformation', 'headFamily', 'idp', 'returnee', 'interviewwee', 'photoSection', 'houseLandOwnership'])->find($id);
+        
+        if (!$submission) {
+            return response()->json(['error' => 'Submission not found'], 404);
+        }
+        
+        $form = Form::find($submission->dm_form_id);
+        $dataObject = json_decode($form->raw_schema);
+        $survey = $dataObject->asset->content->survey;
+        $choices = $dataObject->asset->content->choices;
+        $location = [];
+        $firstLetter = '';
 
 
         foreach ($choices as $key => $value) {
             if (isset($value->name) && $value->name === $submission->sourceInformation->survey_province) {
                 if (isset($value->label[1])) {
                     $location['province'] = $value->label[1];
-
                 }
             }
             if (isset($value->name) && $value->name === $submission->sourceInformation->district_name) {
                 if (isset($value->label[1])) {
                     $location['district'] = $value->label[1];
-                    if ($value->label[0] === 'Och Tangi') {
-                        $firstLetter = 'W';
-                    } else {
-                        $firstLetter = ucfirst($value->label[0])[0];
-                     }
-
+    
                 }
             }
             if (isset($value->name) && $value->name === $submission->sourceInformation->nahya_number) {
@@ -606,48 +648,42 @@ public function editArrayFileWithTitle(string $name, Request $request, $id): arr
                     $location['nahya'] = $value->label[0];
                 }
             }
-            // if (isset($value->name) && $value->name === $submission->sourceInformation->kbl_guzar_number) {
-            //     if (isset($value->label[0])) {
-            //         $location['guzar'] = $value->label[0];
-            //     }
-            // }
+            
             if ($submission->sourceInformation->province_code) {
-
-                    $location['province_code'] = $submission->sourceInformation->province_code;
- 
+                $location['province_code'] = $submission->sourceInformation->province_code;
             }
             if ($submission->sourceInformation->city_code) {
-
                 $location['city_code'] = $submission->sourceInformation->city_code;
             }
             if ($submission->sourceInformation->district_code) {
-
                 $location['district_code'] = $submission->sourceInformation->district_code;
             }
-
-            // if ($submission->sourceInformation->kbl_guzar_number) {
-
-            //     $location['guzar'] = $submission->sourceInformation->kbl_guzar_number;
-            // }
-     
-            if (isset($value->name) && $value->name === $submission->sourceInformation->kbl_guzar_number) {
+            if ($submission->sourceInformation->kbl_guzar_number) {
+                $location['guzar'] = $submission->sourceInformation->kbl_guzar_number;
+            }
+            
+            if (isset($value->name) && $value->name === $submission->extraAttributesJson['guzar_number']) {
                 if (isset($value->label[0])) {
                     $location['guzar'] = substr($value->label[0], 1);
                 }
             }
-
             if (isset($value->name) && $value->name === $submission->sourceInformation->block_number) {
                 if (isset($value->label[0])) {
                     $location['block'] = $value->label[0];
                 }
             }
-
-
             if (isset($value->name) && $value->name === $submission->sourceInformation->house_number) {
                 if (isset($value->label[0])) {
                     $location['house'] = $value->label[0];
                 }
             }
+            
+            if (isset($value->name) && $value->name === ($submission->extraAttributesJson['manteqa'] ?? 'falst')) {
+                if (isset($value->label[0])) {
+                    $location['manteqa'] = substr($value->label[0], 1);
+                }
+            }
+
             if (isset($value->name) && $value->name === $submission->familyInformation->province_origin) {
                 if (isset($value->label[1])) {
                     $location['province_origin'] = $value->label[1];
@@ -669,7 +705,7 @@ public function editArrayFileWithTitle(string $name, Request $request, $id): arr
                         $location['year'] = $value->label[1];
                     }
                 }
-            }elseif ($submission->status === 'returnee') {
+            } elseif ($submission->status === 'returnee') {
                 if (isset($value->name) && $value->name === $submission->returnee->year_returnee) {
                     if (isset($value->label[1])) {
                         $location['year'] = $value->label[1];
@@ -692,47 +728,56 @@ public function editArrayFileWithTitle(string $name, Request $request, $id): arr
                     $location['duration_lived_thishouse'] = $value->label[1];
                 }
             }
-
         }
 
-        if ($submission?->projects?->first()) {
-            $location['folder'] = $submission?->projects?->first()?->google_storage_folder;
-            $map_path = $this->getPath($location, $firstLetter);
-        $location['map_image'] = $map_path;
-        $html = View::make('pdf.template', [
+   
+        // Check if projects relationship exists and has data
+        if ($submission->projects && $submission->projects->first()) {
+            $location['folder'] = $submission->projects->first()->google_storage_folder;
+            $map_path = $this->getPath($location);
+            $location['map_image'] = $map_path;
+        }
+
+        $bladeFile = 'pdf.local_template';
+        if ($location['province_code'] == 19) {
+            $bladeFile = 'pdf.kunduz_local_template';
+        }
+
+
+        $html = View::make($bladeFile, [
             'submission' => $submission,
             'location' => $location,
             'choices' => $choices,
         ])->render();
 
-        $mpdf = new Mpdf([
-            'tempDir' => storage_path('app/mpdf-temp'),
-            'format' => 'A4',
-            'mode' => 'utf-8',
-            'default_font' => 'dejavusans',
-            'default_font_size' => 9,
-            'directionality' => 'rtl', // Important for RTL
-            'margin_top' => 10,      // Reduced from default 16
-            'margin_bottom' => 10,   // Reduced from default 16
-            'margin_left' => 5,     // Reduced from default 15
-            'margin_right' => 5,    // Reduced from default 15
-            'margin_header' => 2,   // Reduced from default 9
-            'margin_footer' => 2,   // Reduced from default 9
-        ]);
-
-        $si = $submission->sourceInformation;
-        $name = $si->province_code.'-'.$si->city_code.'-'.$si->city_code.'-'.$si->district_code.'-'.$location['guzar'].'-'.$location['block'].'-'.$location['house'];
-        $mpdf->WriteHTML($html);
-        return response($mpdf->Output('', 'S'), 200)
-            ->header('Content-Type', 'application/pdf')
-            ->header('Content-Disposition', 'inline; filename="'. $name .'.pdf"');
-        }
-
-       
-    
         
-        return $submission;
 
+    
+         $name = $this->getCodeName($location);
+
+        // Return StreamedResponse with only ONE mPDF instance
+        return new StreamedResponse(function() use ($html, $name) {
+            $mpdf = new \Mpdf\Mpdf([
+                'tempDir' => storage_path('app/mpdf-temp'),
+                'format' => 'A4',
+                'mode' => 'utf-8',
+                'default_font' => 'dejavusans',
+                'default_font_size' => 9,
+                'directionality' => 'rtl',
+                'margin_top' => 10,
+                'margin_bottom' => 10,
+                'margin_left' => 5,
+                'margin_right' => 5,
+                'margin_header' => 2,
+                'margin_footer' => 2,
+            ]);
+            
+            $mpdf->WriteHTML($html);
+            $mpdf->Output($name . '.pdf', 'D'); // 'D' for download
+        }, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $name . '.pdf"',
+        ]);
     }
 
     public function addAsBeneficairy(Request $request) {
@@ -767,84 +812,84 @@ public function editArrayFileWithTitle(string $name, Request $request, $id): arr
         return response()->json(["message" => "Successfully removed!", "data" => $project->load('submissions')], 201);
     }
 
-public function downloadExcel(Request $request)
-{
-    ini_set('max_execution_time', 6000);
-    ini_set('memory_limit', '2048M');
-    set_time_limit(1200);
+    public function downloadExcel(Request $request)
+    {
+        ini_set('max_execution_time', 6000);
+        ini_set('memory_limit', '2048M');
+        set_time_limit(1200);
 
-    // 1️⃣ Determine selected fields
-    $fields = [];
-    foreach ($request->selectedColumns as $key => $value) {
-        $fields[] = $this->filterable[$value];
-    }
-
-    // 2️⃣ Group fields by relation
-    $groupedFields = [];
-    foreach ($fields as $field) {
-        if (str_contains($field, '__')) {
-            [$relation, $column] = explode('__', $field, 2);
-            $groupedFields[$relation][] = $column;
-        } else {
-            $groupedFields['submission'][] = $field;
-        }
-    }
-
-    // 3️⃣ Base query
-    $query = Submission::query();
-
-    // Select submission fields
-    $submissionFields = $groupedFields['submission'] ?? [];
-    $query->select(array_merge(['id'], $submissionFields));
-
-    // Handle related table fields
-    foreach ($groupedFields as $relation => $columns) {
-        if ($relation === 'submission') continue;
-
-        $foreignKey = 'submission_id';
-        $query->with([$relation => function ($q) use ($columns, $foreignKey) {
-            $q->select(array_merge([$foreignKey], array_unique($columns)));
-        }]);
-    }
-
-    // 4️⃣ Apply project filters
-    if ($request->selectAll) {
-        if ($request->project_id) {
-            $query->whereHas('projects', function ($q) use ($request) {
-                $q->where('projects.id', $request->project_id);
-            });
-        } else {
-            $query->whereDoesntHave('projects');
+        // 1️⃣ Determine selected fields
+        $fields = [];
+        foreach ($request->selectedColumns as $key => $value) {
+            $fields[] = $this->filterable[$value];
         }
 
-        $this->getSearchData($query, $request);
-    } else {
-        $query->whereIn('id', $request->selects);
+        // 2️⃣ Group fields by relation
+        $groupedFields = [];
+        foreach ($fields as $field) {
+            if (str_contains($field, '__')) {
+                [$relation, $column] = explode('__', $field, 2);
+                $groupedFields[$relation][] = $column;
+            } else {
+                $groupedFields['submission'][] = $field;
+            }
+        }
+
+        // 3️⃣ Base query
+        $query = Submission::query();
+
+        // Select submission fields
+        $submissionFields = $groupedFields['submission'] ?? [];
+        $query->select(array_merge(['id'], $submissionFields));
+
+        // Handle related table fields
+        foreach ($groupedFields as $relation => $columns) {
+            if ($relation === 'submission') continue;
+
+            $foreignKey = 'submission_id';
+            $query->with([$relation => function ($q) use ($columns, $foreignKey) {
+                $q->select(array_merge([$foreignKey], array_unique($columns)));
+            }]);
+        }
+
+        // 4️⃣ Apply project filters
+        if ($request->selectAll) {
+            if ($request->project_id) {
+                $query->whereHas('projects', function ($q) use ($request) {
+                    $q->where('projects.id', $request->project_id);
+                });
+            } else {
+                $query->whereDoesntHave('projects');
+            }
+
+            $this->getSearchData($query, $request);
+        } else {
+            $query->whereIn('id', $request->selects);
+        }
+
+        // 5️⃣ Load survey schema
+        $form = Form::find(1);
+        $dataObject = json_decode($form->raw_schema);
+        $survey = $dataObject->asset->content->survey;
+        $choices = $dataObject->asset->content->choices;
+
+        // 6️⃣ Generate headings
+        $header = [];
+        foreach ($fields as $field) {
+            $header[] = $this->getHeader($survey, str_contains($field, '__') ? explode('__', $field, 2)[1] : $field);
+        }
+
+        // 7️⃣ Stream the file (no queue)
+        $title = $request->project['label'] ?? now()->format('Y-m-d');
+        $filename = now()->format('Y-m-d') . '-submissions.xlsx';
+
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new \App\Exports\SubmissionsExport($query, $fields, $survey, $choices, $header, $title),
+            $filename
+        );
     }
 
-    // 5️⃣ Load survey schema
-    $form = Form::find(1);
-    $dataObject = json_decode($form->raw_schema);
-    $survey = $dataObject->asset->content->survey;
-    $choices = $dataObject->asset->content->choices;
-
-    // 6️⃣ Generate headings
-    $header = [];
-    foreach ($fields as $field) {
-        $header[] = $this->getHeader($survey, str_contains($field, '__') ? explode('__', $field, 2)[1] : $field);
-    }
-
-    // 7️⃣ Stream the file (no queue)
-    $title = $request->project['label'] ?? now()->format('Y-m-d');
-    $filename = now()->format('Y-m-d') . '-submissions.xlsx';
-
-    return \Maatwebsite\Excel\Facades\Excel::download(
-        new \App\Exports\SubmissionsExport($query, $fields, $survey, $choices, $header, $title),
-        $filename
-    );
-}
-
-    function getSearchData($query, $request) {
+    public static function getSearchData($query, $request) {
         
         foreach ($request->search as $key => $field) {
             if ($field) {
@@ -867,6 +912,7 @@ public function downloadExcel(Request $request)
             }
         }
     }
+
     function getSurvey( $survey, $choices, $name, $value) {
         foreach ($survey as $item) {
 
@@ -989,17 +1035,12 @@ public function downloadExcel(Request $request)
 
     }
 
-    private function getPath($location, $firstLetter) {
+    private function getPath($location) {
         $expiration = Carbon::now()->addMinutes(10);
 
-        $filePath = "{$location['folder']}/"
-            ."{$firstLetter}_"
-            .$location['province_code'].'-'
-            .$location['city_code'].'-'
-            .$location['district_code'].'-'
-            .$location['guzar'].'-'
-            .$location['block'].'-'
-            .$location['house'].'.jpg';
+        $code = $this->getCodeName($location);
+        // Join with hyphens
+        $filePath = $location['folder'] . '/' . $code . '.jpg';
 
         if (Storage::disk('gcs')->exists($filePath)) {
             return Storage::disk('gcs')->temporaryUrl($filePath, $expiration);
@@ -1009,10 +1050,106 @@ public function downloadExcel(Request $request)
         return asset('images/default.png');
     }
 
-      
+    private function getCodeName($location) {
+        $parts = [
+            $location['province_code'],
+            $location['city_code'] ?? null,
+            $location['district_code'] ?? null,
+            $location['guzar'] ?? null,
+            $location['block'] ?? null,
+            $location['house'] ?? null
+        ];
+
+        // Filter out empty values
+        $parts = array_filter($parts, function($value) {
+            return !empty($value);
+        });
+        $code = implode('-', $parts);
+
+        return $code;
+    }
+
+    
+    public function deleteSelectedRecords(Request $request) {
+        $submissions = $request->submissions;
+        if ($request->selectAll) {
+            $query = Submission::query();
+            // Records attached to the given project
+
+            if ($request->project_id) {
+                // Records attached to the given project
+                $query->whereHas('projects', function ($q) use ($request) {
+                    $q->where('projects.id', $request->project_id);
+                });
+            } else {
+                // Records that are not attached to any project
+                $query->whereDoesntHave('projects');
+            }
+
+            $this->getSearchData($query, $request);
+            $submissions = $query->pluck('id')->toArray();
+        }
+
+        if (count($submissions) < 1) {
+            return response()->json(['message' => 'No record found!'], 200);
+        }
+
+        foreach ($submissions as $key => $value) {
+            $submission = Submission::find($value);
+            if (!$submission) {
+                continue;
+            }
+
+            $headFamily = $submission->headFamily;
+            if ($headFamily) {
+                $headFamily->delete();
+            }
+
+            $interviewwee = $submission->interviewwee;
+            if ($interviewwee) {
+                $interviewwee->delete();
+            }
+            foreach ($submission->returnee?->typeReturnDocumentPhoto ?? [] as $value) {
+                $value->delete();
+            }
+            foreach ($submission->houseLandOwnership?->landOwnershipDocument ?? [] as $key => $value) {
+                $value->delete();
+            }
+            $houseLandOwnership = $submission->houseLandOwnership;
+            if ($houseLandOwnership) {
+                $houseLandOwnership->delete();
+            }
+            foreach ($submission->houseCondition?->houseProblemAreaPhoto ?? [] as $key => $value) {
+                $value->delete();
+            }
+            $accessBasicService = $submission->accessBasicService;
+            if ($accessBasicService) {
+                $accessBasicService->delete();
+            }
+            $communityAvailability = $submission->communityAvailability;
+            if ($communityAvailability) {
+                $communityAvailability->delete();
+            }
+            $photoSection = $submission->photoSection;
+            if ($photoSection) {
+                $photoSection->delete();
+            }
+
+            $submission->extraAttributes->each(fn ($extraAttribute) => $extraAttribute->delete());
+
+            $submission->repeatableGroup->each(function ($group) {
+                $group->attributes->each(fn ($attribute) => $attribute->delete());
+            });
+            $submission->repeatableGroup()->delete();
+            
+            $submission->delete();
+        }
+        return response()->json(["message" => "Successfully removed!"], 201);
+    }
 
 
     public function destroy($id) {
+        Gate::authorize('profile delete');
         $submission = Submission::find($id);
         if (!$submission) {
             return response()->json(['message' => 'Record not found'], 404);

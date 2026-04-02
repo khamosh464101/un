@@ -23,6 +23,7 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->boolean('open_to_survey')->default(false);
             $table->string('kobo_project_id');
+            $table->string('kobo_copy_project_id')->nullable();
             $table->foreignId('donor_id');
             // $table->foreignId('program_id');
             $table->foreignId('project_status_id');

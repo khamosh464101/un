@@ -231,6 +231,13 @@ class Submission extends Model
             $submission->skillIdea()->delete();
             $submission->infrasttructureService()->delete();
             $submission->photoSection()->delete();
+            $submission->extraAttributes()->delete();
+            $submission->repeatableGroup->each(function ($group) {
+                $group->attributes()->delete();
+            });
+            $submission->repeatableGroup()->delete();
+
+            
         });
     }
 

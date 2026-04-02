@@ -6,9 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Modules\Projects\Models\Project;
 use App\Models\User;
 use Modules\DataManagement\Models\SubmissionStatus;
+
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 
 class Submission extends Model
@@ -33,7 +36,7 @@ class Submission extends Model
         'user_id'
     ];
 
-
+    protected $appends = ['extra_attributes_json'];
 
     public function projects(): BelongsToMany
     {
@@ -171,6 +174,25 @@ class Submission extends Model
         return $this->hasOne(SkillIdea::class);
     }
 
+     public function extraAttributes() : HasMany
+    {
+        return $this->hasMany(SubmissionExtraAttribute::class);
+    }
+
+    protected function extraAttributesJson(): Attribute
+    {
+        return Attribute::make(
+            get: fn() => $this->extraAttributes()
+                ->pluck('attribute_value', 'attribute_name')
+                ->toArray()
+        );
+    }
+
+    public function repeatableGroup() : HasMany
+    {
+        return $this->hasMany(SubmissionRepeatableGroup::class);
+    }
+
     public static function boot()
     {
         parent::boot();
@@ -206,6 +228,12 @@ class Submission extends Model
             $submission->skillIdea()->delete();
             $submission->infrasttructureService()->delete();
             $submission->photoSection()->delete();
+            $submission->extraAttributes()->delete();
+            $submission->repeatableGroup->each(function ($group) {
+                $group->attributes()->delete();
+            });
+            $submission->repeatableGroup()->delete();
+
         });
     }
 

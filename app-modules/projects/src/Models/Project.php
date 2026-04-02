@@ -5,12 +5,15 @@ use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 use Spatie\Activitylog\Models\Activity as Actvty;
 use Modules\DataManagement\Models\Submission;
+use Modules\DataManagement\Models\ImportFormatFile;
+use Modules\DataManagement\Models\ImportFormatMap;
 use Storage;
 use Auth;
 use DB;
@@ -31,6 +34,7 @@ class Project extends Model
         'open_to_survey',
         'donor_id',
         'kobo_project_id',
+        'kobo_copy_project_id',
         'project_status_id',
         'google_storage_folder',
         'manager_id'
@@ -62,6 +66,16 @@ class Project extends Model
     public function submissions(): BelongsToMany
     {
         return $this->belongsToMany(Submission::class, 'project_submission');
+    }
+
+    public function importFormatFiles(): HasMany
+    {
+        return $this->hasMany(ImportFormatFile::class);
+    }
+
+    public function importFormatMaps(): HasMany
+    {
+        return $this->hasMany(ImportFormatMap::class);
     }
 
     public function status(): BelongsTo

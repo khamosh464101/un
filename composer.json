@@ -10,6 +10,9 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "clickbar/laravel-magellan": "^2.0",
+        "doctrine/dbal": "^4.4",
+        "gasparesganga/php-shapefile": "^3.4",
         "google/cloud-storage": "^1.48",
         "google/cloud-vision": "^2.0",
         "guzzlehttp/guzzle": "^7.9",
@@ -26,6 +29,7 @@
         "modules/data-management": "*",
         "modules/projects": "*",
         "mpdf/mpdf": "^8.2",
+        "proj4php/proj4php": "^2.0",
         "spatie/laravel-activitylog": "^4.10",
         "spatie/laravel-backup": "^9.2",
         "spatie/laravel-google-cloud-storage": "^2.3",

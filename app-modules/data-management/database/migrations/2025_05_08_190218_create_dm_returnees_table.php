@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('dm_returnees', function (Blueprint $table) {
             $table->id();
-            $table->string('year_returnee');
+            $table->string('year_returnee')->nullable();
             $table->string('migrate_country');
             // if select other country then enter then name
             $table->string('migrate_country_other')->nullable();
@@ -21,15 +21,15 @@ return new class extends Migration
             $table->string('migration_reason_security')->nullable();
             $table->string('migration_reason_natural_disaster')->nullable();
             $table->string('migration_reason_other')->nullable();
-            $table->string('duration_Household_living_there');
+            $table->string('duration_Household_living_there')->nullable();
             $table->date("date_return_home_country");
-            $table->string('entry_borders');
+            $table->string('entry_borders')->nullable();
             $table->string('return_document_have');
             $table->string('type_return_document')->nullable();
             $table->string('type_return_document_number')->nullable();
             $table->date("type_return_document_date")->nullable();
             $table->text("household_get_support_no")->nullable();
-            $table->string('household_get_support');
+            $table->string('household_get_support')->nullable();
             $table->string('household_get_support_yes')->nullable();
             $table->string('organization_support')->nullable();
             $table->string('reason_return');

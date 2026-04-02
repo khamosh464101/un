@@ -64,6 +64,9 @@ class ProjectController
         }
         $project = Project::create($data);
         $this->addFormToDb($project->kobo_project_id);
+        if ($project->kobo_copy_project_id) {
+            $this->addFormToDb($project->kobo_copy_project_id);
+        }
         return response()->json(['message' => 'Sucessfully added!', 'data' => $project], 201);
     }
 
@@ -97,6 +100,9 @@ class ProjectController
         
         $project->update($data);
         $this->addFormToDb($project->kobo_project_id);
+        if ($project->kobo_copy_project_id) {
+            $this->addFormToDb($project->kobo_copy_project_id);
+        }
         return response()->json(['message' => 'Sucessfully updated!', 'data' => $project], 201);
     }
 

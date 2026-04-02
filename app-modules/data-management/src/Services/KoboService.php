@@ -52,7 +52,7 @@ class KoboService
 
     public function getFormSubmissions($startRow, $limit, $formId)
     {
-        $response = Http::withHeaders([
+        $response = Http::timeout(300)->withHeaders([
             'Authorization' => 'Token ' . $this->token,
             'Accept' => 'application/json',
         ])->get("{$this->baseUrl}/assets/{$formId}/data?start={$startRow}&limit={$limit}");
@@ -61,7 +61,19 @@ class KoboService
     }
 
     public function getSubmission($submissionId) {
+        // this function is for all import from excel
         $formId = $this->formId;
+        $response = Http::withHeaders([
+            'Authorization' => 'Token ' . $this->token,
+            'Accept' => 'application/json',
+        ])->get("{$this->baseUrl}/assets/{$formId}/data/{$submissionId}/");
+
+        return $response->json();
+        
+    }
+
+    public function getSubmissionForMapImport($submissionId, $formId) {
+        // this function will be used to get the submission data for map import, it will return the submission data with _id and start time, which will be used to map the data with the excel file
         $response = Http::withHeaders([
             'Authorization' => 'Token ' . $this->token,
             'Accept' => 'application/json',

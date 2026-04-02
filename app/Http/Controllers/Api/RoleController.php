@@ -67,7 +67,7 @@ class RoleController extends Controller
                     }
                 }
             });
-            return response()->json(['permissions' => Auth::user()->getAllPermissions()->pluck('description', 'name')->toArray()], 201);
+            return response()->json(['permissions' => Auth::user()->getAllPermissions()->pluck('description', 'name')->toArray(), 'pr' => Auth::user()->getAllPermissions()->pluck('name'),], 201);
             
          } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], 500);

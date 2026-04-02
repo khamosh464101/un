@@ -95,16 +95,29 @@ class PermissionSeeder extends Seeder
             [ 'name' => 'profile delete'],
             [ 'name' => 'add profile as beneficiary'],
             [ 'name' => 'remove profile as beneficairy'],
+            [ 'name' => 'manage kobo import'],
             [ 'name' => 'manage excel'],
             [ 'name' => 'move profile to archive'],
             [ 'name' => 'download profile'],
-            [ 'name' => 'archive view'],
+            [ 'name' => 'archive view'], 
+            [ 'name' => 'view land-use'], // new permissions
+            [ 'name' => 'manage land-use'],
+            [ 'name' => 'view parcel'],
+            [ 'name' => 'manage parcel'],
+            [ 'name' => 'view submission status'],
+            [ 'name' => 'manage submission status'],
+            [ 'name' => 'manage location map'],
+
         ];
 
         $user = User::first();
-        $role = Role::create(["name" => 'Super admin', "guard_name" => "web"]);
+        $role = Role::firstOrCreate(["name" => 'Super admin'], ["name" => 'Super admin', "guard_name" => "web"]);
         foreach ($permissions as $key => $value) {
-            $p = Permission::create($value);
+            $p = Permission::firstOrCreate(
+                ['name' => $value['name']], // column to check for existence
+                $value // attributes to create if not exists
+            );
+
             $role->givePermissionTo($p);
         }
         $user->assignRole($role);

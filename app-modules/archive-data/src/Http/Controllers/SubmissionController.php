@@ -37,9 +37,10 @@ class SubmissionController
         $this->restore = $restore;
     }
 
+
     public function index(Request $request) {
         
-         $query = Submission::with($this->query);
+         $query = Submission::with($this->query)->with('extraAttributes');
         if ($request->project_id) {
             // Records attached to the given project
             $query->whereHas('projects', function ($q) use ($request) {
@@ -51,8 +52,9 @@ class SubmissionController
         }
         
         $this->getSearchData($query, $request);
+        $data = $query->paginate(8);
 
-        return ["data" => $query->paginate(8), "filterable" => $this->filterable, "projects" => Project::select("id as value", "title as label")->get()];
+        return ["request" => $request->search, "data" => $data, "filterable" => $this->filterable, "projects" => Project::select("id as value", "title as label")->get()];
     }
     public function getForm() {
         
@@ -386,29 +388,35 @@ class SubmissionController
                 // Records that are not attached to any project
                 $query->whereDoesntHave('projects');
             }
-
             $this->getSearchData($query, $request);
             $ids = $query->pluck('id')->toArray();
         } 
-
         foreach ($ids as $key => $value) {
             $this->restore->restoreSubmission($value, 1);
         }
-
         // return 
         return response()->json(['message' => 'Successfully restored.'], 201);
     }
 
 
+
     function getSearchData($query, $request) {
+        
         foreach ($request->search as $key => $field) {
             if ($field) {
                 if (Str::contains($key, '__') ) {
                     [$relation, $column] = explode('__', $key, 2);
-
-                    $query->whereHas($relation, function ($q) use ($column, $field) {
-                        $q->where($column, $field);
-                    });
+                    if ($relation === 'extra_attributes_json') {
+                        $query->whereHas('extraAttributes', function ($q) use ($column, $field) {
+                            $q->where('attribute_name', $column)
+                            ->where('attribute_value', $field);
+                        });
+                    } else {
+                        $query->whereHas($relation, function ($q) use ($column, $field) {
+                            $q->where($column, $field);
+                        });
+                    }
+                    
                 } else {
                     $query->where($key, $field);
                 }
