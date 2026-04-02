@@ -57,7 +57,7 @@ Route::get('/fillables', function () {
     
 });
 Route::middleware(['auth:sanctum', 'twofactor'])->group(function () {
-    Route::get('/data-management/{projectId}/get-form', [SubmissionController::class, 'getForm'])->middleware(['can:manage kobo import']);
+    Route::get('/data-management/{projectId}/get-form', [SubmissionController::class, 'getForm']);
     Route::get('/data-management/get-filterable', [SubmissionController::class, 'getFilterable']);
     Route::post('/data-managements', [SyncKoboController::class, 'listForms'])->name('data-managements.index')->middleware(['can:manage kobo import']);
     Route::get('/data-management/get-open-projects', [SubmissionController::class, 'getOpenProjects'])->middleware(['can:manage kobo import']);
