@@ -1039,6 +1039,7 @@ class SubmissionController
     }
 
     private function getPath($location) {
+        return asset('images/default.png');
         $expiration = Carbon::now()->addMinutes(10);
 
         $code = $this->getCodeName($location);
