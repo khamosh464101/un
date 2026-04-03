@@ -271,9 +271,9 @@ class ProcessBulkDownloadItem implements ShouldQueue
             }
         }
 
-        $bladeFile = 'pdf.local_template';
+        $bladeFile = 'pdf.template';
         if ($location['province_code'] == 19) {
-            $bladeFile = 'pdf.kunduz_local_template';
+            $bladeFile = 'pdf.kunduz_template';
         }
 
 

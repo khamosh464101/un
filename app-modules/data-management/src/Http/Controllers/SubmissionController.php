@@ -741,9 +741,9 @@ class SubmissionController
             $location['map_image'] = $map_path;
         }
 
-        $bladeFile = 'pdf.local_template';
+        $bladeFile = 'pdf.template';
         if ($location['province_code'] == 19) {
-            $bladeFile = 'pdf.kunduz_local_template';
+            $bladeFile = 'pdf.kunduz_template';
         }
 
 
