@@ -746,6 +746,8 @@ class SubmissionController
         //     $bladeFile = 'pdf.kunduz_template';
         // }
 
+        return $location;
+
 
         $html = View::make($bladeFile, [
             'submission' => $submission,
