@@ -741,10 +741,10 @@ class SubmissionController
             $location['map_image'] = $map_path;
         }
 
-        $bladeFile = 'pdf.new_template';
-        if ($location['province_code'] == 19) {
-            $bladeFile = 'pdf.kunduz_template';
-        }
+        $bladeFile = 'pdf.template';
+        // if ($location['province_code'] == 19) {
+        //     $bladeFile = 'pdf.kunduz_template';
+        // }
 
 
         $html = View::make($bladeFile, [
