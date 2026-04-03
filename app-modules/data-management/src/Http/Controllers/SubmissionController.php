@@ -34,6 +34,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 use Storage;
 use Carbon\Carbon;
+use Log;
 
 class SubmissionController
 {
@@ -745,6 +746,8 @@ class SubmissionController
         // if ($location['province_code'] == 19) {
         //     $bladeFile = 'pdf.kunduz_template';
         // }
+
+        \Log::info('Download request started', ['id' => $id, 'time' => now()]);
 
         return $location;
 
