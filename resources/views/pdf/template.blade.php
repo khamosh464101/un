@@ -9,7 +9,7 @@
             text-align: right;
             margin: 0;
             padding: 0;
-            font-family: 'dejavu sans', sans-serif;
+            /* font-family: 'dejavu sans', sans-serif; */
         }
         table {
             table-layout: fixed;
@@ -43,107 +43,47 @@
     </style>
 </head>
 <body>
-
-@php
-    // Ensure all location keys exist with defaults
-    $defaultLocation = [
-        'house' => '',
-        'block' => '',
-        'guzar' => '',
-        'district_code' => '',
-        'city_code' => '',
-        'province_code' => '',
-        'province_origin' => '',
-        'district_origin' => '',
-        'house_owner' => '',
-        'status' => '',
-        'ownership_type' => '',
-        'year' => '',
-        'duration_lived_thishouse' => '',
-        'map_image' => ''
-    ];
-    $location = array_merge($defaultLocation, $location ?? []);
-    
-    // Fix ownership type text if needed
-    if (isset($location['ownership_type']) && $location['ownership_type'] === 'سند تصدی مرسوم [ فروشنده ملک، رسید فروش، ارث و غیره]') {
-        $location['ownership_type'] = 'سند تصدی مرسوم';
-    }
-    
-    // Helper function to convert URL to filesystem path for mPDF
-    function getImagePath($path) {
-        if (empty($path)) {
-            return '';
-        }
-        // Remove http://127.0.0.1:8000/ if present
-        $path = str_replace('http://127.0.0.1:8000/', '', $path);
-        $path = str_replace('http://localhost:8000/', '', $path);
-        $path = str_replace('https://', '', $path);
-        
-        // Check if it's a storage path
-        if (str_starts_with($path, 'storage/')) {
-            return public_path($path);
-        }
-        
-        // Check if file exists in public path
-        if (file_exists(public_path($path))) {
-            return public_path($path);
-        }
-        
-        // Return as is (might be external URL)
-        return $path;
-    }
-    
-    // Get interviewee name safely
-    $intervieweeName = $submission->headFamily->hoh_name ?? 
-                       $submission->interviewwee->inter_name ?? 
-                       'N/A';
-    
-    $intervieweeFatherName = $submission->headFamily->hoh_father_name ?? 
-                             $submission->interviewwee->inter_father_name ?? 
-                             'N/A';
-    
-    $intervieweeGrandfatherName = $submission->headFamily->hoh_grandfather_name ?? 
-                                   $submission->interviewwee->inter_grandfather_name ?? 
-                                   'N/A';
-    
-    $intervieweeNicNumber = $submission->headFamily->hoh_nic_number ?? 
-                            $submission->interviewwee->inter_nic_number ?? 
-                            'N/A';
-    
-    $intervieweePhone = $submission->headFamily->hoh_phone_number ?? 
-                        $submission->interviewwee->inter_phone_number ?? 
-                        'N/A';
-    
-    // Get photo paths
-    $photoInterviewee = getImagePath($submission->photoSection->photo_interviewee ?? '');
-    $photoDocument = getImagePath($submission->houseLandOwnership?->landOwnershipDocument?->first()?->house_document_photo ?? '');
-    $photoHouse = getImagePath($submission->photoSection->photo_house_building ?? '');
-    $mapImage = getImagePath($location['map_image'] ?? '');
-@endphp
-
 <!-- Top Logos Horizontal Row -->
-<table style="width: 100%; text-align: center; border: none; direction: ltr;">
+<!-- Horizontal Logo Row for mPDF -->
+<!-- Horizontal Logo Row for mPDF (No Borders, Larger Logos) -->
+<table style="width: 100%; text-align: center; border: none;  direction: ltr;">
     <tr>
-        <td style="width: 80%; text-align: center; border: none;">
-            <div style="margin-bottom: 20px;">
-                <img src="{{ public_path('logos/ahf_logo.png') }}" alt="لوگو چپ" style="max-width: 170px; max-height: 170px; display: inline-block; margin-bottom: 10px;">
-                <img src="{{ public_path('logos/hlp_logo.jpg') }}" alt="لوگو مرکز" style="max-width: 130px; max-height: 130px; display: inline-block; margin-left: 20px; margin-right: 30px;">
-                <img src="{{ public_path('logos/habitat.png') }}" alt="لوگو راست" style="max-width: 50px; max-height: 50px; display: inline-block; margin-bottom: 10px;">
-            </div>
-            <h3 style="margin-top: 40px; display: block;">Property Information <span style="color:#00BFFF; font-weight:bold;">|</span> معلومات ملکیت</h3>
-        </td>
+
+    <td style="width: 80%; text-align: center; border: none;">
+        <div style="margin-bottom: 20px;">
+            @php
+                $logo_left = 'logos/ahf_logo.png';
+            @endphp
+            <img src="{{ public_path($logo_left) }}" alt="لوگو چپ" style="max-width: 170px; max-height: 170px; display: inline-block; margin-bottom: 10px; ">
+
+            @php
+                $logo_center = 'logos/hlp_logo.jpg';
+            @endphp
+            <img src="{{ public_path($logo_center) }}" alt="لوگو مرکز" style="max-width: 130px; max-height: 130px; display: inline-block; margin-left: 20px; margin-right: 30px;">
+
+            @php
+                $logo_right = 'logos/habitat.png';
+            @endphp
+            <img src="{{ public_path($logo_right) }}" alt="لوگو راست" style="max-width: 50px; max-height: 50px; display: inline-block; margin-bottom: 10px;">
+        </div>
+
+        <h3 style="margin-top: 40px; display: block;">Property Information <span style="color:#00BFFF; font-size:bold;">|</span> معلومات ملکیت</h3>
+    </td>
+
+    
     </tr>
 </table>
 
-<!-- Code Number Row -->
+
+
+
 <table style="width: 100%; border: none; font-weight: 700;">
     <tr>
         <td style="text-align: right; border:none;">کود نمبر:</td>
-        <td style="text-align: left; border:none; direction: ltr">
-            <strong style="direction: ltr; unicode-bidi: embed;">Issue year: 2024</strong>
-            <br>
-            Code Number: {{ $submission->code_number ?? 'N/A' }}
-        </td>
+        <td style="text-align: left; border:none;direction: ltr">
+        <strong style="direction: ltr; unicode-bidi: embed;">Issue year: 2024</strong>
+        <br>
+        Code Number:</td>
     </tr>
 </table>
 
@@ -158,12 +98,12 @@
         <td>ولایت-Province</td>
     </tr>
     <tr>
-        <td>{{ $location['house'] }}</td>
-        <td>{{ $location['block'] }}</td>
-        <td>{{ $location['guzar'] }}</td>
-        <td>{{ $location['district_code'] }}</td>
-        <td>{{ $location['city_code'] }}</td>
-        <td>{{ $location['province_code'] }}</td>
+        <td>{{ $location['house'] ?? '' }}</td>
+        <td>{{ $location['block'] ?? '' }}</td>
+        <td>{{ $location['guzar'] ?? '' }}</td>
+        <td>{{ $location['district_code'] ?? '' }}</td>
+        <td>{{ $location['city_code'] ?? '' }}</td>
+        <td>{{ $location['province_code'] ?? '' }}</td>
     </tr>
 </table>
 
@@ -180,14 +120,8 @@
                 </tr>
             </table>
         </td>
-        <td style="width:30%;">{{ $intervieweeName }}</td>
-        <td style="width:27%;" rowspan="4" class="center">
-            @if($photoInterviewee && file_exists($photoInterviewee))
-                <img src="{{ $photoInterviewee }}" alt="تصویر" style="max-width: 120px; max-height: 150px;">
-            @else
-                <div style="max-width: 120px; max-height: 150px; border: 1px solid #ccc; display: flex; align-items: center; justify-content: center;">No Image</div>
-            @endif
-        </td>
+        <td style="width:30%;">{{ $submission->headFamily ? $submission->headFamily->hoh_name : $submission->interviewwee->inter_name }}</td>
+
     </tr>
     <tr>
         <td style="width: 42%;">
@@ -198,9 +132,11 @@
                 </tr>
             </table>
         </td>
-        <td>{{ $intervieweeFatherName }}</td>
+
+        <td>{{ $submission->headFamily ? $submission->headFamily->hoh_father_name : $submission->interviewwee->inter_father_name }}</td>
     </tr>
     <tr>
+        
         <td style="width: 42%;">
             <table style="width: 100%; border: none; padding:0;">
                 <tr style="padding:0">
@@ -209,7 +145,7 @@
                 </tr>
             </table>
         </td>
-        <td>{{ $intervieweeGrandfatherName }}</td>
+        <td>{{ $submission->headFamily ? $submission->headFamily->hoh_grandfather_name : $submission->interviewwee->inter_grandfather_name }}</td>
     </tr>
     <tr>
         <td style="width: 42%;">
@@ -220,13 +156,13 @@
                 </tr>
             </table>
         </td>
-        <td>{{ $intervieweeNicNumber }}</td>
+        <td>{{ $submission->headFamily ? $submission->headFamily->hoh_nic_number : $submission->interviewwee->inter_nic_number }}</td>
     </tr>
+
 </table>
 
 <br>
 
-<!-- Additional Info Table -->
 <table>
     <tr>
         <td>
@@ -239,7 +175,7 @@
                 </tr>
             </table>
         </td>
-        <td>{{ $location['province_origin'] }}, {{ $location['district_origin'] }}</td>
+        <td>{{ $location['province_origin'] ?? '' }}, {{ $location['district_origin'] ?? '' }}</td>
         <td>
             <table style="width: 100%; border: none; padding:none;">
                 <tr style="padding:none;">
@@ -250,7 +186,9 @@
                 </tr>
             </table>
         </td>
-        <td>{{ $location['house_owner'] }}</td>
+
+        <td>{{ $location['house_owner'] ?? '' }}</td>
+       
     </tr>
     <tr>
         <td>
@@ -263,7 +201,8 @@
                 </tr>
             </table>
         </td>
-        <td>{{ $location['status'] }}</td>
+
+        <td>{{ $location['status'] ?? '' }}</td>
         <td>
             <table style="width: 100%; border: none; padding:none;">
                 <tr style="padding:none;">
@@ -274,10 +213,15 @@
                 </tr>
             </table>
         </td>
-        <td>{{ $location['ownership_type'] }}</td>
+        @if(array_key_exists('ownership_type', $location) &&$location['ownership_type'] === 'سند تصدی مرسوم [ فروشنده ملک، رسید فروش، ارث و غیره]')
+            @php
+                $location['ownership_type'] = 'سند تصدی مرسوم';
+            @endphp
+        @endif
+        <td>{{ $location['ownership_type'] ?? '' }}</td>
     </tr>
     <tr>
-        <td>
+    <td>
             <table style="width: 100%; border: none; padding:none;">
                 <tr style="padding:none;">
                     <td style="text-align: right; direction: rtl; border:none; padding:none;">مدت بیجاه شدگی</td>
@@ -287,7 +231,8 @@
                 </tr>
             </table>
         </td>
-        <td>{{ $location['year'] }}</td>
+
+        <td>{{ $location['year'] ?? '' }}</td>
         <td>
             <table style="width: 100%; border: none; padding:none;">
                 <tr style="padding:none;">
@@ -298,10 +243,11 @@
                 </tr>
             </table>
         </td>
-        <td>{{ $location['duration_lived_thishouse'] }}</td>
+
+        <td>{{ $location['duration_lived_thishouse'] ?? '' }}</td>
     </tr>
     <tr>
-        <td>
+    <td>
             <table style="width: 100%; border: none; padding:none;">
                 <tr style="padding:none;">
                     <td style="text-align: right; direction: rtl; border:none; padding:none;">مختصات ملکیت</td>
@@ -311,7 +257,8 @@
                 </tr>
             </table>
         </td>
-        <td>Lat: {{ $submission->photoSection->latitude ?? 'N/A' }}<br>Lon: {{ $submission->photoSection->longitude ?? 'N/A' }}</td>
+
+        <td > Lat: {{ $submission->photoSection->latitude }}<br>Lon: {{ $submission->photoSection->longitude }}</td>
         <td>
             <table style="width: 100%; border: none; padding:none;">
                 <tr style="padding:none;">
@@ -322,15 +269,20 @@
                 </tr>
             </table>
         </td>
-        <td>{{ $intervieweePhone }}</td>
+
+        <td>{{ $submission->headFamily ? $submission->headFamily->hoh_phone_number : $submission->interviewwee->inter_phone_number }}</td>
     </tr>
 </table>
+
+
 
 <br>
 
 <!-- Property Images -->
 <table>
     <tr>
+    
+    
         <td class="center">
             <table style="width: 100%; border: none; padding:0; font-size: 16px;">
                 <tr style="padding:0">
@@ -341,11 +293,11 @@
         </td>
         <td class="center">
             <table style="width: 100%; border: none; padding:0; font-size: 16px;">
-                <tr style="padding:0">
-                    <td style="text-align: right; direction: rtl; unicode-bidi: embed; width: 40%; border:none; padding:0;">عکس فضای ملکیت</td>
-                    <td style="text-align: left; direction: ltr; unicode-bidi: embed; width: 60%; border:none; padding:0;">Satellite image</td>
-                </tr>
-            </table>
+            <tr style="padding:0">
+                <td style="text-align: right; direction: rtl; unicode-bidi: embed; width: 40%; border:none; padding:0;">عکس فضای ملکیت</td>
+                <td style="text-align: left; direction: ltr; unicode-bidi: embed; width: 60%; border:none; padding:0;">Satellite image</td>
+            </tr>
+        </table>
         </td>
         <td class="center">
             <table style="width: 100%; border: none; padding:0; font-size: 16px;">
@@ -357,37 +309,17 @@
         </td>
     </tr>
     <tr>
-        <td style="height:250px;" class="center">
-            @if($photoDocument && file_exists($photoDocument))
-                <img src="{{ $photoDocument }}" alt="سند ملکیت" style="max-width:100%; max-height:250px;">
-            @else
-                <div style="max-width:100%; max-height:250px; border: 1px solid #ccc; display: flex; align-items: center; justify-content: center;">No Image</div>
-            @endif
-        </td>
-        <td style="height:250px;" class="center">
-            @if($mapImage && file_exists($mapImage))
-                <img src="{{ $mapImage }}" alt="نقشه" style="max-width:100%; max-height:250px;">
-            @else
-                <div style="max-width:100%; max-height:250px; border: 1px solid #ccc; display: flex; align-items: center; justify-content: center;">No Map Image</div>
-            @endif
-        </td>
-        <td style="height:250px;" class="center">
-            @if($photoHouse && file_exists($photoHouse))
-                <img src="{{ $photoHouse }}" alt="تصویر ملکیت" style="max-width:100%; max-height:250px;">
-            @else
-                <div style="max-width:100%; max-height:250px; border: 1px solid #ccc; display: flex; align-items: center; justify-content: center;">No Image</div>
-            @endif
-        </td>
-    </tr>
-</table>
 
+    </tr>
+
+</table>
 <!-- Notes Section -->
 <table style="border: none;">
     <tr>
         <td style="text-align: left; direction: ltr; unicode-bidi: embed; border: none; padding: 5px; font-size: 12px; line-height: 1.2;">
             Note: This guidance note is not an official and/or legal document but provides information and analysis collected by UN-Habitat
             on housing and land characteristics. For further information or to update the information please contact UN-Habitat. 
-            <br>Email: <span style="color:#00BFFF;">info.unhafg@un.org</span>
+            </br>Email: <span style="color:#00BFFF;">info.unhafg@un.org</span>
         </td>
     </tr>
     <tr>
@@ -398,6 +330,7 @@
         </td>
     </tr>
 </table>
+
 
 </body>
 </html>
