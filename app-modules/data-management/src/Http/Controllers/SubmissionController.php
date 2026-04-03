@@ -662,7 +662,10 @@ class SubmissionController
                 $location['guzar'] = $submission->sourceInformation->kbl_guzar_number;
             }
             
-            if (isset($value->name) && $value->name === $submission->extraAttributesJson['guzar_number']) {
+            if (isset($value->name) && 
+                ($value->name === ($submission->sourceInformation->kbl_guzar_number ?? null) || 
+                $value->name === ($submission->extraAttributesJson['guzar_number'] ?? null))) {
+                
                 if (isset($value->label[0])) {
                     $location['guzar'] = substr($value->label[0], 1);
                 }

@@ -190,15 +190,16 @@ class ProcessBulkDownloadItem implements ShouldQueue
             if ($submission->sourceInformation->district_code) {
                 $location['district_code'] = $submission->sourceInformation->district_code;
             }
-            if ($submission->sourceInformation->kbl_guzar_number) {
-                $location['guzar'] = $submission->sourceInformation->kbl_guzar_number;
-            }
-            
-            if (isset($value->name) && $value->name === $submission->extraAttributesJson['guzar_number']) {
+
+            if (isset($value->name) && 
+                ($value->name === ($submission->sourceInformation->kbl_guzar_number ?? null) || 
+                $value->name === ($submission->extraAttributesJson['guzar_number'] ?? null))) {
+                
                 if (isset($value->label[0])) {
                     $location['guzar'] = substr($value->label[0], 1);
                 }
             }
+            
             if (isset($value->name) && $value->name === $submission->sourceInformation->block_number) {
                 if (isset($value->label[0])) {
                     $location['block'] = $value->label[0];
