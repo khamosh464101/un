@@ -233,7 +233,7 @@ class BulkDownloadController
     public function downloadBatch($batchId)
     {
         $batch = BulkDownloadBatch::where('batch_id', $batchId)->first();
-        
+
         if (!$batch) {
             return response()->json(['error' => 'Batch not found'], 404);
         }
@@ -242,7 +242,7 @@ class BulkDownloadController
             return response()->json(['error' => 'Batch is not ready for download'], 400);
         }
 
-        // If ZIP already exists, return it
+        // Return existing ZIP if exists
         if ($batch->zip_file_path && Storage::disk('public')->exists($batch->zip_file_path)) {
             return response()->download(
                 Storage::disk('public')->path($batch->zip_file_path),
@@ -250,7 +250,6 @@ class BulkDownloadController
             );
         }
 
-        // Get all completed files
         $completedFiles = BulkDownloadItem::where('batch_id', $batchId)
             ->where('status', 'completed')
             ->whereNotNull('file_path')
@@ -260,14 +259,19 @@ class BulkDownloadController
             return response()->json(['error' => 'No completed files found'], 404);
         }
 
-        // Create ZIP archive
-        $zipFileName = Str::slug($batch->name) . '-' . $batchId . '.zip';
-        $zipPath = storage_path("app/temp/{$zipFileName}");
-        
         // Ensure temp directory exists
-        if (!file_exists(storage_path('app/temp'))) {
-            mkdir(storage_path('app/temp'), 0755, true);
-        }
+        $tempDir = storage_path('app/tmp');
+        if (!file_exists($tempDir)) mkdir($tempDir, 0775, true);
+
+        // Use temp directory for PHP and ZipArchive
+        $tmpBackup = sys_get_temp_dir();
+        putenv("TMPDIR={$tempDir}");
+        putenv("TMP={$tempDir}");
+        putenv("TEMP={$tempDir}");
+
+        // Prepare ZIP
+        $zipFileName = Str::slug($batch->name) . '-' . $batchId . '.zip';
+        $zipPath = $tempDir . '/' . $zipFileName;
 
         $zip = new ZipArchive();
         if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
@@ -283,7 +287,12 @@ class BulkDownloadController
 
         $zip->close();
 
-        // Store ZIP path in batch
+        // Restore temp dir
+        putenv("TMPDIR={$tmpBackup}");
+        putenv("TMP={$tmpBackup}");
+        putenv("TEMP={$tmpBackup}");
+
+        // Store ZIP in public storage
         $zipStoragePath = "bulk-downloads/zips/{$zipFileName}";
         Storage::disk('public')->put($zipStoragePath, file_get_contents($zipPath));
         $batch->update(['zip_file_path' => $zipStoragePath]);
