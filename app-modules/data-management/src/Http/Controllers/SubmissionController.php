@@ -624,7 +624,6 @@ class SubmissionController
         if (!$submission) {
             return response()->json(['error' => 'Submission not found'], 404);
         }
-        return 'working before Form';
         
         $form = Form::find($submission->dm_form_id);
         $dataObject = json_decode($form->raw_schema);
@@ -632,6 +631,8 @@ class SubmissionController
         $choices = $dataObject->asset->content->choices;
         $location = [];
         $firstLetter = '';
+
+        return $form;
 
         
         foreach ($choices as $key => $value) {
