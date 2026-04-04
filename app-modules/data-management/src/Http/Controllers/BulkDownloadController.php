@@ -242,7 +242,7 @@ class BulkDownloadController
             return response()->json(['error' => 'Batch is not ready for download'], 400);
         }
 
-        // Return existing ZIP if exists
+        // Return existing ZIP if it already exists
         if ($batch->zip_file_path && Storage::disk('public')->exists($batch->zip_file_path)) {
             return response()->download(
                 Storage::disk('public')->path($batch->zip_file_path),
@@ -259,17 +259,17 @@ class BulkDownloadController
             return response()->json(['error' => 'No completed files found'], 404);
         }
 
-        // Ensure temp directory exists
+        // --- Prepare temp folder for ZIP ---
         $tempDir = storage_path('app/tmp');
         if (!file_exists($tempDir)) mkdir($tempDir, 0775, true);
 
-        // Use temp directory for PHP and ZipArchive
+        // Make sure PHP and ZipArchive use our temp folder
         $tmpBackup = sys_get_temp_dir();
         putenv("TMPDIR={$tempDir}");
         putenv("TMP={$tempDir}");
         putenv("TEMP={$tempDir}");
 
-        // Prepare ZIP
+        // --- Create ZIP file ---
         $zipFileName = Str::slug($batch->name) . '-' . $batchId . '.zip';
         $zipPath = $tempDir . '/' . $zipFileName;
 
@@ -287,19 +287,28 @@ class BulkDownloadController
 
         $zip->close();
 
-        // Restore temp dir
+        // Restore PHP temp directory
         putenv("TMPDIR={$tmpBackup}");
         putenv("TMP={$tmpBackup}");
         putenv("TEMP={$tmpBackup}");
 
-        // Store ZIP in public storage
-        $zipStoragePath = "bulk-downloads/zips/{$zipFileName}";
-        Storage::disk('public')->put($zipStoragePath, file_get_contents($zipPath));
+        // --- Ensure public storage folder exists ---
+        $zipStorageDir = 'bulk-downloads/zips';
+        if (!Storage::disk('public')->exists($zipStorageDir)) {
+            Storage::disk('public')->makeDirectory($zipStorageDir);
+        }
+
+        // Move ZIP from temp folder to public storage
+        $zipStoragePath = $zipStorageDir . '/' . $zipFileName;
+        copy($zipPath, Storage::disk('public')->path($zipStoragePath));
+
+        // Update batch record
         $batch->update(['zip_file_path' => $zipStoragePath]);
 
         // Clean up temp file
         @unlink($zipPath);
 
+        // Return download response
         return response()->download(
             Storage::disk('public')->path($zipStoragePath),
             $batch->name . '.zip'
