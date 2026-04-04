@@ -778,6 +778,7 @@ class SubmissionController
         }
 
 
+        return $location;
 
         // ---------------- PDF PART ----------------
 
