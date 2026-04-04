@@ -777,12 +777,12 @@ class SubmissionController
             $location['map_image'] = $this->getPath($location);
         }
 
-        return $location;
+
 
 
         // ---------------- PDF PART ----------------
 
-        $bladeFile = 'pdf.template';
+        $bladeFile = 'pdf.new_template';
 
         \Log::info('Download request started', ['id' => $id]);
 
