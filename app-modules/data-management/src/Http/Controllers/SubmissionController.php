@@ -632,7 +632,6 @@ class SubmissionController
         $location = [];
         $firstLetter = '';
 
-        return $form;
 
         
         foreach ($choices as $key => $value) {
@@ -736,6 +735,7 @@ class SubmissionController
                 }
             }
         }
+        return 'after foraeach';
 
    
         // Check if projects relationship exists and has data
