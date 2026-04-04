@@ -616,8 +616,9 @@ class SubmissionController
 
 
     public function downloadProfile($id) {
-        ini_set('memory_limit', '512M');
-        ini_set('max_execution_time', 300);
+        return $id;
+        // ini_set('memory_limit', '512M');
+        // ini_set('max_execution_time', 300);
         $submission = Submission::with(['sourceInformation', 'familyInformation', 'headFamily', 'idp', 'returnee', 'interviewwee', 'photoSection', 'houseLandOwnership'])->find($id);
         
         if (!$submission) {
