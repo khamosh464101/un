@@ -779,10 +779,9 @@ class SubmissionController
 
 
 
-
         // ---------------- PDF PART ----------------
 
-        $bladeFile = 'pdf.new_template';
+        $bladeFile = 'pdf.template';
 
         \Log::info('Download request started', ['id' => $id]);
 
@@ -1070,6 +1069,7 @@ class SubmissionController
     }
 
     private function getPath($location) {
+         return asset('images/default.png');
         $expiration = Carbon::now()->addMinutes(10);
 
         $code = $this->getCodeName($location);
