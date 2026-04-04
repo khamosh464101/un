@@ -616,7 +616,7 @@ class SubmissionController
 
 
     public function downloadProfile($id) {
-        return $id;
+  
         // ini_set('memory_limit', '512M');
         // ini_set('max_execution_time', 300);
         $submission = Submission::with(['sourceInformation', 'familyInformation', 'headFamily', 'idp', 'returnee', 'interviewwee', 'photoSection', 'houseLandOwnership'])->find($id);
@@ -632,7 +632,7 @@ class SubmissionController
         $location = [];
         $firstLetter = '';
 
-
+        
         foreach ($choices as $key => $value) {
             if (isset($value->name) && $value->name === $submission->sourceInformation->survey_province) {
                 if (isset($value->label[1])) {
@@ -742,6 +742,8 @@ class SubmissionController
             $map_path = $this->getPath($location);
             $location['map_image'] = $map_path;
         }
+
+        return 'still working';
 
         $bladeFile = 'pdf.template';
         // if ($location['province_code'] == 19) {
