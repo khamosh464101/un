@@ -145,165 +145,200 @@ class ProcessBulkDownloadItem implements ShouldQueue
      * Generate PDF for submission - EXACTLY like downloadProfile
      */
     private function generatePDF($submission)
-    {
-        // Get form data
-        $form = Form::find($submission->dm_form_id);
-        if (!$form || !$form->raw_schema) {
-            throw new Exception("Form not found for submission ID: {$submission->id}");
-        }
+{
+    // Get form
+    $form = Form::find($submission->dm_form_id);
 
-        $dataObject = json_decode($form->raw_schema);
-        if (!$dataObject || !isset($dataObject->asset->content->choices)) {
-            throw new Exception("Invalid form schema for submission ID: {$submission->id}");
-        }
-
-        $choices = $dataObject->asset->content->choices;
-        
-        // Get location data using the EXACT same logic as downloadProfile
-        $location = [];
-        $firstLetter = '';
-
-        foreach ($choices as $key => $value) {
-            if (isset($value->name) && $value->name === $submission->sourceInformation->survey_province) {
-                if (isset($value->label[1])) {
-                    $location['province'] = $value->label[1];
-                }
-            }
-            if (isset($value->name) && $value->name === $submission->sourceInformation->district_name) {
-                if (isset($value->label[1])) {
-                    $location['district'] = $value->label[1];
-         
-                }
-            }
-            if (isset($value->name) && $value->name === $submission->sourceInformation->nahya_number) {
-                if (isset($value->label[0])) {
-                    $location['nahya'] = $value->label[0];
-                }
-            }
-            
-            if ($submission->sourceInformation->province_code) {
-                $location['province_code'] = $submission->sourceInformation->province_code;
-            }
-            if ($submission->sourceInformation->city_code) {
-                $location['city_code'] = $submission->sourceInformation->city_code;
-            }
-            if ($submission->sourceInformation->district_code) {
-                $location['district_code'] = $submission->sourceInformation->district_code;
-            }
-
-            if (isset($value->name) && 
-                ($value->name === ($submission->sourceInformation->kbl_guzar_number ?? null) || 
-                $value->name === ($submission->extraAttributesJson['guzar_number'] ?? null))) {
-                
-                if (isset($value->label[0])) {
-                    $location['guzar'] = substr($value->label[0], 1);
-                }
-            }
-            
-            if (isset($value->name) && $value->name === $submission->sourceInformation->block_number) {
-                if (isset($value->label[0])) {
-                    $location['block'] = $value->label[0];
-                }
-            }
-            if (isset($value->name) && $value->name === $submission->sourceInformation->house_number) {
-                if (isset($value->label[0])) {
-                    $location['house'] = $value->label[0];
-                }
-            }
-            if (isset($value->name) && $value->name === ($submission->extraAttributesJson['manteqa'] ?? 'falst')) {
-                if (isset($value->label[0])) {
-                    $location['manteqa'] = substr($value->label[0], 1);
-                }
-            }
-            if (isset($value->name) && $value->name === $submission->familyInformation->province_origin) {
-                if (isset($value->label[1])) {
-                    $location['province_origin'] = $value->label[1];
-                }
-            }
-            if (isset($value->name) && $value->name === $submission->familyInformation->district_origin) {
-                if (isset($value->label[1])) {
-                    $location['district_origin'] = $value->label[1];
-                }
-            }
-            if (isset($value->name) && $value->name === $submission->status) {
-                if (isset($value->label[1])) {
-                    $location['status'] = $value->label[1];
-                }
-            }
-            if ($submission->status === 'idp') {
-                if (isset($value->name) && $value->name === $submission->idp->year_idp) {
-                    if (isset($value->label[1])) {
-                        $location['year'] = $value->label[1];
-                    }
-                }
-            } elseif ($submission->status === 'returnee') {
-                if (isset($value->name) && $value->name === $submission->returnee->year_returnee) {
-                    if (isset($value->label[1])) {
-                        $location['year'] = $value->label[1];
-                    }
-                }
-            } 
-            
-            if (isset($value->name) && $value->name === $submission->houseLandOwnership->house_owner) {
-                if (isset($value->label[1])) {
-                    $location['house_owner'] = $value->label[1];
-                }
-            }
-            if (isset($value->name) && $value->name === $submission->houseLandOwnership->type_tenure_document) {
-                if (isset($value->label[1])) {
-                    $location['ownership_type'] = $value->label[1];
-                }
-            }
-            if (isset($value->name) && $value->name === $submission->houseLandOwnership->duration_lived_thishouse) {
-                if (isset($value->label[1])) {
-                    $location['duration_lived_thishouse'] = $value->label[1];
-                }
-            }
-        }
-
-        // Check if projects relationship exists and has data
-        if ($submission->projects && $submission->projects->isNotEmpty()) {
-            $firstProject = $submission->projects->first();
-            if ($firstProject && $firstProject->google_storage_folder) {
-                $location['folder'] = $firstProject->google_storage_folder;
-                $map_path = $this->getPath($location);
-                $location['map_image'] = $map_path;
-            }
-        }
-
-        $bladeFile = 'pdf.template';
-        if ($location['province_code'] == 19) {
-            $bladeFile = 'pdf.kunduz_template';
-            logger()->info("Using kunduz template for submission ID: {$submission->id}");
-        }
-
-
-        $html = View::make($bladeFile, [
-            'submission' => $submission,
-            'location' => $location,
-            'choices' => $choices,
-        ])->render();
-        
-
-        // Create PDF with EXACT same configuration as downloadProfile
-        $mpdf = new Mpdf([
-            'tempDir' => storage_path('app/mpdf-temp'),
-            'format' => 'A4',
-            'mode' => 'utf-8',
-            'default_font' => 'dejavusans',
-            'default_font_size' => 9,
-            'directionality' => 'rtl',
-            'margin_top' => 10,
-            'margin_bottom' => 10,
-            'margin_left' => 5,
-            'margin_right' => 5,
-            'margin_header' => 2,
-            'margin_footer' => 2,
-        ]);
-
-        $mpdf->WriteHTML($html);
-        return $mpdf->Output('', 'S'); // 'S' for string output
+    if (!$form || !$form->raw_schema) {
+        throw new Exception("Form not found for submission ID: {$submission->id}");
     }
+
+    $dataObject = json_decode($form->raw_schema);
+
+    // Safe choices extraction
+    $choices = $dataObject->asset->content->choices ?? [];
+    if (!is_array($choices)) {
+        $choices = [];
+    }
+
+    $location = [];
+
+    // Safe shortcuts
+    $source = $submission->sourceInformation;
+    $family = $submission->familyInformation;
+    $ownership = $submission->houseLandOwnership;
+    $extra = is_array($submission->extraAttributesJson)
+        ? $submission->extraAttributesJson
+        : [];
+
+    foreach ($choices as $value) {
+
+        try {
+
+            if (!isset($value->name)) {
+                continue;
+            }
+
+            // Province
+            if ($source?->survey_province === $value->name && isset($value->label[1])) {
+                $location['province'] = $value->label[1];
+            }
+
+            // District
+            if ($source?->district_name === $value->name && isset($value->label[1])) {
+                $location['district'] = $value->label[1];
+            }
+
+            // Nahya
+            if ($source?->nahya_number === $value->name && isset($value->label[0])) {
+                $location['nahya'] = $value->label[0];
+            }
+
+            // Static fields
+            if ($source?->province_code) {
+                $location['province_code'] = $source->province_code;
+            }
+
+            if ($source?->city_code) {
+                $location['city_code'] = $source->city_code;
+            }
+
+            if ($source?->district_code) {
+                $location['district_code'] = $source->district_code;
+            }
+
+            if ( $value->name === ($source?->kbl_guzar_number ?? null)) {
+                    $location['guzar'] = $value->label[0];
+                }
+
+                // Guzar (from choices or extra)
+                if (
+                    
+                    $value->name === ($extra['guzar_number'] ?? null)
+                ) {
+                    if (isset($value->label[0])) {
+                        $location['guzar'] = $value->label[0];
+                    }
+                }
+
+            // Block
+            if ($source?->block_number === $value->name && isset($value->label[0])) {
+                $location['block'] = $value->label[0];
+            }
+
+            // House
+            if ($source?->house_number === $value->name && isset($value->label[0])) {
+                $location['house'] = $value->label[0];
+            }
+
+            // Manteqa
+            if ($value->name === ($extra['manteqa'] ?? null) && isset($value->label[0])) {
+                $location['manteqa'] = substr($value->label[0], 1);
+            }
+
+            // Origin province
+            if ($family?->province_origin === $value->name && isset($value->label[1])) {
+                $location['province_origin'] = $value->label[1];
+            }
+
+            // Origin district
+            if ($family?->district_origin === $value->name && isset($value->label[1])) {
+                $location['district_origin'] = $value->label[1];
+            }
+
+            // Status
+            if ($submission->status === $value->name && isset($value->label[1])) {
+                $location['status'] = $value->label[1];
+            }
+
+            // Year
+            if ($submission->status === 'idp') {
+                if ($submission->idp?->year_idp === $value->name && isset($value->label[1])) {
+                    $location['year'] = $value->label[1];
+                }
+            }
+
+            if ($submission->status === 'returnee') {
+                if ($submission->returnee?->year_returnee === $value->name && isset($value->label[1])) {
+                    $location['year'] = $value->label[1];
+                }
+            }
+
+            // Ownership
+            if ($ownership?->house_owner === $value->name && isset($value->label[1])) {
+                $location['house_owner'] = $value->label[1];
+            }
+
+            if ($ownership?->type_tenure_document === $value->name && isset($value->label[1])) {
+                $location['ownership_type'] = $value->label[1];
+            }
+
+            if ($ownership?->duration_lived_thishouse === $value->name && isset($value->label[1])) {
+                $location['duration_lived_thishouse'] = $value->label[1];
+            }
+
+        } catch (\Throwable $e) {
+            \Log::error('generatePDF loop error', [
+                'submission_id' => $submission->id,
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+            ]);
+        }
+    }
+
+    // ✅ Fix guzar (your requirement)
+    if (isset($location['guzar'])) {
+        $guzar = $location['guzar'];
+
+        if (strlen($guzar) === 3 && substr($guzar, 0, 1) === '0') {
+            $location['guzar'] = substr($guzar, 1);
+        }
+    }
+
+    // Projects
+    if ($submission->projects && $submission->projects->isNotEmpty()) {
+        $firstProject = $submission->projects->first();
+
+        if ($firstProject && $firstProject->google_storage_folder) {
+            $location['folder'] = $firstProject->google_storage_folder;
+            $location['map_image'] = $this->getPath($location);
+        }
+    }
+
+    // Template selection (safe)
+    $bladeFile = 'pdf.template';
+
+    if (($location['province_code'] ?? null) == 19) {
+        $bladeFile = 'pdf.kunduz_template';
+        \Log::info("Using kunduz template", ['submission_id' => $submission->id]);
+    }
+
+    $html = View::make($bladeFile, [
+        'submission' => $submission,
+        'location' => $location,
+        'choices' => $choices,
+    ])->render();
+
+    // PDF generation
+    $mpdf = new \Mpdf\Mpdf([
+        'tempDir' => storage_path('app/mpdf-temp'),
+        'format' => 'A4',
+        'mode' => 'utf-8',
+        'default_font' => 'dejavusans',
+        'default_font_size' => 9,
+        'directionality' => 'rtl',
+        'margin_top' => 10,
+        'margin_bottom' => 10,
+        'margin_left' => 5,
+        'margin_right' => 5,
+        'margin_header' => 2,
+        'margin_footer' => 2,
+    ]);
+
+    $mpdf->WriteHTML($html);
+
+    return $mpdf->Output('', 'S'); // return as string
+}
 
     /**
      * Generate filename for PDF - EXACTLY like downloadProfile
