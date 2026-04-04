@@ -274,6 +274,7 @@ class ProcessBulkDownloadItem implements ShouldQueue
         $bladeFile = 'pdf.template';
         if ($location['province_code'] == 19) {
             $bladeFile = 'pdf.kunduz_template';
+            logger()->info("Using kunduz template for submission ID: {$submission->id}");
         }
 
 
@@ -375,11 +376,16 @@ class ProcessBulkDownloadItem implements ShouldQueue
             return asset('images/default.png');
         }
         $expiration = Carbon::now()->addMinutes(10);
+        $guzar = $location['guzar'] ?? null;
+
+        if ($guzar !== null && strlen($guzar) === 3 && str_starts_with($guzar, '0')) {
+            $guzar = substr($guzar, 1);
+        }
         $parts = [
             $location['province_code'],
             $location['city_code'] ?? null,
             $location['district_code'] ?? null,
-            $location['guzar'] ?? null,
+            $guzar,
             $location['block'] ?? null,
             $location['house'] ?? null
         ];
