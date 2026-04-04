@@ -314,13 +314,8 @@
         </td>
     </tr>
     <tr>
-        <td style="height:250px; " class="center">
-            @php
-            $document = str_replace('http://127.0.0.1:8000/', '', $submission->houseLandOwnership?->landOwnershipDocument?->first()?->house_document_photo);
-            @endphp
-            <img src="{{ $submission->houseLandOwnership?->landOwnershipDocument?->first()?->house_document_photo ?? asset('images/default.png') }}" alt="تصویر" style="max-width:100%; max-height:250px;">
+        
 
-        </td>
         <td style="height:250px;" class="center">
             @php
                 $map = str_replace('http://127.0.0.1:8000/', '', $location['map_image']);
