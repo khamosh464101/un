@@ -777,7 +777,6 @@ class SubmissionController
             $location['map_image'] = $this->getPath($location);
         }
 
-        return $location; // for debugging (remove later)
 
         // ---------------- PDF PART ----------------
 
@@ -1069,7 +1068,6 @@ class SubmissionController
     }
 
     private function getPath($location) {
-        return asset('images/default.png');
         $expiration = Carbon::now()->addMinutes(10);
 
         $code = $this->getCodeName($location);
