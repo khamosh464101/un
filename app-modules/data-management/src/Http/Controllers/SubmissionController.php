@@ -693,17 +693,17 @@ class SubmissionController
                     $location['district_code'] = $source->district_code;
                 }
 
-                if ($source?->kbl_guzar_number) {
-                    $location['guzar'] = $source->kbl_guzar_number;
+                if ( $value->name === ($source?->kbl_guzar_number ?? null)) {
+                    $location['guzar'] = $value->label[0];
                 }
 
                 // Guzar (from choices or extra)
                 if (
-                    $value->name === ($source?->kbl_guzar_number ?? null) ||
+                    
                     $value->name === ($extra['guzar_number'] ?? null)
                 ) {
                     if (isset($value->label[0])) {
-                        $location['guzar'] = substr($value->label[0], 1);
+                        $location['guzar'] = $value->label[0];
                     }
                 }
 
@@ -776,6 +776,8 @@ class SubmissionController
             $location['folder'] = $submission->projects->first()->google_storage_folder;
             $location['map_image'] = $this->getPath($location);
         }
+
+        return $location;
 
 
         // ---------------- PDF PART ----------------
