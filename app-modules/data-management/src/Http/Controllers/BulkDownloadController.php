@@ -335,7 +335,7 @@ class BulkDownloadController
         
         // Generate temp token and return URL
         $token = hash('sha256', $batch->id . $batch->zip_file_path . now()->timestamp);
-        Cache::put('download_token:' . $token, $batch->zip_file_path, 3600);
+        Cache::put('download_token:' . $token, $batch->zip_file_path, 7200);
         
         return response()->json([
             'success' => true,
