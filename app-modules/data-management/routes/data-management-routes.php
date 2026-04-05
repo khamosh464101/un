@@ -18,6 +18,8 @@ use Modules\DataManagement\Http\Controllers\ParcelMapController;
 use Modules\DataManagement\Http\Controllers\ParcelSymbologyController;
 
 use Modules\DataManagement\Http\Controllers\BulkDownloadController;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Cache;
 
 
 
@@ -169,6 +171,22 @@ Route::middleware(['auth:sanctum', 'twofactor'])->group(function () {
 
 
 });
+
+Route::get('/download-temp/{token}', function ($token) {
+    $filePath = Cache::get('download_token:' . $token);
+    
+    if (!$filePath || !Storage::disk('public')->exists($filePath)) {
+        abort(404, 'Download link expired or invalid');
+    }
+    
+    // Optional: Remove token after use for one-time download
+    Cache::forget('download_token:' . $token);
+    
+    return response()->download(
+        Storage::disk('public')->path($filePath),
+        basename($filePath)
+    );
+})->name('download.temp');
 // routes/api.php
 
 
