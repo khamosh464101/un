@@ -172,6 +172,8 @@ Route::middleware(['auth:sanctum', 'twofactor'])->group(function () {
 
 });
 
+
+
 Route::get('/download-temp/{token}', function ($token) {
     $filePath = Cache::get('download_token:' . $token);
     
@@ -179,12 +181,14 @@ Route::get('/download-temp/{token}', function ($token) {
         abort(404, 'Download link expired or invalid');
     }
     
-    // Optional: Remove token after use for one-time download
+    // One-time use - remove token
     Cache::forget('download_token:' . $token);
+    
+    $filename = basename($filePath);
     
     return response()->download(
         Storage::disk('public')->path($filePath),
-        basename($filePath)
+        $filename
     );
 })->name('download.temp');
 // routes/api.php

@@ -5,6 +5,7 @@ namespace Modules\DataManagement\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Modules\DataManagement\Jobs\GenerateBatchZip;
 use Storage;
 
 class BulkDownloadBatch extends Model
@@ -39,14 +40,20 @@ class BulkDownloadBatch extends Model
         $this->successful_items = $this->items()->where('status', 'completed')->count();
         $this->failed_items = $this->items()->where('status', 'failed')->count();
         
-        if ($this->processed_items >= $this->total_items) {
+        if ($this->processed_items >= $this->total_items && $this->status !== 'completed') {
             $this->status = 'completed';
             $this->completed_at = now();
+            $this->save();
+            
+            // 🔥 TRIGGER ZIP GENERATION HERE
+            if ($this->successful_items > 0) {
+                GenerateBatchZip::dispatch($this)->onQueue('bulk-downloads');
+            }
         }
+
         
         $this->save();
     }
-
     public static function boot()
     {
         parent::boot();

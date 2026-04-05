@@ -8,6 +8,7 @@ use Modules\DataManagement\Models\BulkDownloadBatch;
 use Modules\DataManagement\Models\BulkDownloadItem;
 use Modules\DataManagement\Models\BulkDownloadLog;
 use Modules\DataManagement\Jobs\ProcessBulkDownloadItem;
+use Modules\DataManagement\Jobs\GenerateBatchZip;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
@@ -304,78 +305,38 @@ class BulkDownloadController
 
     public function downloadBatch($batchId)
     {
-    
         $batch = BulkDownloadBatch::where('batch_id', $batchId)->first();
         
         if (!$batch) {
             return response()->json(['error' => 'Batch not found'], 404);
         }
-
-        if ($batch->status !== 'completed') {
-            return response()->json(['error' => 'Batch is not ready for download'], 400);
-        }
-
-        // If ZIP already exists, generate temp link
-        if ($batch->zip_file_path && Storage::disk('public')->exists($batch->zip_file_path)) {
-            // Generate unique token for this download
-            $token = hash('sha256', $batch->id . $batch->zip_file_path . now()->timestamp);
-            Cache::put('download_token:' . $token, $batch->zip_file_path, 3600); // 1 hour expiry
-            
+        
+        // Check if ZIP is being generated
+        if ($batch->status === 'generating_zip') {
             return response()->json([
-                'success' => true,
-                'download_url' => url('/download-temp/' . $token),
-                'filename' => $batch->name . '.zip'
-            ]);
+                'error' => 'ZIP is being prepared, please wait a moment',
+                'status' => 'generating'
+            ], 425);
         }
-
-        // Get all completed files
-        $completedFiles = BulkDownloadItem::where('batch_id', $batchId)
-            ->where('status', 'completed')
-            ->whereNotNull('file_path')
-            ->get();
-
-        if ($completedFiles->isEmpty()) {
-            return response()->json(['error' => 'No completed files found'], 404);
-        }
-
-        // Create ZIP archive
-        $zipFileName = Str::slug($batch->name) . '-' . $batchId . '.zip';
-        $zipPath = storage_path("app/temp/{$zipFileName}");
         
-        // Ensure temp directory exists
-        if (!file_exists(storage_path('app/temp'))) {
-            mkdir(storage_path('app/temp'), 0755, true);
+        if ($batch->status !== 'completed') {
+            return response()->json([
+                'error' => 'Batch is not ready for download',
+                'status' => $batch->status
+            ], 400);
         }
-
-        $zip = new ZipArchive();
-        $tempDir = storage_path('app/tmp');
-        if (!file_exists($tempDir)) mkdir($tempDir, 0775, true);
         
-        if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
-            return response()->json(['error' => 'Could not create ZIP file'], 500);
+        if (!$batch->zip_file_path || !Storage::disk('public')->exists($batch->zip_file_path)) {
+            return response()->json([
+                'error' => 'ZIP file not found',
+                'status' => 'missing'
+            ], 404);
         }
-
-        foreach ($completedFiles as $file) {
-            $fullPath = Storage::disk('public')->path($file->file_path);
-            if (file_exists($fullPath)) {
-                $zip->addFile($fullPath, $file->file_name ?? basename($file->file_path));
-            }
-        }
-
-        $zip->close();
-
-        // Store ZIP path in batch
-        $zipStoragePath = "bulk-downloads/zips/{$zipFileName}";
-        Storage::disk('public')->put($zipStoragePath, file_get_contents($zipPath));
-        $batch->update(['zip_file_path' => $zipStoragePath]);
-
-        // Clean up temp file
-        @unlink($zipPath);
-
-        // Generate temporary download link
-        $token = hash('sha256', $batch->id . $zipStoragePath . now()->timestamp);
-        Cache::put('download_token:' . $token, $zipStoragePath, 3600);
-
+        
+        // Generate temp token and return URL
+        $token = hash('sha256', $batch->id . $batch->zip_file_path . now()->timestamp);
+        Cache::put('download_token:' . $token, $batch->zip_file_path, 3600);
+        
         return response()->json([
             'success' => true,
             'download_url' => url('/download-temp/' . $token),
