@@ -305,13 +305,21 @@ class ProcessBulkDownloadItem implements ShouldQueue
         }
     }
 
-    // Template selection (safe)
     $bladeFile = 'pdf.template';
-
-    if (($location['province_code'] ?? null) == 19) {
-        $bladeFile = 'pdf.kunduz_template';
-        \Log::info("Using kunduz template", ['submission_id' => $submission->id]);
+    if (app()->environment('production')) {
+        $bladeFile = 'pdf.template';
+        if (($location['province_code'] ?? null) == 19) {
+            $bladeFile = 'pdf.kunduz_template';
+            \Log::info("Using kunduz template", ['submission_id' => $submission->id]);
+        }
+    } else {
+        $bladeFile = 'pdf.local_template';
+        if (($location['province_code'] ?? null) == 19) {
+            $bladeFile = 'pdf.kunduz_local_template';
+            \Log::info("Using kunduz local template", ['submission_id' => $submission->id]);
+        }
     }
+    
 
     $html = View::make($bladeFile, [
         'submission' => $submission,

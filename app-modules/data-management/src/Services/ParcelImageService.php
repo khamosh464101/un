@@ -543,17 +543,17 @@ private function drawLabelInsidePolygon($image, $geojson, string $text, string $
 
  private function drawTextLabel($image, string $text, int $x, int $y, int $fontSize, $color, $selected)
 {
-    // Use macOS system font (more compatible with XAMPP's GD)
-    $fontFile = '/Library/Fonts/Arial.ttf';
+     // Detect environment
+    $isLocal = app()->environment('local');
     
-    // Alternative paths if above doesn't exist
-    if (!file_exists($fontFile)) {
-        $fontFile = '/System/Library/Fonts/Supplemental/Arial.ttf';
+    if ($isLocal) {
+        // Use Mac font paths
+        $fontFile = $this->getMacFontPath();
+    } else {
+        // Use Linux server font paths
+        $fontFile = $this->getLinuxFontPath();
     }
-    
-    if (!file_exists($fontFile)) {
-        $fontFile = '/Applications/XAMPP/xamppfiles/lib/fonts/FreeSans.ttf'; // Sometimes bundled with XAMPP
-    }
+
     
     if (file_exists($fontFile) && is_readable($fontFile)) {
         try {
@@ -625,6 +625,34 @@ private function drawLabelInsidePolygon($image, $geojson, string $text, string $
     
     // Fallback to GD
     $this->drawTextLabelFallback($image, $text, $x, $y, $fontSize, $color, $selected);
+}
+
+private function getMacFontPath(): ?string
+{
+    $paths = [
+        '/Library/Fonts/Arial.ttf',
+        '/System/Library/Fonts/Supplemental/Arial.ttf',
+        '/Applications/XAMPP/xamppfiles/lib/fonts/FreeSans.ttf',
+    ];
+    
+    foreach ($paths as $path) {
+        if (file_exists($path)) return $path;
+    }
+    return null;
+}
+
+private function getLinuxFontPath(): ?string
+{
+    $paths = [
+        '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
+        '/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf',
+        '/usr/share/fonts/dejavu/DejaVuSans.ttf',
+    ];
+    
+    foreach ($paths as $path) {
+        if (file_exists($path)) return $path;
+    }
+    return null;
 }
     
     /**
