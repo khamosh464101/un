@@ -130,97 +130,129 @@ class PowerbiController extends Controller
     // }
 public function getBIData()
 {
-    ini_set('max_execution_time', 0); // Prevent timeouts
-    ini_set('memory_limit', '-1'); // Optional: allow more memory
+    ini_set('max_execution_time', 300);
 
-    $form = Form::first();
+    // Load choices map once
+    $form = Form::select('id', 'raw_schema')->first();
     $dataObject = json_decode($form->raw_schema);
     $choicesMap = collect($dataObject->asset->content->choices)
-        ->pluck('label.0', 'name');
+        ->pluck('label.0', 'name')
+        ->all(); // plain array is faster than a Collection for lookups
 
     $submissionColumnsToProcess = [
-        'submission' => ['status'],
-        'sourceInformation' => ['survey_province', 'kbl_guzar_number', 'province_code', 'city_code', 'district_code', 'block_number', 'house_number'],
-        'familyInformation' => ['hoh_disable', 'province_origin'],
-        'headFamily' => ['hoh_sex'],
-        'interviewwee' => ['inter_sex'],
-        'returnee' => ['entry_borders', 'reason_return'],
-        'extremelyVulnerableMember' => ['disable_member','conditional_women','conditional_women_pregnant','conditional_women_breastfeeding_mother','conditional_women_widow'],
-        'houseLandOwnership' => ['house_owner'],
-        'accessBasicService' => ['drinkingwater_main_source', 'type_water_source', 'water_source_distance', 'water_source_route_safe', 'water_collect_person', 'water_quality','type_toilet_facilities','access_education','access_school','type_school','nearest_school','access_school_university','access_school_madrasa', 'Household_members_attend_school_present', 'litrate_Household_member','access_health_services','health_facilities_type', 'health_service_distance','health_facility_have_female_staff', 'health_challanges','type_access_road','how_access_electricity'],
-        'livelihood' => ['Household_main_source_income'],
-        'photoSection' => ['latitude', 'longitude'],
+        'submission'               => ['status'],
+        'sourceInformation'        => ['survey_province', 'district_name', 'kbl_guzar_number', 'province_code', 'city_code', 'district_code', 'block_number', 'house_number'],
+        'familyInformation'        => ['hoh_disable', 'province_origin'],
+        'headFamily'               => ['hoh_sex'],
+        'interviewwee'             => ['inter_sex'],
+        'returnee'                 => ['entry_borders', 'reason_return'],
+        'extremelyVulnerableMember'=> ['disable_member','conditional_women','conditional_women_pregnant','conditional_women_breastfeeding_mother','conditional_women_widow'],
+        'houseLandOwnership'       => ['house_owner'],
+        'accessBasicService'       => ['drinkingwater_main_source','type_water_source','water_source_distance','water_source_route_safe','water_collect_person','water_quality','type_toilet_facilities','access_education','access_school','type_school','nearest_school','access_school_university','access_school_madrasa','Household_members_attend_school_present','litrate_Household_member','access_health_services','health_facilities_type','health_service_distance','health_facility_have_female_staff','health_challanges','type_access_road','how_access_electricity'],
+        'livelihood'               => ['Household_main_source_income'],
+        'photoSection'             => ['latitude', 'longitude'],
+        'composition'              => ['f_male', 'f_female'],
     ];
 
-    $processedSubmissions = collect();
+    // Build submissions via streaming JSON to avoid holding everything in memory
+    $staticData = [
+        'project_statuses'  => ProjectStatus::select('id', 'title')->get(),
+        'donors'            => Donor::select('id', 'name')->get(),
+        'projects'          => Project::select('id', 'title', 'estimated_budget', 'spent_budget', 'donor_id', 'project_status_id')
+                                ->get()->each->setAppends([]),
+        'partners'          => Partner::select('id', 'business_name')->get()->each->setAppends([]),
+        'subproject_types'  => SubprojectType::select('id', 'title')->get(),
+        'subprojects'       => Subproject::select('id', 'title', 'budget', 'partner_id', 'subproject_type_id', 'project_id')
+                                ->get()->each->setAppends([]),
+        'activity_statuses' => ActivityStatus::select('id', 'title')->get(),
+        'ticket_statuses'   => TicketStatus::select('id', 'title')->get(),
+        'activities'        => Activity::select('id', 'title', 'activity_status_id', 'project_id')
+                                ->get()->each->setAppends([]),
+        'tickets'           => Ticket::select('id', 'title', 'ticket_status_id', 'ticket_priority_id', 'activity_id', 'responsible_id', 'start_date', 'deadline')
+                                ->with(['activity:id,project_id'])
+                                ->get()
+                                ->each(function ($ticket) {
+                                    // keep only project_id from appends, drop the rest
+                                    $ticket->setAppends(['project_id']);
+                                }),
+        'staffs'            => Staff::select('id', 'name')->get()->each->setAppends([]),
+        'project_submission'=> DB::table('project_submission')->select('id', 'project_id', 'submission_id')->get(),
+    ];
 
-    Submission::with([
-        'dstatus:id,title,color',
-        'sourceInformation:id,submission_id,survey_province,kbl_guzar_number,province_code,city_code,district_code,block_number,house_number',
-        'familyInformation:id,submission_id,hoh_disable,province_origin',
-        'headFamily:id,submission_id,hoh_sex',
-        'interviewwee:id,submission_id,inter_sex',
-        'returnee:id,submission_id,entry_borders,reason_return',
-        'extremelyVulnerableMember:id,submission_id,disable_member,conditional_women,conditional_women_pregnant,conditional_women_breastfeeding_mother,conditional_women_widow',
-        'houseLandOwnership:id,submission_id,house_owner',
-        'accessBasicService:id,submission_id,drinkingwater_main_source,type_water_source,water_source_distance,water_source_route_safe,water_collect_person,water_quality,type_toilet_facilities,access_education,access_school,type_school,nearest_school,access_school_university,access_school_madrasa,Household_members_attend_school_present,Household_members_attend_university_present,litrate_Household_member,access_health_services,health_facilities_type,health_service_distance,health_facility_have_female_staff,health_challanges,type_access_road,how_access_electricity',
-        'livelihood:id,submission_id,Household_main_source_income',
-        'photoSection:id,submission_id,latitude,longitude',
-    ])
-    ->select('id', 'today', 'status')
-    ->chunk(1000, function ($chunk) use ($choicesMap, $submissionColumnsToProcess, &$processedSubmissions) {
+    return response()->stream(function () use ($choicesMap, $submissionColumnsToProcess, $staticData) {
+        echo '{';
 
-        foreach ($chunk as $submission) {
+        // Output static data keys first
+        foreach ($staticData as $key => $value) {
+            echo '"' . $key . '":' . json_encode($value) . ',';
+        }
 
-            // Replace choice labels
-            foreach ($submissionColumnsToProcess as $relation => $columns) {
-                if ($relation === 'submission') {
-                    foreach ($columns as $col) {
-                        if (isset($submission->$col)) {
-                            $submission->$col = $choicesMap->get($submission->$col, $submission->$col);
+        // Stream submissions array
+        echo '"submissions":[';
+
+        $first = true;
+
+        Submission::with([
+            'dstatus:id,title,color',
+            'sourceInformation:id,submission_id,survey_province,district_name,kbl_guzar_number,province_code,city_code,district_code,block_number,house_number',
+            'familyInformation:id,submission_id,hoh_disable,province_origin',
+            'headFamily:id,submission_id,hoh_sex',
+            'interviewwee:id,submission_id,inter_sex',
+            'returnee:id,submission_id,entry_borders,reason_return',
+            'extremelyVulnerableMember:id,submission_id,disable_member,conditional_women,conditional_women_pregnant,conditional_women_breastfeeding_mother,conditional_women_widow',
+            'houseLandOwnership:id,submission_id,house_owner',
+            'accessBasicService:id,submission_id,drinkingwater_main_source,type_water_source,water_source_distance,water_source_route_safe,water_collect_person,water_quality,type_toilet_facilities,access_education,access_school,type_school,nearest_school,access_school_university,access_school_madrasa,Household_members_attend_school_present,Household_members_attend_university_present,litrate_Household_member,access_health_services,health_facilities_type,health_service_distance,health_facility_have_female_staff,health_challanges,type_access_road,how_access_electricity',
+            'livelihood:id,submission_id,Household_main_source_income',
+            'photoSection:id,submission_id,latitude,longitude',
+            'composition:id,submission_id,f_male,f_female',
+        ])
+        ->select('id', 'today', 'status')
+        ->chunk(500, function ($chunk) use ($choicesMap, $submissionColumnsToProcess, &$first) {
+            foreach ($chunk as $submission) {
+                // Map choice labels
+                foreach ($submissionColumnsToProcess as $relation => $columns) {
+                    if ($relation === 'submission') {
+                        foreach ($columns as $col) {
+                            if (isset($submission->$col)) {
+                                $submission->$col = $choicesMap[$submission->$col] ?? $submission->$col;
+                            }
                         }
-                    }
-                } elseif ($submission->$relation) {
-                    foreach ($columns as $col) {
-                        if (isset($submission->$relation->$col)) {
-                            $submission->$relation->$col =
-                                $choicesMap->get($submission->$relation->$col, $submission->$relation->$col);
+                    } elseif ($submission->$relation) {
+                        foreach ($columns as $col) {
+                            if (isset($submission->$relation->$col)) {
+                                $v = $submission->$relation->$col;
+                                $submission->$relation->$col = $choicesMap[$v] ?? $v;
+                            }
                         }
                     }
                 }
+
+                $row = [
+                    'submission'                => $submission->only(['id', 'today', 'status']),
+                    'sourceInformation'         => $submission->sourceInformation,
+                    'familyInformation'         => $submission->familyInformation,
+                    'headFamily'                => $submission->headFamily,
+                    'interviewwee'              => $submission->interviewwee,
+                    'returnee'                  => $submission->returnee,
+                    'extremelyVulnerableMember' => $submission->extremelyVulnerableMember,
+                    'houseLandOwnership'        => $submission->houseLandOwnership,
+                    'accessBasicService'        => $submission->accessBasicService,
+                    'livelihood'                => $submission->livelihood,
+                    'photoSection'              => $submission->photoSection,
+                    'composition'               => $submission->composition,
+                ];
+
+                if (!$first) echo ',';
+                echo json_encode($row);
+                $first = false;
             }
 
-            $processedSubmissions->push([
-                'submission' => $submission->only(['id', 'today', 'status']),
-                'sourceInformation' => $submission->sourceInformation,
-                'familyInformation' => $submission->familyInformation,
-                'headFamily' => $submission->headFamily,
-                'interviewwee' => $submission->interviewwee,
-                'returnee' => $submission->returnee,
-                'extremelyVulnerableMember' => $submission->extremelyVulnerableMember,
-                'houseLandOwnership' => $submission->houseLandOwnership,
-                'accessBasicService' => $submission->accessBasicService,
-                'livelihood' => $submission->livelihood,
-                'photoSection' => $submission->photoSection,
-            ]);
-        }
-    });
+            // Free chunk memory immediately
+            unset($chunk);
+        });
 
-    return response()->json([
-        'project_statuses' => ProjectStatus::select('id', 'title')->get(),
-        'donors' => Donor::select('id', 'name')->get(),
-        'projects' => Project::select('id', 'title', 'estimated_budget', 'spent_budget', 'donor_id', 'project_status_id')->get(),
-        'partners' => Partner::select('id', 'business_name')->get(),
-        'subproject_types' => SubprojectType::select('id', 'title')->get(),
-        'subprojects' => Subproject::select('id', 'title', 'budget', 'partner_id', 'subproject_type_id', 'project_id')->get(),
-        'activity_statuses' => ActivityStatus::select('id', 'title')->get(),
-        'ticket_statuses' => TicketStatus::select('id', 'title')->get(),
-        'activities' => Activity::select('id', 'title', 'activity_status_id', 'project_id')->get(),
-        'tickets' => Ticket::all(),
-        'staffs' => Staff::select('id', 'name')->get(),
-        'submissions' => $processedSubmissions,
-        'project_submission' => DB::table('project_submission')->get()
-    ]);
+        echo ']}';
+    }, 200, ['Content-Type' => 'application/json']);
 }
 
 }

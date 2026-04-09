@@ -27,6 +27,7 @@ class Composition extends Model
         'submission_id',
     ];
 
+
     public function getIgnoreIdFillable()
     {
         return array_filter(parent::getFillable(), function ($field) {
