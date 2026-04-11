@@ -94,7 +94,7 @@
         <td>بلاک-Block</td>
         <td>گذر-Gozar</td>
         <td>ناحیه-District</td>
-        <td>شهر-City</td>
+        <td>قریه-Village</td>
         <td>ولایت-Province</td>
     </tr>
     <tr>
