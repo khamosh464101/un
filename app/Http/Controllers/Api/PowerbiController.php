@@ -132,12 +132,16 @@ public function getBIData()
 {
     ini_set('max_execution_time', 300);
 
-    // Load choices map once
-    $form = Form::select('id', 'raw_schema')->first();
-    $dataObject = json_decode($form->raw_schema);
-    $choicesMap = collect($dataObject->asset->content->choices)
-        ->pluck('label.0', 'name')
-        ->all(); // plain array is faster than a Collection for lookups
+    // Build a choices map per form_id — each project has its own form/survey
+    $choicesMaps = Form::select('id', 'raw_schema')->get()
+        ->mapWithKeys(function ($form) {
+            $dataObject = json_decode($form->raw_schema);
+            $choices = $dataObject->asset->content->choices ?? [];
+            return [
+                $form->id => collect($choices)->pluck('label.0', 'name')->all()
+            ];
+        })
+        ->all();
 
     $submissionColumnsToProcess = [
         'submission'               => ['status'],
@@ -177,9 +181,10 @@ public function getBIData()
                                 }),
         'staffs'            => Staff::select('id', 'name')->get()->each->setAppends([]),
         'project_submission'=> DB::table('project_submission')->select('id', 'project_id', 'submission_id')->get(),
+        'forms'             => Form::select('id', 'title', 'form_id')->get(),
     ];
 
-    return response()->stream(function () use ($choicesMap, $submissionColumnsToProcess, $staticData) {
+    return response()->stream(function () use ($choicesMaps, $submissionColumnsToProcess, $staticData) {
         echo '{';
 
         // Output static data keys first
@@ -206,10 +211,11 @@ public function getBIData()
             'photoSection:id,submission_id,latitude,longitude',
             'composition:id,submission_id,f_male,f_female',
         ])
-        ->select('id', 'today', 'status')
-        ->chunk(500, function ($chunk) use ($choicesMap, $submissionColumnsToProcess, &$first) {
+        ->select('id', 'today', 'status', 'dm_form_id')
+        ->chunk(500, function ($chunk) use ($choicesMaps, $submissionColumnsToProcess, &$first) {
             foreach ($chunk as $submission) {
-                // Map choice labels
+                // Pick the correct choices map for this submission's form
+                $choicesMap = $choicesMaps[$submission->dm_form_id] ?? [];
                 foreach ($submissionColumnsToProcess as $relation => $columns) {
                     if ($relation === 'submission') {
                         foreach ($columns as $col) {
@@ -228,7 +234,7 @@ public function getBIData()
                 }
 
                 $row = [
-                    'submission'                => $submission->only(['id', 'today', 'status']),
+                    'submission'                => $submission->only(['id', 'today', 'status', 'dm_form_id']),
                     'sourceInformation'         => $submission->sourceInformation,
                     'familyInformation'         => $submission->familyInformation,
                     'headFamily'                => $submission->headFamily,
