@@ -61,7 +61,18 @@ class ExcelController
 
     public function delete(Request $request)
     {
-        
+
+     
+        $i = ImportFormatFile::where('excel_file_path', $request->filename)?->first();
+        $project = $i->project;
+
+        if ($project->importFormatFiles()->first()->excel_file_path == $request->filename) {
+
+            $project->importFormatMaps()->delete();
+            $project->importFormatFiles()->delete();
+        } else {
+            $i->delete();
+        }
         $disk = Storage::disk('excel');
 
         if ($disk->exists($request->filename)) {
