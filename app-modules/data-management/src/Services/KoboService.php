@@ -83,6 +83,40 @@ class KoboService
         
     }
 
+    /**
+     * Fetch multiple submissions in a single API call using _id $in filter.
+     * Returns an array keyed by _id for fast lookup.
+     */
+    public function getSubmissionsByIds(array $ids, string $formId): array
+    {
+        $query = json_encode(['_id' => ['$in' => $ids]]);
+
+        $response = Http::timeout(300)->withHeaders([
+            'Authorization' => 'Token ' . $this->token,
+            'Accept'        => 'application/json',
+        ])->get("{$this->baseUrl}/assets/{$formId}/data/", [
+            'query' => $query,
+            'limit' => count($ids),
+        ]);
+
+        if (!$response->successful()) {
+            logger()->error('Kobo bulk fetch failed: ' . $response->body());
+            return [];
+        }
+
+        $results = $response->json('results') ?? [];
+
+        // Index by _id for O(1) lookup
+        $indexed = [];
+        foreach ($results as $submission) {
+            if (isset($submission['_id'])) {
+                $indexed[$submission['_id']] = $submission;
+            }
+        }
+
+        return $indexed;
+    }
+
         
 
     public function downloadAttachment(array $attachment, string $directory = 'kobo-attachments'): ?string

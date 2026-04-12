@@ -81,11 +81,10 @@ class SyncKoboController
             ->pluck('excel_file_column_name')
             ->toArray();
 
-    
         try {
             $formatController = new FormatController();
             $result = $formatController->getExcelIndexColumnAndHeaderMap($path);
-            
+
             $idColumn = collect($result)->firstWhere('label', '_id');
             if (!$idColumn) {
                 return response()->json([
@@ -103,10 +102,12 @@ class SyncKoboController
 
         // Import Excel rows
         $import = new CustomColumnsImport($startRow, $limitRow, $columns);
-
-        $data = $import->toArray($path);
+        $data   = $import->toArray($path);
         $sheetData = $data[0] ?? [];
 
+        if (empty($sheetData)) {
+            return response()->json(['message' => 'No rows found in Excel.'], 400);
+        }
 
         // Load form schema
         $form = Form::where('form_id', $project->kobo_copy_project_id ?? $project->kobo_project_id)->first();
@@ -115,63 +116,103 @@ class SyncKoboController
             return response()->json(['message' => 'Form not found'], 404);
         }
 
-        $schema = json_decode($form->raw_schema);
+        $schema  = json_decode($form->raw_schema);
         $choices = $schema->asset->content->choices ?? [];
-        $survey = $schema->asset->content->survey ?? [];
+        $survey  = $schema->asset->content->survey  ?? [];
+
+        // ── Collect all _id values from the Excel rows ───────────────────────
+        $idColumnKey = $idColumn['value'];
+
+        $submissionIds = collect($sheetData)
+            ->pluck($idColumnKey)
+            ->filter()           // remove nulls/empty
+            ->unique()
+            ->values()
+            ->toArray();
+
+        if (empty($submissionIds)) {
+            return response()->json(['message' => 'No valid _id values found in selected rows.'], 400);
+        }
+
+        // ── Filter out already-existing submissions ───────────────────────────
+        $existingIds = Submission::whereIn('_id', $submissionIds)
+            ->pluck('_id')
+            ->toArray();
+
+        $newIds = array_values(array_diff($submissionIds, $existingIds));
+
+        if (empty($newIds)) {
+            return response()->json([
+                'message'    => 'All selected submissions already exist.',
+                'total_rows' => count($sheetData),
+                'skipped'    => count($existingIds),
+                'inserted'   => 0,
+            ]);
+        }
+
+        // ── Single bulk API call to Kobo for all new _ids ─────────────────────
+        $koboSubmissionsMap = $this->kobo->getSubmissionsByIds($newIds, $project->kobo_project_id);
+
+        if (empty($koboSubmissionsMap)) {
+            logger()->warning('Kobo returned no submissions for ids: ' . implode(',', $newIds));
+        }
+
+        // ── Loop rows and process ─────────────────────────────────────────────
+        $inserted = 0;
+        $skipped  = count($existingIds);
 
         foreach ($sheetData as $row) {
-
-            $submissionId = $row[$idColumn['value']] ?? null;
+            $submissionId = $row[$idColumnKey] ?? null;
 
             if (!$submissionId) {
                 continue;
             }
 
-            // Skip if submission already exists
-            $existingSubmission = Submission::where('_id', $submissionId)->first();
-            if ($existingSubmission) {
+            // Already exists — skip
+            if (in_array($submissionId, $existingIds)) {
                 logger()->info("Submission already exists: {$submissionId}");
                 continue;
             }
 
-            // Fetch submission from Kobo
-            $submissionData = $this->kobo->getSubmissionForMapImport(
-                $submissionId,
-                $project->kobo_project_id
-            );
+            // Not returned by Kobo — skip
+            if (!isset($koboSubmissionsMap[$submissionId])) {
+                logger()->warning("Submission not found in Kobo response: {$submissionId}");
+                continue;
+            }
 
-            $cleanedSubmission = $this->cleanKoboSubmissionKeys($submissionData);
+            $cleanedSubmission = $this->cleanKoboSubmissionKeys($koboSubmissionsMap[$submissionId]);
 
-            // Apply field mappings
+            // Apply field mappings from Excel columns
             foreach ($project->importFormatMaps as $map) {
-
                 $surveyItem = collect($survey)->firstWhere('name', $map->kobo_form_field_name);
-
                 $labelValue = $row[$map->excel_file_column_name] ?? null;
-
                 $mappedValue = $this->checkChoice($choices, $labelValue, $surveyItem);
 
                 if ($mappedValue !== false) {
                     $cleanedSubmission[$map->kobo_form_field_name] = $mappedValue;
                 } else {
-                    if ($surveyItem->type === 'date' && $labelValue) {
+                    if (isset($surveyItem->type) && $surveyItem->type === 'date' && $labelValue) {
                         $cleanedSubmission[$map->kobo_form_field_name] = $this->getDate($labelValue);
                     } else {
                         $cleanedSubmission[$map->kobo_form_field_name] = $labelValue;
                     }
-
                 }
             }
 
-            // Parse submission
+            // Parse and insert submission
             $this->parser->parseAndReturn($cleanedSubmission, $project->id);
+            $inserted++;
         }
 
+        logger()->info('Memory usage after import: ' . (memory_get_usage(true) / 1024 / 1024) . ' MB');
+
         return response()->json([
-            'data' => $sheetData,
-            'columns_requested' => $columns,
-            'total_rows' => count($sheetData),
-            'memory_used' => (memory_get_usage(true) / 1024 / 1024) . ' MB'
+            'data'             => $sheetData,
+            'columns_requested'=> $columns,
+            'total_rows'       => count($sheetData),
+            'inserted'         => $inserted,
+            'skipped'          => $skipped,
+            'memory_used'      => (memory_get_usage(true) / 1024 / 1024) . ' MB',
         ]);
     }
 
