@@ -176,7 +176,10 @@ class ParcelImageService
                     'geojson' => is_string($parcel->geometry) 
                         ? json_decode($parcel->geometry, true) 
                         : $parcel->geometry,
-                    'land_use_type' => $parcel->land_use_type ?? 'Unknown'
+                    'land_use_type' => $parcel->land_use_type ?? 'Unknown',
+                    'attributes'    => is_string($parcel->attributes)
+                        ? json_decode($parcel->attributes, true)
+                        : ($parcel->attributes ?? []),
                 ];
             }
         }
@@ -241,6 +244,13 @@ class ParcelImageService
         
         // Add header
         $this->drawHeader($mapImage, $selectedParcel);
+
+        // ── Dark 1px border around the entire image (map + header) ───────────
+        $borderColor = imagecolorallocate($mapImage, 40, 40, 40);
+        imagerectangle($mapImage, 0, 0, $this->mapWidth - 1, $this->mapHeight - 1, $borderColor);
+        // Separator line between header and map body
+        $headerHeight = 54; // must match drawHeader value
+        imageline($mapImage, 0, $headerHeight, $this->mapWidth - 1, $headerHeight, $borderColor);
         
         // ///////// Save image in local storage ////////
         // $filename = 'parcel-images/' . $selectedParcel['code'] . '.jpg';
@@ -261,7 +271,7 @@ class ParcelImageService
 
         // Capture image output into memory
         ob_start();
-        imagejpeg($mapImage, null, 90);
+        imagejpeg($mapImage, null, 100);
         $imageContent = ob_get_clean();
 
         // Upload to Google Cloud Storage
@@ -634,11 +644,25 @@ private function getMacFontPath(): ?string
         '/System/Library/Fonts/Supplemental/Arial.ttf',
         '/Applications/XAMPP/xamppfiles/lib/fonts/FreeSans.ttf',
     ];
-    
     foreach ($paths as $path) {
         if (file_exists($path)) return $path;
     }
     return null;
+}
+
+private function getMacBoldFontPath(): ?string
+{
+    $paths = [
+        '/Library/Fonts/Arial Bold.ttf',
+        '/Library/Fonts/Arial-BoldMT.ttf',
+        '/System/Library/Fonts/Supplemental/Arial Bold.ttf',
+        '/System/Library/Fonts/Supplemental/Arial-BoldMT.ttf',
+    ];
+    foreach ($paths as $path) {
+        if (file_exists($path)) return $path;
+    }
+    // fallback to regular
+    return $this->getMacFontPath();
 }
 
 private function getLinuxFontPath(): ?string
@@ -648,64 +672,179 @@ private function getLinuxFontPath(): ?string
         '/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf',
         '/usr/share/fonts/dejavu/DejaVuSans.ttf',
     ];
-    
     foreach ($paths as $path) {
         if (file_exists($path)) return $path;
     }
     return null;
 }
+
+private function getLinuxBoldFontPath(): ?string
+{
+    $paths = [
+        '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf',
+        '/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf',
+        '/usr/share/fonts/dejavu/DejaVuSans-Bold.ttf',
+        '/usr/share/fonts/truetype/freefont/FreeSansBold.ttf',
+    ];
+    foreach ($paths as $path) {
+        if (file_exists($path)) return $path;
+    }
+    // fallback to regular
+    return $this->getLinuxFontPath();
+}
     
     /**
-     * Draw header (YOUR EXISTING CODE)
+     * Draw header matching the reference design:
+     * [AHF logo white box] | [Blue band: white bold text centered + N arrow top-right] | [UN-HABITAT logo white box]
+     *
+     * Reference image dimensions ~1050×720, header ~70px tall.
+     * Logo boxes: ~100px left, ~80px right.
+     * Blue band fills the rest. Text is white, bold, ~15pt. North arrow is black.
      */
     private function drawHeader($image, $parcel)
     {
-        $width = imagesx($image);
-        $headerHeight = 60;
-        
-        $headerBg = imagecolorallocatealpha($image, 0, 0, 0, 40);
-        imagefilledrectangle($image, 0, 0, $width, $headerHeight, $headerBg);
-        
-        $whiteColor = imagecolorallocate($image, 255, 255, 255);
-        $font = 2;
-        
-        // Draw north arrow
-        $this->drawNorthArrow($image, 20, 30);
-        
-        // Draw parcel info
-        $line1 = "AFGHANISTAN: Nangarhar Province - Jalalabad City";
+        $width        = imagesx($image);
+        $headerHeight = 54;   // smaller overall header
+        $padding      = 4;    // tighter padding so logos get more room
+
+        // ── 1. Full white background ─────────────────────────────────────────
+        $white = imagecolorallocate($image, 255, 255, 255);
+        imagefilledrectangle($image, 0, 0, $width, $headerHeight, $white);
+
+        // ── 2. Logo box widths — AHF gets more space ─────────────────────────
+        $leftLogoW  = (int)($width * 0.145) + 13; // ~129px — extra 13px for AHF
+        $rightLogoW = (int)($width * 0.095); // ~76px
+
+        // ── 3. Blue center band with 1px vertical margin ─────────────────────
+        $bandX1    = $leftLogoW;
+        $bandX2    = $width - $rightLogoW;
+        $bandMargin = 1; // 1px top and bottom margin
+        $blue      = imagecolorallocate($image, 93, 173, 226); // #5DADE2
+        imagefilledrectangle($image, $bandX1, $bandMargin, $bandX2, $headerHeight - $bandMargin, $blue);
+
+        // ── 4. Bold font ──────────────────────────────────────────────────────
+        $isLocal   = app()->environment('local');
+        $boldFont  = $isLocal ? $this->getMacBoldFontPath() : $this->getLinuxBoldFontPath();
+        $whiteText = imagecolorallocate($image, 255, 255, 255);
+
+        $attrs    = $parcel['attributes'] ?? [];
+        $district   = $attrs['DISTRICT']   ?? 'Unknown';
+        $provinceC  = $attrs['PROVINCE_C'] ?? '??';
+        $line1 = "AFGHANISTAN: {$district} - PD#{$provinceC}";
         $line2 = "Parcel No: " . $parcel['code'];
-        
-        $line1Width = strlen($line1) * imagefontwidth($font);
-        $centerX = ($width / 2) - ($line1Width / 2);
-        imagestring($image, $font, (int)$centerX, 15, $line1, $whiteColor);
-        
-        $line2Width = strlen($line2) * imagefontwidth($font);
-        $centerX2 = ($width / 2) - ($line2Width / 2);
-        imagestring($image, $font, (int)$centerX2, 35, $line2, $whiteColor);
-        
-        // Draw logos
-        $this->drawLogosFromFiles($image, $width - 100, 15);
+
+        // North arrow sits inside the band, right side — reserve space for it
+        $arrowReserve = 42;
+        $bandTextX2   = $bandX2 - $arrowReserve;
+        $bandCenter   = $bandX1 + (($bandTextX2 - $bandX1) / 2);
+
+        if ($boldFont && file_exists($boldFont)) {
+            $fontSize = 12; // scaled down to fit the smaller header
+
+            // Line 1 — vertically at ~38% of header height
+            $bbox1 = imagettfbbox($fontSize, 0, $boldFont, $line1);
+            $tw1   = abs($bbox1[2] - $bbox1[0]);
+            $th1   = abs($bbox1[1] - $bbox1[7]);
+            $tx1   = (int)($bandCenter - $tw1 / 2);
+            $ty1   = (int)(($headerHeight / 2) - 2);          // baseline of line 1
+            imagettftext($image, $fontSize, 0, $tx1, $ty1, $whiteText, $boldFont, $line1);
+
+            // Line 2 — vertically at ~75% of header height
+            $bbox2 = imagettfbbox($fontSize, 0, $boldFont, $line2);
+            $tw2   = abs($bbox2[2] - $bbox2[0]);
+            $tx2   = (int)($bandCenter - $tw2 / 2);
+            $ty2   = (int)($ty1 + $th1 + 5);                  // 5px gap between lines
+            imagettftext($image, $fontSize, 0, $tx2, $ty2, $whiteText, $boldFont, $line2);
+
+        } else {
+            // GD built-in fallback (no bold, but best we can do)
+            $font = 4; // largest built-in GD font
+            $tw1  = strlen($line1) * imagefontwidth($font);
+            imagestring($image, $font, (int)($bandCenter - $tw1 / 2), 10, $line1, $whiteText);
+            $tw2 = strlen($line2) * imagefontwidth($font);
+            imagestring($image, $font, (int)($bandCenter - $tw2 / 2), 38, $line2, $whiteText);
+        }
+
+        // ── 5. North arrow — inside blue band, right side, vertically centered ─
+        $arrowX = $bandX2 - (int)($arrowReserve / 2);
+        $arrowY = (int)($headerHeight / 2) + 6; // +6px total (was +3, now +3 more)
+        $this->drawNorthArrow($image, $arrowX, $arrowY);
+
+        // ── 6. Left logo (AHF) ────────────────────────────────────────────────
+        $ahfPath = public_path('logos/ahf_logo.png');
+        if (file_exists($ahfPath)) {
+            $logo = @imagecreatefrompng($ahfPath);
+            if ($logo) {
+                $lw    = imagesx($logo);
+                $lh    = imagesy($logo);
+                $scale = min(($leftLogoW - $padding * 2) / $lw, ($headerHeight - $padding * 2) / $lh);
+                $dstW  = (int)($lw * $scale);
+                $dstH  = (int)($lh * $scale);
+                $dstX  = (int)(($leftLogoW - $dstW) / 2);
+                $dstY  = (int)(($headerHeight - $dstH) / 2);
+                imagecopyresampled($image, $logo, $dstX, $dstY, 0, 0, $dstW, $dstH, $lw, $lh);
+                imagedestroy($logo);
+            }
+        }
+
+        // ── 7. Right logo (UN-HABITAT) ────────────────────────────────────────
+        $unPath = public_path('logos/habitat.png');
+        if (!file_exists($unPath)) {
+            $unPath = public_path('logos/un_habitat.png');
+        }
+        if (file_exists($unPath)) {
+            $ext  = strtolower(pathinfo($unPath, PATHINFO_EXTENSION));
+            $logo = match($ext) {
+                'png'          => @imagecreatefrompng($unPath),
+                'jpg', 'jpeg'  => @imagecreatefromjpeg($unPath),
+                default        => null,
+            };
+            if ($logo) {
+                $lw    = imagesx($logo);
+                $lh    = imagesy($logo);
+                $scale = min(($rightLogoW - $padding * 2) / $lw, ($headerHeight - $padding * 2) / $lh);
+                $dstW  = (int)($lw * $scale);
+                $dstH  = (int)($lh * $scale);
+                $dstX  = (int)($width - $rightLogoW + ($rightLogoW - $dstW) / 2);
+                $dstY  = (int)(($headerHeight - $dstH) / 2);
+                imagecopyresampled($image, $logo, $dstX, $dstY, 0, 0, $dstW, $dstH, $lw, $lh);
+                imagedestroy($logo);
+            }
+        }
+
+        // ── 8. Thin gray separator under header ───────────────────────────────
+        $gray = imagecolorallocate($image, 160, 160, 160);
+        imageline($image, 0, $headerHeight, $width, $headerHeight, $gray);
     }
-    
+
     /**
-     * Draw north arrow (YOUR EXISTING CODE)
+     * North arrow — black, sits on the blue band.
+     * "N" label on top, filled arrowhead pointing up, vertical shaft below.
      */
     private function drawNorthArrow($image, $x, $y)
     {
-        $whiteColor = imagecolorallocate($image, 255, 255, 255);
-        $redColor = imagecolorallocate($image, 255, 0, 0);
-        
-        imageline($image, $x, $y - 10, $x, $y + 10, $whiteColor);
-        
-        $points = [
-            $x, $y - 15,
-            $x - 5, $y - 5,
-            $x + 5, $y - 5
+        $black = imagecolorallocate($image, 0, 0, 0);
+
+        // Vertical shaft
+        imageline($image, $x, $y - 10, $x, $y + 10, $black);
+        imageline($image, $x + 1, $y - 10, $x + 1, $y + 10, $black); // 2px thick
+
+        // Filled arrowhead pointing up
+        $arrowPoints = [
+            $x,     $y - 18,  // tip
+            $x - 6, $y - 6,   // bottom-left
+            $x + 6, $y - 6,   // bottom-right
         ];
-        imagefilledpolygon($image, $points, 3, $redColor);
-        
-        imagestring($image, 1, $x - 3, $y - 25, "N", $whiteColor);
+        imagefilledpolygon($image, $arrowPoints, 3, $black);
+
+        // "N" label above the arrow
+        $isLocal  = app()->environment('local');
+        $fontFile = $isLocal ? $this->getMacBoldFontPath() : $this->getLinuxBoldFontPath();
+        if ($fontFile && file_exists($fontFile)) {
+            imagettftext($image, 10, 0, $x - 5, $y - 20, $black, $fontFile, 'N');
+        } else {
+            imagestring($image, 2, $x - 3, $y - 32, 'N', $black);
+        }
     }
     
     private function drawLogosFromFiles($image, $startX, $startY)
