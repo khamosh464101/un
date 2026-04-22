@@ -159,6 +159,7 @@ class ParcelController
             foreach ($features as $feature) {
                 // Extract parcel code from attributes (try different field names)
                 $parcelCode = $feature['properties']['FINALL_COD'] ?? 
+                              $feature['properties']['CODE_GIS'] ??
                              $feature['properties']['PARCEL_ID'] ?? 
                              $feature['properties']['PARCEL'] ??
                              $feature['properties']['CODE'] ?? 
