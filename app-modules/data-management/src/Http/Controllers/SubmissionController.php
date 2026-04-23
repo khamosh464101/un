@@ -806,6 +806,8 @@ class SubmissionController
 
         $name = $this->getCodeName($location);
 
+
+
         return new StreamedResponse(function () use ($html, $name) {
 
             $mpdf = new \Mpdf\Mpdf([
@@ -815,6 +817,12 @@ class SubmissionController
                 'default_font' => 'dejavusans',
                 'default_font_size' => 9,
                 'directionality' => 'rtl',
+                'margin_top' => 10,
+                'margin_bottom' => 10,
+                'margin_left' => 5,
+                'margin_right' => 5,
+                'margin_header' => 2,
+                'margin_footer' => 2,
             ]);
 
             $mpdf->WriteHTML($html);

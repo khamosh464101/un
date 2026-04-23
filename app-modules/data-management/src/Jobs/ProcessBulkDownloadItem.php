@@ -358,6 +358,9 @@ class ProcessBulkDownloadItem implements ShouldQueue
         }
 
         $si = $submission->sourceInformation;
+        $extra = is_array($submission->extraAttributesJson)
+        ? $submission->extraAttributesJson
+        : [];
         
         // Get location data using the same logic
         $form = Form::find($submission->dm_form_id);
@@ -369,11 +372,18 @@ class ProcessBulkDownloadItem implements ShouldQueue
                 $choices = $dataObject->asset->content->choices;
                 
                 foreach ($choices as $value) {
-                    if ($si->kbl_guzar_number && isset($value->name) && $value->name === $si->kbl_guzar_number) {
+
+                    if ( $value->name === ($si?->kbl_guzar_number ?? null)) {
+                        $location['guzar'] = $value->label[0];
+                     }
+
+                    // Guzar (from choices or extra)
+                    if ($value->name === ($extra['guzar_number'] ?? null)) {
                         if (isset($value->label[0])) {
-                            $location['guzar'] = substr($value->label[0], 1);
+                            $location['guzar'] = $value->label[0];
                         }
                     }
+        
                     if ($si->block_number && isset($value->name) && $value->name === $si->block_number) {
                         if (isset($value->label[0])) {
                             $location['block'] = $value->label[0];
@@ -387,11 +397,19 @@ class ProcessBulkDownloadItem implements ShouldQueue
                 }
             }
         }
+
+        // ✅ Fix guzar (your requirement)
+        if (isset($location['guzar'])) {
+            $guzar = $location['guzar'];
+
+            if (strlen($guzar) === 3 && substr($guzar, 0, 1) === '0') {
+                $location['guzar'] = substr($guzar, 1);
+            }
+        }
         
         // Fallback to direct values if not found in choices
-        if (!isset($location['guzar'])) {
-            $location['guzar'] = $si->kbl_guzar_number ?? '';
-        }
+        
+
         if (!isset($location['block'])) {
             $location['block'] = $si->block_number ?? '';
         }
@@ -409,6 +427,7 @@ class ProcessBulkDownloadItem implements ShouldQueue
         
         return $name . '.pdf';
     }
+
 
     /**
      * Get map path (matches your existing getPath method)
