@@ -313,13 +313,12 @@
     </tr>
     <tr>
         <td style="height:250px;" class="center">
-            @php
-                // Get document path
-                $document = $document = $submission?->extraAttributesJson['house_document_photo'] ?? null;
-
-                $documentPath = $document;
-                // Check if file exists, else fallback
-                if (! $document || ! file_exists($document)) {
+           @php
+                $document = $submission?->extraAttributesJson['house_document_photo'] ?? null;
+                $documentPath = $document
+                    ? public_path('storage/kobo-attachments/' . $document)
+                    : public_path('images/default.png');
+                if (!file_exists($documentPath)) {
                     $documentPath = public_path('images/default.png');
                 }
             @endphp
