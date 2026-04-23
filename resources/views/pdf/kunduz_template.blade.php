@@ -286,7 +286,7 @@
     <tr>
     
     
-        <td class="center">
+        <td class="center" style="width:33.33%;">
             <table style="width: 100%; border: none; padding:0; font-size: 16px;">
                 <tr style="padding:0">
                     <td style="text-align: right; direction: rtl; unicode-bidi: embed; width: 40%; border:none; padding:0;">عکس سند ملکیت</td>
@@ -294,7 +294,7 @@
                 </tr>
             </table>
         </td>
-        <td class="center">
+        <td class="center" style="width:33.33%;">
             <table style="width: 100%; border: none; padding:0; font-size: 16px;">
             <tr style="padding:0">
                 <td style="text-align: right; direction: rtl; unicode-bidi: embed; width: 40%; border:none; padding:0;">عکس فضای ملکیت</td>
@@ -302,7 +302,7 @@
             </tr>
         </table>
         </td>
-        <td class="center">
+        <td class="center" style="width:33.33%;">
             <table style="width: 100%; border: none; padding:0; font-size: 16px;">
                 <tr style="padding:0">
                     <td style="text-align: right; direction: rtl; unicode-bidi: embed; width: 40%; border:none; padding:0;">عکس ملکیت</td>
@@ -312,7 +312,7 @@
         </td>
     </tr>
     <tr>
-        <td style="height:250px;" class="center">
+        <td style="width:33.33%; height:250px;" class="center">
            @php
                 $document = $submission?->extraAttributesJson['house_document_photo'] ?? null;
                 $documentPath = $document
@@ -322,18 +322,15 @@
                     $documentPath = public_path('images/default.png');
                 }
             @endphp
-
-            <img src="{{ $documentPath }}" alt="تصویر" style="max-width:100%; max-height:250px;">
+            <img src="{{ $documentPath }}" alt="تصویر" style="max-width:100%; max-height:230px; width:auto; height:auto; object-fit:contain;">
         </td>
 
-
-        <td style="height:250px;" class="center">
-   
-            <img src="{{ $location['map_image'] }}" alt="تصویر" style="max-width:100%; max-height:250px;">
+        <td style="width:33.33%; height:250px;" class="center">
+            <img src="{{ $location['map_image'] }}" alt="تصویر" style="max-width:100%; max-height:230px; width:auto; height:auto; object-fit:contain;">
         </td>
-        <td style="height:250px;" class="center">
-    
-            <img src="{{ $submission->photoSection->photo_house_building }}" alt="تصویر" style="max-width:100%; max-height:250px;">
+
+        <td style="width:33.33%; height:250px;" class="center">
+            <img src="{{ $submission->photoSection->photo_house_building }}" alt="تصویر" style="max-width:100%; max-height:230px; width:auto; height:auto; object-fit:contain;">
         </td>
     </tr>
 
