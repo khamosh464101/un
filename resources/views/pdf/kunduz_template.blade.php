@@ -88,7 +88,7 @@
 </table>
 
 <!-- Location Table -->
-<table>
+<table style="table-layout: auto; width: 100%;">
     <tr>
         <td>قطعه زمین-Parcel</td>
         <td>بلاک-Block</td>
