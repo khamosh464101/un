@@ -315,7 +315,7 @@
         <td style="height:250px;" class="center">
             @php
                 // Get document path
-                $document = $submission->houseLandOwnership?->landOwnershipDocument?->first()?->house_document_photo;
+                $document = $document = $submission?->extraAttributesJson?->house_document_photo;
 
                 $documentPath = $document;
                 // Check if file exists, else fallback
