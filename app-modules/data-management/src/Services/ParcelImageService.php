@@ -729,8 +729,9 @@ private function getLinuxBoldFontPath(): ?string
 
         $attrs    = $parcel['attributes'] ?? [];
         $district   = $attrs['DISTRICT']   ?? 'Unknown';
-        $provinceC  = $attrs['PROVINCE_C'] ?? '??';
-        $line1 = "AFGHANISTAN: {$district} - PD#{$provinceC}";
+        // $provinceC  = $attrs['PROVINCE_C'] ?? '??';
+        $province  = $attrs['PROVINCE'] ?? '';
+        $line1 = "AFGHANISTAN: {$province} Province, {$district} District";
         $line2 = "Parcel No: " . $parcel['code'];
 
         // North arrow sits inside the band, right side — reserve space for it
