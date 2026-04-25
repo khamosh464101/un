@@ -58,7 +58,7 @@ class BulkDownloadController
             // Create batch record
             $batch = BulkDownloadBatch::create([
                 'batch_id' => $batchId,
-                'name' => $request->batch_name ?? 'Bulk Download ' . now()->format('Y-m-d H:i:s'),
+                'name' => $batchName ?? 'Bulk Download ' . now()->format('Y-m-d H:i:s'),
                 'total_items' => count($ids),
                 'status' => 'pending',
                 'metadata' => [
