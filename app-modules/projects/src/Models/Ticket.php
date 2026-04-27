@@ -117,10 +117,7 @@ class Ticket extends Model
         return $this->hasMany(TicketComment::class, 'ticket_id', 'id');
     }
 
-    public function hours(): HasMany
-    {
-        return $this->hasMany(TicketHour::class, 'ticket_id', 'id');
-    }
+
 
 
     public function getCreatedAtAttribute($value) {
@@ -201,7 +198,7 @@ class Ticket extends Model
     }
     public function getProjectIdAttribute()
     {
-        return $this->activity->project_id;
+        return $this->activity?->project_id;
     }
 
     public function getUpdatedAtAttribute($value)

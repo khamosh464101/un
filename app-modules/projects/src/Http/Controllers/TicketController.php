@@ -86,7 +86,7 @@ class TicketController
 
 
     public function edit($id) {
-        $ticket = Ticket::with('gozars.district.province')->with('comments.user')->with('hours.user')->withSum('hours', 'value')->with('logs.causer')->find($id);
+        $ticket = Ticket::with('gozars.district.province')->with('comments.user')->with('logs.causer')->find($id);
         $ticket->status;
         $ticket->type;
         $ticket->priority;

@@ -81,21 +81,21 @@
     <tr>
         <td style="text-align: right; border:none;">کود نمبر:</td>
         <td style="text-align: left; border:none;direction: ltr">
-        <strong style="direction: ltr; unicode-bidi: embed;">Issue year: 2024</strong>
+        <strong style="direction: ltr; unicode-bidi: embed;">Issue year: 2026</strong>
         <br>
         Code Number:</td>
     </tr>
 </table>
 
 <!-- Location Table -->
-<table style="table-layout: auto; width: 100%;">
+<table>
     <tr>
-        <td>قطعه زمین-Parcel</td>
-        <td>بلاک-Block</td>
-        <td>گذر-Gozar</td>
-        <td>ناحیه-District</td>
-        <td>قریه-Village</td>
-        <td>ولایت-Province</td>
+        <td style="width:10%;"> قطعه زمین- Parcel</td>
+        <td style="width:10%;"> بلاک- Block</td>
+        <td style="width:15%;"> گذر- Gozar</td>
+        <td style="width:25%;"> ناحیه- District</td>
+        <td style="width:15%;"> قریه- Village</td>
+        <td style="width:25%;"> ولایت- Province</td>
     </tr>
     <tr>
         <td>{{ $location['house'] ?? '' }}</td>

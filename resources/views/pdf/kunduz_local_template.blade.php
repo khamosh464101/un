@@ -81,7 +81,7 @@
     <tr>
         <td style="text-align: right; border:none;">کود نمبر:</td>
         <td style="text-align: left; border:none;direction: ltr">
-        <strong style="direction: ltr; unicode-bidi: embed;">Issue year: 2024</strong>
+        <strong style="direction: ltr; unicode-bidi: embed;">Issue year: 2025</strong>
         <br>
         Code Number:</td>
     </tr>
@@ -90,12 +90,12 @@
 <!-- Location Table -->
 <table>
     <tr>
-        <td>قطعه زمین-Parcel</td>
-        <td>بلاک-Block</td>
-        <td>گذر-Gozar</td>
-        <td>ناحیه-District</td>
-        <td>قریه-Village</td>
-        <td>ولایت-Province</td>
+        <td style="width:10%;"> قطعه زمین- Parcel</td>
+        <td style="width:10%;"> بلاک- Block</td>
+        <td style="width:15%;"> گذر- Gozar</td>
+        <td style="width:25%;"> ناحیه- District</td>
+        <td style="width:15%;"> قریه- Village</td>
+        <td style="width:25%;"> ولایت- Province</td>
     </tr>
     <tr>
         <td>{{ $location['house'] ?? '' }}</td>
@@ -289,9 +289,7 @@
 <!-- Property Images -->
 <table>
     <tr>
-    
-    
-        <td class="center">
+        <td class="center" style="width:33.33%;">
             <table style="width: 100%; border: none; padding:0; font-size: 16px;">
                 <tr style="padding:0">
                     <td style="text-align: right; direction: rtl; unicode-bidi: embed; width: 40%; border:none; padding:0;">عکس سند ملکیت</td>
@@ -299,7 +297,7 @@
                 </tr>
             </table>
         </td>
-        <td class="center">
+        <td class="center" style="width:33.33%;">
             <table style="width: 100%; border: none; padding:0; font-size: 16px;">
             <tr style="padding:0">
                 <td style="text-align: right; direction: rtl; unicode-bidi: embed; width: 40%; border:none; padding:0;">عکس فضای ملکیت</td>
@@ -307,7 +305,7 @@
             </tr>
         </table>
         </td>
-        <td class="center">
+        <td class="center" style="width:33.33%;">
             <table style="width: 100%; border: none; padding:0; font-size: 16px;">
                 <tr style="padding:0">
                     <td style="text-align: right; direction: rtl; unicode-bidi: embed; width: 40%; border:none; padding:0;">عکس ملکیت</td>
@@ -317,40 +315,26 @@
         </td>
     </tr>
     <tr>
-        <td style="height:250px;" class="center">
+        <td style="width:33.33%; height:250px;" class="center">
     @php
-        // Get document path
-        $document = $submission->houseLandOwnership?->landOwnershipDocument?->first()?->house_document_photo;
-
-        // Remove local URLs if needed
-        $document = $document
-            ? str_replace(['http://127.0.0.1:8000/', 'http://localhost/'], '', $document)
-            : null;
-
-        // Get full absolute path
-        $documentPath = $document ? public_path($document) : null;
-
-        // Check if file exists, else fallback
-        if (! $documentPath || ! file_exists($documentPath)) {
+        $document = $submission?->extraAttributesJson['house_document_photo'] ?? null;
+        $documentPath = $document
+            ? public_path('storage/kobo-attachments/' . $document)
+            : public_path('images/default.png');
+        if (!file_exists($documentPath)) {
             $documentPath = public_path('images/default.png');
         }
     @endphp
-
-    <img src="{{ $documentPath }}" alt="تصویر" style="max-width:100%; max-height:250px;">
+    <img src="{{ $documentPath }}" alt="تصویر" style="max-width:100%; max-height:230px; width:auto; height:auto; object-fit:contain;">
 </td>
-        <td style="height:250px;" class="center">
-            @php
-                $map = str_replace('http://127.0.0.1:8000/', '', $location['map_image']);
-            @endphp
-            <img src="{{ $location['map_image'] }}" alt="تصویر" style="max-width:100%; max-height:250px;">
+        <td style="width:33.33%; height:250px;" class="center">
+            <img src="{{ $location['map_image'] }}" alt="تصویر" style="max-width:100%; max-height:230px; width:auto; height:auto; object-fit:contain;">
         </td>
-        <td style="height:250px;" class="center">
+        <td style="width:33.33%; height:250px;" class="center">
             @php
-                $house = str_replace('http://127.0.0.1:8000/', '', $submission->photoSection->photo_house_building);
-                $house = str_replace('http://localhost/', '', $house);
-                
+                $house = str_replace(['http://127.0.0.1:8000/', 'http://localhost/'], '', $submission->photoSection->photo_house_building);
             @endphp
-            <img src="{{ public_path($house) }}" alt="تصویر" style="max-width:100%; max-height:250px;">
+            <img src="{{ public_path($house) }}" alt="تصویر" style="max-width:100%; max-height:230px; width:auto; height:auto; object-fit:contain;">
         </td>
     </tr>
 </table>

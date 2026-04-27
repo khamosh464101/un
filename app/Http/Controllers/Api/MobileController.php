@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\Projects\Models\TicketStatus;
 use Modules\Projects\Models\Ticket;
+use Modules\Projects\Models\Activity;
+use Modules\Projects\Models\Project;
 use Modules\Projects\Http\Controllers\ProjectController;
 use Auth;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -27,9 +29,13 @@ class MobileController extends Controller
         $ticket = Ticket::with('comments.user')->find($id);
         $ticket->status;
         $ticket->priority;
-        $ticket->documents;
         $ticket->owner;
         $ticket->responsible;
+        $documents = $ticket->documents->map(function ($doc) {
+            $doc->url = asset('storage/' . $doc->path);
+            return $doc;
+        });
+        $ticket->setRelation('documents', $documents);
         return response()->json($ticket, 201);
     }
 
@@ -181,6 +187,143 @@ class MobileController extends Controller
 
     public function getSubmissions() {
         return response()->json(Auth::user()->submissions->where('submission_status_id', 3));
+    }
+
+
+    public function ownedTickets(Request $request) {
+        return TicketStatus::with([
+            'tickets' => function ($query) {
+                $query->where('owner_id', Auth::id())
+                    ->orderBy('order1', 'asc')
+                    ->with(['priority', 'owner', 'responsible', 'comments.user', 'activity:id,project_id']);
+            }
+        ])->get();
+    }
+
+    public function ownedTicketDetails($id) {
+        $ticket = Ticket::with([
+            'comments.user',
+            'status',
+            'priority',
+            'documents',
+            'owner',
+            'responsible',
+        ])->findOrFail($id);
+        return response()->json($ticket, 200);
+    }
+
+
+    public function getFormData(Request $request) {
+        $staffId    = Auth::user()->staff_id;
+        $priorities = \Modules\Projects\Models\TicketPriority::all(['id', 'title']);
+        $statuses   = \Modules\Projects\Models\TicketStatus::all(['id', 'title']);
+        $staff      = \Modules\Projects\Models\Staff::all(['id', 'name', 'photo']);
+        $projects   = \Modules\Projects\Models\Project::with(['activities' => function($q) {
+            $q->select('id', 'title', 'activity_number', 'project_id');
+        }])->where('manager_id', $staffId)->get(['id', 'title', 'code', 'manager_id']);
+        $isManager  = $projects->isNotEmpty();
+        return response()->json(compact('priorities', 'statuses', 'staff', 'projects', 'isManager'));
+    }
+
+    public function createTicket(Request $request) {
+        $request->validate([
+            'title'               => 'required|string|max:255',
+            'description'         => 'nullable|string',
+            'start_date'          => 'required|date',
+            'deadline'            => 'required|date|after_or_equal:start_date',
+            'responsible_id'      => 'required|exists:staff,id',
+            'ticket_priority_id'  => 'required|exists:ticket_priorities,id',
+            'ticket_status_id'    => 'required|exists:ticket_statuses,id',
+            'activity_id'         => 'required|exists:activities,id',
+        ]);
+
+        $ticket = \Modules\Projects\Models\Ticket::create([
+            'title'              => $request->title,
+            'description'        => $request->description,
+            'start_date'         => $request->start_date,
+            'deadline'           => $request->deadline,
+            'responsible_id'     => $request->responsible_id,
+            'ticket_priority_id' => $request->ticket_priority_id,
+            'ticket_status_id'   => $request->ticket_status_id,
+            'activity_id'        => $request->activity_id,
+            'owner_id'           => Auth::id(),
+        ]);
+
+        return response()->json(
+            \Modules\Projects\Models\Ticket::with(['priority', 'status', 'owner', 'responsible'])->find($ticket->id),
+            201
+        );
+    }
+
+    public function updateTicket(Request $request, $id) {
+        $ticket = \Modules\Projects\Models\Ticket::findOrFail($id);
+
+        if ($ticket->owner_id !== Auth::id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $request->validate([
+            'title'               => 'required|string|max:255',
+            'description'         => 'nullable|string',
+            'start_date'          => 'required|date',
+            'deadline'            => 'required|date|after_or_equal:start_date',
+            'responsible_id'      => 'required|exists:staff,id',
+            'ticket_priority_id'  => 'required|exists:ticket_priorities,id',
+            'ticket_status_id'    => 'required|exists:ticket_statuses,id',
+            'activity_id'         => 'required|exists:activities,id',
+        ]);
+
+        $ticket->update($request->only([
+            'title', 'description', 'start_date', 'deadline',
+            'responsible_id', 'ticket_priority_id', 'ticket_status_id', 'activity_id',
+        ]));
+
+        return response()->json(
+            \Modules\Projects\Models\Ticket::with(['priority', 'status', 'owner', 'responsible'])->find($ticket->id)
+        );
+    }
+
+    public function deleteTicket($id) {
+        $ticket = \Modules\Projects\Models\Ticket::findOrFail($id);
+
+        if ($ticket->owner_id !== Auth::id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $ticket->delete();
+        return response()->json(['message' => 'Task deleted successfully']);
+    }
+
+
+    public function uploadAttachment(Request $request) {
+        $request->validate([
+            'ticket_id' => 'required|exists:tickets,id',
+            'title'     => 'required|string|max:255',
+            'file'      => 'required|file|max:20480',
+        ]);
+
+        $ticket = Ticket::findOrFail($request->ticket_id);
+        $file   = $request->file('file');
+        $ext    = $file->getClientOriginalExtension();
+        $slug   = \Illuminate\Support\Str::slug($request->title);
+        $name   = $slug . '-' . now()->format('Y-m-d-H-i-s') . '.' . $ext;
+        $path   = $file->storeAs('project-management/document', $name, 'public');
+
+        $document = $ticket->documents()->create([
+            'title'       => $request->title,
+            'path'        => $path,
+            'size'        => round($file->getSize() / 1048576, 2),
+            'description' => null,
+        ]);
+
+        $document->url = asset('storage/' . $path);
+        return response()->json($document, 201);
+    }
+
+    public function deleteAttachment($id) {
+        $document = \Modules\Projects\Models\Document::findOrFail($id);
+        $document->delete();
+        return response()->json(['message' => 'Attachment deleted successfully']);
     }
 
 }

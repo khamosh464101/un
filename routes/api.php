@@ -44,6 +44,17 @@ Route::middleware(['auth:sanctum', 'twofactor'])->group(function () {
     Route::post('/mobile/change-password', [MobileController::class, 'changePassword']);
     Route::get('/mobile/dashboard', [MobileController::class, 'dashboard']);
      Route::get('/mobile/submissions', [MobileController::class, 'getSubmissions']);
+    Route::get('/mobile/owned-tickets', [MobileController::class, 'ownedTickets']);
+    Route::post('/mobile/tickets/attachment/upload', [MobileController::class, 'uploadAttachment']);
+    Route::delete('/mobile/tickets/attachment/{id}/delete', [MobileController::class, 'deleteAttachment']);
+
+    Route::get('/mobile/task-form-data', [MobileController::class, 'getFormData']);
+    Route::post('/mobile/tickets/create', [MobileController::class, 'createTicket']);
+    Route::put('/mobile/tickets/{id}/update', [MobileController::class, 'updateTicket']);
+    Route::delete('/mobile/tickets/{id}/delete', [MobileController::class, 'deleteTicket']);
+
+    Route::get('/mobile/owned-tickets/{id}', [MobileController::class, 'ownedTicketDetails']);
+
 
     
     

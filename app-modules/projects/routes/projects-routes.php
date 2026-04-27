@@ -18,7 +18,6 @@ use Modules\Projects\Http\Controllers\GozarController;
  use Modules\Projects\Http\Controllers\TicketController;
  use Modules\Projects\Http\Controllers\DocumentController;
  use Modules\Projects\Http\Controllers\TicketCommentController;
- use Modules\Projects\Http\Controllers\TicketHourController;
  use Modules\Projects\Http\Controllers\StaffContractTypeController;
 
  Route::middleware(['auth:sanctum', 'twofactor'])->get('/user', function (Request $request) {
