@@ -90,12 +90,12 @@
 <!-- Location Table -->
 <table>
     <tr>
-        <td style="width:10%;"> قطعه زمین- Parcel</td>
-        <td style="width:10%;"> بلاک- Block</td>
-        <td style="width:15%;"> گذر- Gozar</td>
-        <td style="width:25%;"> ناحیه- District</td>
-        <td style="width:15%;"> قریه- Village</td>
-        <td style="width:25%;"> ولایت- Province</td>
+        <td >قطعه زمین - Parcel</td>
+        <td >بلاک - Block</td>
+        <td >گذر - Gozar</td>
+        <td >ناحیه - District</td>
+        <td >قریه - Village</td>
+        <td >ولایت - Province</td>
     </tr>
     <tr>
         <td>{{ $location['house'] ?? '' }}</td>
