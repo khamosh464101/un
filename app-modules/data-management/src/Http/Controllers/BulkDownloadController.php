@@ -363,7 +363,7 @@ class BulkDownloadController
                     'province_code' => $item->submission->sourceInformation->province_code ?? 'N/A',
                     'city_code' => $item->submission->sourceInformation->city_code ?? 'N/A',
                     'district_code' => $item->submission->sourceInformation->district_code ?? 'N/A',
-                    'guzar_code' => $item->submission->sourceInformation->kbl_guzar_number ?? 'N/A',
+                    'guzar_code' => $item->submission->sourceInformation->kbl_guzar_number ?? substr($item->submission->extraAttributesJson['guzar_number'], -3)  ?? 'N/A',
                     'block_number' => substr($item->submission->sourceInformation->block_number, -3) ?? 'N/A',
                     'house_number' => substr($item->submission->sourceInformation->house_number, -3) ?? 'N/A',
                     'error' => $item->error_message,
@@ -382,14 +382,17 @@ class BulkDownloadController
 
     public function retryFailed(Request $request, $batchId)
     {
+    
         $request->validate([
             'item_ids' => 'sometimes|array',
             'item_ids.*' => 'exists:dm_bulk_download_items,id'
         ]);
 
-        $batch = BulkDownloadBatch::where('batch_id', $batchId)->first();
         
-        if (!$batch) {
+
+        $originalBatch = BulkDownloadBatch::where('batch_id', $batchId)->first();
+        
+        if (!$originalBatch) {
             return response()->json(['error' => 'Batch not found'], 404);
         }
 
@@ -405,44 +408,149 @@ class BulkDownloadController
             return response()->json(['error' => 'No failed items to retry'], 400);
         }
 
-        DB::transaction(function () use ($failedItems, $batch) {
-            foreach ($failedItems as $item) {
-                // Reset item
-                $item->update([
-                    'status' => 'pending',
-                    'progress' => 0,
-                    'error_message' => null,
-                    'started_at' => null,
-                    'completed_at' => null
+        // Check if the current batch has ANY successful items
+        $hasSuccessfulItems = BulkDownloadItem::where('batch_id', $batchId)
+            ->where('status', 'completed')
+            ->exists();
+
+        DB::beginTransaction();
+        
+        try {
+            // If batch has NO successful items, reuse the current batch
+            if (!$hasSuccessfulItems) {
+                
+                $submissionIds = [];
+                foreach ($failedItems as $item) {
+                    $submissionIds[] = $item->submission_id;
+                    
+                    // Reset the item in the SAME batch
+                    $item->update([
+                        'status' => 'pending',
+                        'progress' => 0,
+                        'error_message' => null,
+                        'started_at' => null,
+                        'completed_at' => null
+                    ]);
+
+                    // Update batch counters
+                    $originalBatch->decrement('failed_items');
+                    $originalBatch->decrement('processed_items');
+
+                    // Re-dispatch job for the SAME batch
+                    ProcessBulkDownloadItem::dispatch($batchId, $item->submission_id, $item->id)
+                        ->onQueue('bulk-downloads');
+                }
+
+                // Update batch status back to processing
+                if ($originalBatch->status === 'completed') {
+                    $originalBatch->update(['status' => 'processing']);
+                }
+
+                BulkDownloadLog::create([
+                    'batch_id' => $batchId,
+                    'level' => 'info',
+                    'message' => 'Retrying failed items in same batch (no successful items yet)',
+                    'context' => [
+                        'retry_count' => $failedItems->count(),
+                        'submission_ids' => $submissionIds
+                    ]
                 ]);
 
-                // Update batch counters
-                $batch->decrement('failed_items');
-                $batch->decrement('processed_items');
+                DB::commit();
 
-                // Re-dispatch job
-                ProcessBulkDownloadItem::dispatch($batch->batch_id, $item->submission_id, $item->id)
+                return response()->json([
+                    'success' => true,
+                    'message' => "Retrying {$failedItems->count()} items in the same batch (no successful items yet)",
+                    'batch_id' => $batchId,
+                    'batch_name' => $originalBatch->name,
+                    'retry_count' => $failedItems->count(),
+                    'reused_batch' => true
+                ]);
+            }
+
+            // If batch HAS successful items, create a NEW batch for retry
+            $newBatchId = (string) Str::uuid();
+            
+            // Create new batch record
+            $newBatch = BulkDownloadBatch::create([
+                'batch_id' => $newBatchId,
+                'name' => $originalBatch->name . ' (Retry - ' . now()->format('Y-m-d H:i') . ')',
+                'total_items' => $failedItems->count(),
+                'status' => 'pending',
+                'metadata' => [
+                    'user_id' => auth()->id(),
+                    'user_name' => auth()->user()->name ?? 'System',
+                    'requested_at' => now()->toIso8601String(),
+                    'retry_from_batch' => $batchId,
+                    'original_batch_name' => $originalBatch->name
+                ]
+            ]);
+
+            // Create new items for the new batch
+            $submissionIds = [];
+            foreach ($failedItems as $failedItem) {
+                $submissionIds[] = $failedItem->submission_id;
+                
+                $newItem = BulkDownloadItem::create([
+                    'batch_id' => $newBatchId,
+                    'submission_id' => $failedItem->submission_id,
+                    'status' => 'pending',
+                    'progress' => 0,
+                    'metadata' => [
+                        'retried_from_batch' => $batchId,
+                        'original_item_id' => $failedItem->id,
+                        'original_error' => $failedItem->error_message
+                    ]
+                ]);
+
+                // Dispatch job for the new batch
+                ProcessBulkDownloadItem::dispatch($newBatchId, $failedItem->submission_id, $newItem->id)
                     ->onQueue('bulk-downloads');
             }
 
-            // Update batch status if needed
-            if ($batch->status === 'completed') {
-                $batch->update(['status' => 'processing']);
-            }
-        });
+            BulkDownloadLog::create([
+                'batch_id' => $newBatchId,
+                'level' => 'info',
+                'message' => 'Retry batch created from failed items',
+                'context' => [
+                    'original_batch_id' => $batchId,
+                    'total_items' => $failedItems->count(),
+                    'submission_ids' => $submissionIds
+                ]
+            ]);
 
-        BulkDownloadLog::create([
-            'batch_id' => $batchId,
-            'level' => 'info',
-            'message' => "Retrying {$failedItems->count()} failed items",
-            'context' => ['item_ids' => $failedItems->pluck('id')]
-        ]);
+            // Log in original batch too
+            BulkDownloadLog::create([
+                'batch_id' => $batchId,
+                'level' => 'info',
+                'message' => "Failed items retried in new batch: {$newBatchId}",
+                'context' => [
+                    'new_batch_id' => $newBatchId,
+                    'retry_count' => $failedItems->count()
+                ]
+            ]);
 
-        return response()->json([
-            'success' => true,
-            'message' => "Retrying {$failedItems->count()} failed items",
-            'retry_count' => $failedItems->count()
-        ]);
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => "Created new batch with {$failedItems->count()} items for retry",
+                'new_batch_id' => $newBatchId,
+                'new_batch_name' => $newBatch->name,
+                'original_batch_id' => $batchId,
+                'retry_count' => $failedItems->count(),
+                'reused_batch' => false
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to create retry batch',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function cancelBatch($batchId)

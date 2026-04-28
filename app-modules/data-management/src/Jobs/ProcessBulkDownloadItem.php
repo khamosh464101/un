@@ -76,6 +76,9 @@ class ProcessBulkDownloadItem implements ShouldQueue
 
             $item->update(['progress' => 30]);
 
+            // Check if map image exists before processing
+            $this->validateMapImageExists($submission);
+
             // Generate PDF using the exact same logic as downloadProfile
             $pdfContent = $this->generatePDF($submission);
             
@@ -428,6 +431,117 @@ class ProcessBulkDownloadItem implements ShouldQueue
         return $name . '.pdf';
     }
 
+
+    /**
+     * Validate that map image exists on Google Cloud Storage
+     * Throws exception if image is not found
+     */
+    private function validateMapImageExists($submission)
+    {
+        // Get form and location data
+        $form = Form::find($submission->dm_form_id);
+        
+        if (!$form || !$form->raw_schema) {
+            throw new Exception("Form not found for submission ID: {$submission->id}");
+        }
+
+        $dataObject = json_decode($form->raw_schema);
+        $choices = $dataObject->asset->content->choices ?? [];
+        
+        if (!is_array($choices)) {
+            $choices = [];
+        }
+
+        $location = [];
+        $source = $submission->sourceInformation;
+        $extra = is_array($submission->extraAttributesJson)
+            ? $submission->extraAttributesJson
+            : [];
+
+        // Extract location codes
+        if ($source?->province_code) {
+            $location['province_code'] = $source->province_code;
+        }
+
+        if ($source?->city_code) {
+            $location['city_code'] = $source->city_code;
+        }
+
+        if ($source?->district_code) {
+            $location['district_code'] = $source->district_code;
+        }
+
+        // Extract guzar, block, house from choices
+        foreach ($choices as $value) {
+            if (!isset($value->name)) {
+                continue;
+            }
+
+            if ($value->name === ($source?->kbl_guzar_number ?? null)) {
+                $location['guzar'] = $value->label[0];
+            }
+
+            if ($value->name === ($extra['guzar_number'] ?? null)) {
+                if (isset($value->label[0])) {
+                    $location['guzar'] = $value->label[0];
+                }
+            }
+
+            if ($source?->block_number === $value->name && isset($value->label[0])) {
+                $location['block'] = $value->label[0];
+            }
+
+            if ($source?->house_number === $value->name && isset($value->label[0])) {
+                $location['house'] = $value->label[0];
+            }
+        }
+
+        // Get folder from projects
+        if ($submission->projects && $submission->projects->isNotEmpty()) {
+            $firstProject = $submission->projects->first();
+            if ($firstProject && $firstProject->google_storage_folder) {
+                $location['folder'] = $firstProject->google_storage_folder;
+            }
+        }
+
+        // Check if we have the required data
+        if (empty($location['folder'])) {
+            throw new Exception("Map image not found: No Google Storage folder configured for this submission");
+        }
+
+        // Build the file path
+        $guzar = $location['guzar'] ?? null;
+        if ($guzar !== null && strlen($guzar) === 3 && str_starts_with($guzar, '0')) {
+            $guzar = substr($guzar, 1);
+        }
+
+        $parts = [
+            $location['province_code'] ?? null,
+            $location['city_code'] ?? null,
+            $location['district_code'] ?? null,
+            $guzar,
+            $location['block'] ?? null,
+            $location['house'] ?? null
+        ];
+
+        // Filter out empty values
+        $parts = array_filter($parts, function($value) {
+            return !empty($value);
+        });
+        
+        $code = implode('-', $parts);
+        $filePath = "{$location['folder']}/{$code}.jpg";
+
+        // Check if file exists on Google Cloud Storage
+        if (!Storage::disk('gcs')->exists($filePath)) {
+            throw new Exception("Map image not found: {$filePath}");
+        }
+
+        $this->log('info', 'Map image validated successfully', [
+            'submission_id' => $this->submissionId,
+            'file_path' => $filePath
+        ]);
+    }
 
     /**
      * Get map path (matches your existing getPath method)
