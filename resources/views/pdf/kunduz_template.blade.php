@@ -81,7 +81,7 @@
     <tr>
         <td style="text-align: right; border:none;">کود نمبر:</td>
         <td style="text-align: left; border:none;direction: ltr">
-        <strong style="direction: ltr; unicode-bidi: embed;">Issue year: 2026</strong>
+        <strong style="direction: ltr; unicode-bidi: embed;">Issue year: 2025</strong>
         <br>
         Code Number:</td>
     </tr>
@@ -94,7 +94,7 @@
         <td >بلاک - Block</td>
         <td >گذر - Gozar</td>
         <td >ناحیه - District</td>
-        <td >قریه - Village</td>
+        <td >منطقه - Manteqa</td>
         <td >ولایت - Province</td>
     </tr>
     <tr>

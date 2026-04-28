@@ -235,8 +235,8 @@ class ProcessBulkDownloadItem implements ShouldQueue
             }
 
             // Manteqa
-            if ($value->name === ($extra['manteqa'] ?? null) && isset($value->label[0])) {
-                $location['manteqa'] = substr($value->label[0], 1);
+            if ($value->name === ($extra['manteqa'] ?? null) && isset($value->label[1])) {
+                $location['manteqa'] = $value->label[1];
             }
 
             // Origin province

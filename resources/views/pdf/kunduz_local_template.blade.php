@@ -94,7 +94,7 @@
         <td >بلاک - Block</td>
         <td >گذر - Gozar</td>
         <td >ناحیه - District</td>
-        <td >قریه - Village</td>
+        <td >منطقه - Manteqa</td>
         <td >ولایت - Province</td>
     </tr>
     <tr>
@@ -102,7 +102,7 @@
         <td>{{ $location['block'] ?? '' }}</td>
         <td>{{ $location['guzar'] ?? '' }}</td>
         <td>{{ $location['district'] ?? '' }} - {{ $location['district_code'] ?? '' }}</td>
-        <td>  {{ $location['manteqa'] ?? '' }}</td>
+        <td> {{ $location['manteqa'] ?? '' }}</td>
         <td>{{ $location['province'] ?? '' }} - {{ $location['province_code'] ?? '' }}</td>
     </tr>
 </table>
