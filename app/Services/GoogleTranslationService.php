@@ -18,7 +18,7 @@ class GoogleTranslationService
         // Try GOOGLE_APPLICATION_CREDENTIALS first (standard Google Cloud env var)
         $keyFilePath = storage_path('app/public/settings/google-storage-service-account.json');
         
-        $keyFilePath = env('GOOGLE_APPLICATION_CREDENTIALS');
+        // $keyFilePath = env('GOOGLE_APPLICATION_CREDENTIALS');
         // Fall back to GOOGLE_CLOUD_KEY_FILE
         if (empty($keyFilePath) || !file_exists($keyFilePath)) {
             $keyFilePath = env('GOOGLE_CLOUD_KEY_FILE');
