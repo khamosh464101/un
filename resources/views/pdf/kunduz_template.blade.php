@@ -122,7 +122,7 @@
         </td>
         <td style="width:30%;">{{ translateToPersian($submission->headFamily ? $submission->headFamily->hoh_name : $submission->interviewwee->inter_name) }}</td>
         <td style="width:27%;" rowspan="4" class="center">
-    
+    <!-- Just checking 667788 -->
             <img src="{{ $submission->photoSection->photo_interviewee }}" alt="تصویر" style="max-width: 120px; max-height: 150px;">
         </td>
     </tr>
