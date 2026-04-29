@@ -65,3 +65,33 @@ Route::get('/', function () {
 
 
 require __DIR__.'/auth.php';
+
+
+// Test Google Translation
+Route::get('/test-google-translation', function () {
+    try {
+        $service = new \App\Services\GoogleTranslationService();
+        
+        $tests = [
+            'Aman' => $service->translate('Aman'),
+            'Ahmad' => $service->translate('Ahmad'),
+            'Mohammad' => $service->translate('Mohammad'),
+            'Gul Andam' => $service->translate('Gul Andam'),
+            'Abdullah' => $service->translate('Abdullah'),
+        ];
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Google Translation Test',
+            'results' => $tests,
+            'service_exists' => class_exists('\App\Services\GoogleTranslationService'),
+            'helper_exists' => function_exists('translateToPersian'),
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ], 500);
+    }
+});

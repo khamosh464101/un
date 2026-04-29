@@ -120,7 +120,7 @@
                 </tr>
             </table>
         </td>
-        <td style="width:30%;">{{ $submission->headFamily ? $submission->headFamily->hoh_name : $submission->interviewwee->inter_name }}</td>
+        <td style="width:30%;">{{ translateToPersian($submission->headFamily ? $submission->headFamily->hoh_name : $submission->interviewwee->inter_name) }}</td>
         <td style="width:27%;" rowspan="4" class="center">
     
             <img src="{{ $submission->photoSection->photo_interviewee }}" alt="تصویر" style="max-width: 120px; max-height: 150px;">
@@ -136,7 +136,7 @@
             </table>
         </td>
 
-        <td>{{ $submission->headFamily ? $submission->headFamily->hoh_father_name : $submission->interviewwee->inter_father_name }}</td>
+        <td>{{translateToPersian( $submission->headFamily ? $submission->headFamily->hoh_father_name : $submission->interviewwee->inter_father_name ) }}</td>
     </tr>
     <tr>
         
@@ -148,7 +148,7 @@
                 </tr>
             </table>
         </td>
-        <td>{{ $submission->headFamily ? $submission->headFamily->hoh_grandfather_name : $submission->interviewwee->inter_grandfather_name }}</td>
+        <td>{{ translateToPersian( $submission->headFamily ? $submission->headFamily->hoh_grandfather_name : $submission->interviewwee->inter_grandfather_name) }}</td>
     </tr>
     <tr>
         <td style="width: 42%;">
