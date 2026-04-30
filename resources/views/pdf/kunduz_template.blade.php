@@ -93,7 +93,7 @@
         <td >قطعه زمین - Parcel</td>
         <td >بلاک - Block</td>
         <td >گذر - Gozar</td>
-        <td >ناحیه - District</td>
+        <td >ولسوالی - District</td>
         <td >منطقه - Manteqa</td>
         <td >ولایت - Province</td>
     </tr>
