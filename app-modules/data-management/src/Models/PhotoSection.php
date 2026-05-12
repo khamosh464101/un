@@ -105,6 +105,7 @@ class PhotoSection extends Model
 
     $originalPath = storage_path("app/public/kobo-attachments/$value");
     $publicStoragePath = "storage/kobo-attachments/$value";
+    return asset($publicStoragePath);
 
     if (!file_exists($originalPath)) {
         return null;
