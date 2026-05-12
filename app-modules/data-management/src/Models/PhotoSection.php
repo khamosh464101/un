@@ -97,46 +97,77 @@ class PhotoSection extends Model
 
 
 
-
     public function getPhotoIntervieweeAttribute($value)
-    {
-        // 1. Handle missing value
-        if (!$value) {
-            return null;
-        }
-        $originalPath = storage_path("app/public/kobo-attachments/$value");
-        $publicStoragePath = "storage/kobo-attachments/$value"; // Path for asset()
-
-        // 3. Check if original file exists
-        if (!file_exists($originalPath)) {
-            \Log::warning("Photo file not found at: " . $originalPath);
-            return null;
-        }
-
-        // 4. Try to fix image orientation.
-        // IMPORTANT: Doing this on every accessor call is highly inefficient
-        // especially for large images or many images on a page.
-        // It's MUCH better to do this:
-        //    a) When the image is first uploaded/saved.
-        //    b) As a background job (Laravel Queues).
-        // For demonstration, it's here as requested, but be aware of performance.
-
-        // A simple way to avoid re-fixing: If the image is already processed once,
-        // we might not need to run the heavy `fixFaceOrientationWithVision` again.
-        // You could maintain a flag in the database (e.g., `photo_orientation_fixed`)
-        // or check if a `_fixed` version of the file exists.
-        // For simplicity, `fixFaceOrientationWithVision` itself checks.
-        // ImageFixer::fixFaceOrientationWithVision($originalPath);
-        $manager = new ImageManager(new Driver());
-        $image = $manager->read($originalPath);
-        $image->orient(); // v3 (or orientate() if using v2)
-        $image->save($originalPath);
-        return asset($publicStoragePath);
-        ImageFixer::fixFaceOrientationWithVision($originalPath);
-
-        // 5. Return the asset path to the (potentially) fixed image.
-        return asset($publicStoragePath);
+{
+    if (!$value) {
+        return null;
     }
+
+    $originalPath = storage_path("app/public/kobo-attachments/$value");
+    $publicStoragePath = "storage/kobo-attachments/$value";
+
+    if (!file_exists($originalPath)) {
+        return null;
+    }
+
+    $extension = strtolower(pathinfo($originalPath, PATHINFO_EXTENSION));
+
+    if ($extension !== 'heic') {
+        try {
+            $manager = new ImageManager(new Driver());
+            $image = $manager->read($originalPath);
+            $image->orient();
+            $image->save($originalPath);
+        } catch (\Exception $e) {
+            \Log::warning('Image processing skipped', [
+                'file' => $originalPath,
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
+    return asset($publicStoragePath);
+}
+
+    // public function getPhotoIntervieweeAttribute($value)
+    // {
+    //     // 1. Handle missing value
+    //     if (!$value) {
+    //         return null;
+    //     }
+    //     $originalPath = storage_path("app/public/kobo-attachments/$value");
+    //     $publicStoragePath = "storage/kobo-attachments/$value"; // Path for asset()
+
+    //     // 3. Check if original file exists
+    //     if (!file_exists($originalPath)) {
+    //         \Log::warning("Photo file not found at: " . $originalPath);
+    //         return null;
+    //     }
+
+    //     // 4. Try to fix image orientation.
+    //     // IMPORTANT: Doing this on every accessor call is highly inefficient
+    //     // especially for large images or many images on a page.
+    //     // It's MUCH better to do this:
+    //     //    a) When the image is first uploaded/saved.
+    //     //    b) As a background job (Laravel Queues).
+    //     // For demonstration, it's here as requested, but be aware of performance.
+
+    //     // A simple way to avoid re-fixing: If the image is already processed once,
+    //     // we might not need to run the heavy `fixFaceOrientationWithVision` again.
+    //     // You could maintain a flag in the database (e.g., `photo_orientation_fixed`)
+    //     // or check if a `_fixed` version of the file exists.
+    //     // For simplicity, `fixFaceOrientationWithVision` itself checks.
+    //     // ImageFixer::fixFaceOrientationWithVision($originalPath);
+    //     $manager = new ImageManager(new Driver());
+    //     $image = $manager->read($originalPath);
+    //     $image->orient(); // v3 (or orientate() if using v2)
+    //     $image->save($originalPath);
+    //     return asset($publicStoragePath);
+    //     ImageFixer::fixFaceOrientationWithVision($originalPath);
+
+    //     // 5. Return the asset path to the (potentially) fixed image.
+    //     return asset($publicStoragePath);
+    // }
 
   
     public function submission(): BelongsTo
