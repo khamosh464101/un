@@ -57,7 +57,7 @@ class PhotoSection extends Model
         }
         $originalPath = storage_path("app/public/kobo-attachments/$value");
         $publicStoragePath = "storage/kobo-attachments/$value"; // Path for asset()
-        return asset($publicStoragePath);
+         return asset($publicStoragePath);
 
         if (!file_exists($originalPath)) {
             \Log::warning("Photo file not found at: " . $originalPath);
@@ -106,7 +106,6 @@ class PhotoSection extends Model
 
     $originalPath = storage_path("app/public/kobo-attachments/$value");
     $publicStoragePath = "storage/kobo-attachments/$value";
-    return asset($publicStoragePath);
 
     if (!file_exists($originalPath)) {
         return null;
