@@ -777,6 +777,8 @@ class SubmissionController
             $location['map_image'] = $this->getPath($location);
         }
 
+        
+
 
 
         // ---------------- PDF PART ----------------
@@ -1102,6 +1104,97 @@ class SubmissionController
 
         // ✅ use asset(), not public_path()
         return asset('images/default.png');
+    }
+
+    /**
+     * Find a submission ID by its location code.
+     *
+     * Accepts a 6-part code:  province_code-city_code-district_code-guzar-block-house
+     * or a 5-part code (no city_code): province_code-district_code-guzar-block-house
+     *
+     * DB column values look like "block_number_038" — the last segment after the last "_"
+     * is the meaningful value. SUBSTRING_INDEX(col, '_', -1) extracts it.
+     * If the value has no "_", the full value is used as-is.
+     */
+    public function findByCode(Request $request)
+    {
+        $code = trim($request->input('code', ''));
+
+        if (empty($code)) {
+            return response()->json(['error' => 'Code is required'], 422);
+        }
+
+        $parts = explode('-', $code);
+        $count = count($parts);
+
+        if ($count < 5 || $count > 6) {
+            return response()->json(['error' => 'Invalid code format. Expected 5 or 6 parts separated by hyphens.'], 422);
+        }
+
+        // Parse parts based on whether city_code is present
+        if ($count === 6) {
+            [$provinceCode, $cityCode, $districtCode, $guzarLabel, $blockLabel, $houseLabel] = $parts;
+        } else {
+            [$provinceCode, $districtCode, $guzarLabel, $blockLabel, $houseLabel] = $parts;
+            $cityCode = null;
+        }
+
+        // Normalize guzarLabel to 3 digits if numeric (e.g. "6" → "006", "12" → "012", "006" stays "006")
+        if (ctype_digit($guzarLabel)) {
+            $guzarLabel = str_pad($guzarLabel, 3, '0', STR_PAD_LEFT);
+        }
+
+        // Primary: guzar stored in kbl_guzar_number on source_information
+        // DB values look like "kbl_guzar_number_006" — SUBSTRING_INDEX extracts the last part after "_"
+        $submission = Submission::whereHas('sourceInformation', function ($q) use (
+            $provinceCode, $cityCode, $districtCode, $guzarLabel, $blockLabel, $houseLabel
+        ) {
+            $q->where('province_code', $provinceCode)
+              ->where('district_code', $districtCode);
+
+            if ($cityCode !== null) {
+                $q->where('city_code', $cityCode);
+            }
+
+            $q->whereNotNull('kbl_guzar_number')
+              ->whereRaw("SUBSTRING_INDEX(kbl_guzar_number, '_', -1) = ?", [$guzarLabel]);
+
+            $q->whereNotNull('block_number')
+              ->whereRaw("SUBSTRING_INDEX(block_number, '_', -1) = ?", [$blockLabel]);
+
+            $q->whereNotNull('house_number')
+              ->whereRaw("SUBSTRING_INDEX(house_number, '_', -1) = ?", [$houseLabel]);
+        })->select('id')->first();
+
+        // Fallback: guzar stored in extra_attributes as attribute_name = "guzar_number"
+        if (!$submission) {
+            $submission = Submission::whereHas('sourceInformation', function ($q) use (
+                $provinceCode, $cityCode, $districtCode, $blockLabel, $houseLabel
+            ) {
+                $q->where('province_code', $provinceCode)
+                  ->where('district_code', $districtCode);
+
+                if ($cityCode !== null) {
+                    $q->where('city_code', $cityCode);
+                }
+
+                $q->whereNotNull('block_number')
+                  ->whereRaw("SUBSTRING_INDEX(block_number, '_', -1) = ?", [$blockLabel]);
+
+                $q->whereNotNull('house_number')
+                  ->whereRaw("SUBSTRING_INDEX(house_number, '_', -1) = ?", [$houseLabel]);
+            })->whereHas('extraAttributes', function ($q) use ($guzarLabel) {
+                $q->where('attribute_name', 'guzar_number')
+                  ->whereNotNull('attribute_value')
+                  ->whereRaw("SUBSTRING_INDEX(attribute_value, '_', -1) = ?", [$guzarLabel]);
+            })->select('id')->first();
+        }
+
+        if (!$submission) {
+            return response()->json(['not found' => 'No submission found for the given code'], 404);
+        }
+
+        return response()->json(['submission_id' => $submission->id]);
     }
 
     private function getCodeName($location) {

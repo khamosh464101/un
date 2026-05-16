@@ -15,6 +15,7 @@ use Spatie\Activitylog\LogOptions;
 use Modules\Projects\Models\Staff;
 use Modules\DataManagement\Models\Submission;
 use Modules\ArchiveData\Models\Submission as ArchiveSubmission;
+use App\Models\UserDeviceToken;
 
 
 class User extends Authenticatable
@@ -34,7 +35,6 @@ class User extends Authenticatable
         'password',
         'two_factor_code', 
         'two_factor_expires_at',
-        'device_token',
         'staff_id'
     ];
 
@@ -79,9 +79,15 @@ class User extends Authenticatable
         return $this->hasMany(ArchiveSubmission::class, 'user_id');
     }
 
+    public function deviceTokens(): HasMany
+    {
+        return $this->hasMany(UserDeviceToken::class);
+    }
+
     public function routeNotificationForFcm()
     {
-        return $this->device_token;
+        // Return all device tokens for this user so every device gets the notification
+        return $this->deviceTokens()->pluck('device_token')->toArray();
     }
 
     public function getPhotoAttribute() {

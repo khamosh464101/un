@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Notifications\SendTwoFactorCode;
 use Illuminate\Http\JsonResponse;
 use Kreait\Laravel\Firebase\Facades\Firebase;
+use App\Models\UserDeviceToken;
 
 class TwoFactorController extends Controller
 {
@@ -22,7 +23,12 @@ class TwoFactorController extends Controller
             return response()->json(['message' => 'Invalid 2FA code'], 401);
         }
         $user->resetTwoFactorCode();
-        $user->device_token = $request->deviceToken;
+        if ($request->deviceToken) {
+            UserDeviceToken::updateOrCreate(
+                ['user_id' => $user->id, 'device_token' => $request->deviceToken],
+                ['device_name' => $request->deviceName ?? null, 'last_used_at' => now()]
+            );
+        }
         $user->save();
         return response()->json($user, 201);
     }
@@ -48,7 +54,12 @@ class TwoFactorController extends Controller
             return response()->json(['error' => 'Invalid token'], 400);
         }
         $user->resetTwoFactorCode();
-        $user->device_token = $request->deviceToken;
+        if ($request->deviceToken) {
+            UserDeviceToken::updateOrCreate(
+                ['user_id' => $user->id, 'device_token' => $request->deviceToken],
+                ['device_name' => $request->deviceName ?? null, 'last_used_at' => now()]
+            );
+        }
         $user->save();
         return response()->json($user, 201);
     }

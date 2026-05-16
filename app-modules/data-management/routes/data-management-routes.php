@@ -82,6 +82,7 @@ Route::middleware(['auth:sanctum', 'twofactor'])->group(function () {
             Route::post('/update-photo', [SubmissionController::class, 'updatePhoto'])->middleware(['can:profile create']);
             Route::post('/delete-selected-records', [SubmissionController::class, 'deleteSelectedRecords'])->middleware(['can:profile delete']);
             Route::get('/{id}/download-profile', [SubmissionController::class, 'downloadProfile'])->middleware(['can:download profile']);
+            Route::get('/find-by-code', [SubmissionController::class, 'findByCode']);
             
         });
         Route::resource('submissions', SubmissionController::class)->only(['store', 'destroy', 'edit']);
