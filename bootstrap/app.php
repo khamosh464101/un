@@ -25,6 +25,7 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withCommands([
     \App\Console\Commands\CheckMissingSurveyPdfs::class,
+    \App\Console\Commands\MigrateBulkDownloadsToGcs::class,
     ])
     ->withExceptions(function (Exceptions $exceptions) {
         //
