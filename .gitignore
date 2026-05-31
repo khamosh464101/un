@@ -27,7 +27,6 @@ public/un-project-460907-d91021c78057.json/public/gis/*
 /public/Excels/*
 
 DEVELOPER_MANUAL.md
-app/Console/Commands/MigrateBulkDownloadsToGcs.php
 diagrams/
 public/Theme_first_one.json
 public/Theme_first_one_redesigned.json
