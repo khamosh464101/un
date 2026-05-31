@@ -1027,7 +1027,7 @@ class SubmissionController
             $ids = $query->pluck('id')->toArray();
         } 
         foreach ($ids as $key => $value) {
-            $this->archive->archiveSubmission($value, 1);
+            $this->archive->archiveSubmission($value, auth()->id());
         }
         return response()->json(['message' => 'Successfully Archived.'], 201);
     }

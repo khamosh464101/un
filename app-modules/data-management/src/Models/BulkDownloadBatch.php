@@ -61,10 +61,10 @@ class BulkDownloadBatch extends Model
 
         static::deleting(function ($batch) {
 
-            Storage::disk('public')->deleteDirectory("bulk-downloads/batch-{$batch->batch_id}");
+            Storage::disk('gcs')->deleteDirectory("bulk-downloads/batch-{$batch->batch_id}");
 
-            if ($batch->zip_file_path && Storage::disk('public')->exists($batch->zip_file_path)) {
-                Storage::disk('public')->delete($batch->zip_file_path);
+            if ($batch->zip_file_path && Storage::disk('gcs')->exists($batch->zip_file_path)) {
+                Storage::disk('gcs')->delete($batch->zip_file_path);
             }
 
             $batch->items()->delete(); 

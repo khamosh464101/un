@@ -40,7 +40,7 @@ class Submission extends Model
 
     public function projects(): BelongsToMany
     {
-        return $this->belongsToMany(Project::class, 'project_submission');
+        return $this->belongsToMany(Project::class, 'archive_project_submission');
     }
 
     public function form(): BelongsTo

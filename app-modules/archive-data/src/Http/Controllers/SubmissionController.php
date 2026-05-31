@@ -392,7 +392,7 @@ class SubmissionController
             $ids = $query->pluck('id')->toArray();
         } 
         foreach ($ids as $key => $value) {
-            $this->restore->restoreSubmission($value, 1);
+            $this->restore->restoreSubmission($value, auth()->id());
         }
         // return 
         return response()->json(['message' => 'Successfully restored.'], 201);

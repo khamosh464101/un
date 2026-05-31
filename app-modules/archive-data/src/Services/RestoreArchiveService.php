@@ -75,7 +75,21 @@ class RestoreArchiveService
                 unset($tmp['archived_by']);
                 unset($tmp['archived_at']);
                 
-                $sub = submission::create($tmp);
+                $sub = Submission::create($tmp);
+
+                // Restore project pivot associations
+                $pivots = DB::table('archive_project_submission')
+                    ->where('submission_id', $submissionId)
+                    ->get();
+                foreach ($pivots as $pivot) {
+                    DB::table('project_submission')->insert([
+                        'project_id' => $pivot->project_id,
+                        'submission_id' => $pivot->submission_id,
+                        'created_at' => $pivot->created_at,
+                        'updated_at' => $pivot->updated_at,
+                    ]);
+                }
+                DB::table('archive_project_submission')->where('submission_id', $submissionId)->delete();
 
                 if ($t->sourceInformation && !$sub->sourceInformation){
                     $tmp = $t->sourceInformation->toArray();

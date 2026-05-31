@@ -68,28 +68,31 @@ class GenerateBatchZip implements ShouldQueue
             
             $fileCount = 0;
             foreach ($completedFiles as $file) {
-                $fullPath = Storage::disk('public')->path($file->file_path);
-                if (file_exists($fullPath)) {
-                    $zip->addFile($fullPath, $file->file_name ?? basename($file->file_path));
+                // Download PDF from GCS to temp for zipping
+                if (Storage::disk('gcs')->exists($file->file_path)) {
+                    $pdfContent = Storage::disk('gcs')->get($file->file_path);
+                    $tempPdfPath = $tempDir . '/' . ($file->file_name ?? basename($file->file_path));
+                    file_put_contents($tempPdfPath, $pdfContent);
+                    $zip->addFile($tempPdfPath, $file->file_name ?? basename($file->file_path));
                     $fileCount++;
                 } else {
-                    $this->log('warning', 'File not found', ['file_path' => $file->file_path]);
+                    $this->log('warning', 'File not found on GCS', ['file_path' => $file->file_path]);
                 }
             }
             
             $zip->close();
             
-            $this->log('info', 'ZIP file created', ['file_count' => $fileCount, 'size' => filesize($zipPath)]);
-            
-            // Create permanent storage directory
-            $zipStorageDir = 'bulk-downloads/zips';
-            if (!Storage::disk('public')->exists($zipStorageDir)) {
-                Storage::disk('public')->makeDirectory($zipStorageDir);
+            // Clean up temp PDF files
+            foreach ($completedFiles as $file) {
+                $tempPdfPath = $tempDir . '/' . ($file->file_name ?? basename($file->file_path));
+                @unlink($tempPdfPath);
             }
             
-            // Move to permanent storage
-            $zipStoragePath = $zipStorageDir . '/' . $zipFileName;
-            Storage::disk('public')->put($zipStoragePath, file_get_contents($zipPath));
+            $this->log('info', 'ZIP file created', ['file_count' => $fileCount, 'size' => filesize($zipPath)]);
+            
+            // Upload ZIP to Google Cloud Storage
+            $zipStoragePath = "bulk-downloads/zips/{$zipFileName}";
+            Storage::disk('gcs')->put($zipStoragePath, file_get_contents($zipPath));
             
             // Update batch with ZIP path
             $this->batch->update([
@@ -97,10 +100,10 @@ class GenerateBatchZip implements ShouldQueue
                 'status' => 'completed'
             ]);
             
-            // Clean up temp file
+            // Clean up temp ZIP file
             @unlink($zipPath);
             
-            $this->log('info', 'ZIP generation completed', ['zip_path' => $zipStoragePath]);
+            $this->log('info', 'ZIP generation completed and uploaded to GCS', ['zip_path' => $zipStoragePath]);
             
         } catch (Exception $e) {
             $this->handleFailure($e);

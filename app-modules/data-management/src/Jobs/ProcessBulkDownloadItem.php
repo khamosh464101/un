@@ -87,9 +87,9 @@ class ProcessBulkDownloadItem implements ShouldQueue
             // Generate filename using the exact same logic as downloadProfile
             $filename = $this->generateFilename($submission);
             
-            // Store PDF
+            // Store PDF on Google Cloud Storage
             $path = "bulk-downloads/batch-{$this->batchId}/{$filename}";
-            Storage::disk('public')->put($path, $pdfContent);
+            Storage::disk('gcs')->put($path, $pdfContent);
             
             $item->update(['progress' => 90]);
 

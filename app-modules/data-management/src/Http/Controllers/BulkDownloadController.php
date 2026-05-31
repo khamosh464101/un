@@ -17,7 +17,6 @@ use ZipArchive;
 
 use Modules\DataManagement\Http\Controllers\SubmissionController;
 use Modules\Projects\Models\Project;
-use Illuminate\Support\Facades\Cache;
 
 class BulkDownloadController
 {
@@ -326,20 +325,20 @@ class BulkDownloadController
             ], 400);
         }
         
-        if (!$batch->zip_file_path || !Storage::disk('public')->exists($batch->zip_file_path)) {
+        if (!$batch->zip_file_path || !Storage::disk('gcs')->exists($batch->zip_file_path)) {
             return response()->json([
                 'error' => 'ZIP file not found',
                 'status' => 'missing'
             ], 404);
         }
         
-        // Generate temp token and return URL
-        $token = hash('sha256', $batch->id . $batch->zip_file_path . now()->timestamp);
-        Cache::put('download_token:' . $token, $batch->zip_file_path, 7200);
+        // Generate a signed temporary URL from GCS
+        $expiration = now()->addHours(2);
+        $downloadUrl = Storage::disk('gcs')->temporaryUrl($batch->zip_file_path, $expiration);
         
         return response()->json([
             'success' => true,
-            'download_url' => url('/download-temp/' . $token),
+            'download_url' => $downloadUrl,
             'filename' => $batch->name . '.zip'
         ]);
     }
@@ -581,8 +580,8 @@ class BulkDownloadController
             $batch->updateCounters();
         });
 
-        // Clean up any existing files
-        Storage::disk('public')->deleteDirectory("bulk-downloads/batch-{$batchId}");
+        // Clean up any existing files on GCS
+        Storage::disk('gcs')->deleteDirectory("bulk-downloads/batch-{$batchId}");
 
         BulkDownloadLog::create([
             'batch_id' => $batchId,
@@ -625,10 +624,10 @@ class BulkDownloadController
             ->get();
 
         foreach ($oldBatches as $batch) {
-            // Delete files
-            Storage::disk('public')->deleteDirectory("bulk-downloads/batch-{$batch->batch_id}");
+            // Delete files from GCS
+            Storage::disk('gcs')->deleteDirectory("bulk-downloads/batch-{$batch->batch_id}");
             if ($batch->zip_file_path) {
-                Storage::disk('public')->delete($batch->zip_file_path);
+                Storage::disk('gcs')->delete($batch->zip_file_path);
             }
             
             // Delete logs and items (cascading)

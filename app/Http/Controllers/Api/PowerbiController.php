@@ -155,7 +155,7 @@ public function getBIData()
         'accessBasicService'       => ['drinkingwater_main_source','type_water_source','water_source_distance','water_source_route_safe','water_collect_person','water_quality','type_toilet_facilities','access_education','access_school','type_school','nearest_school','access_school_university','access_school_madrasa','Household_members_attend_school_present','litrate_Household_member','access_health_services','health_facilities_type','health_service_distance','health_facility_have_female_staff','health_challanges','type_access_road','how_access_electricity'],
         'livelihood'               => ['Household_main_source_income'],
         'photoSection'             => ['latitude', 'longitude'],
-        'composition'              => ['f_male', 'f_female'],
+        'composition'              => [], // numeric only — no choice mapping needed
     ];
 
     // Build submissions via streaming JSON to avoid holding everything in memory
@@ -209,7 +209,7 @@ public function getBIData()
             'accessBasicService:id,submission_id,drinkingwater_main_source,type_water_source,water_source_distance,water_source_route_safe,water_collect_person,water_quality,type_toilet_facilities,access_education,access_school,type_school,nearest_school,access_school_university,access_school_madrasa,Household_members_attend_school_present,Household_members_attend_university_present,litrate_Household_member,access_health_services,health_facilities_type,health_service_distance,health_facility_have_female_staff,health_challanges,type_access_road,how_access_electricity',
             'livelihood:id,submission_id,Household_main_source_income',
             'photoSection:id,submission_id,latitude,longitude',
-            'composition:id,submission_id,f_male,f_female',
+            'composition:id,submission_id,female_0_1,male_0_1,female_1_5,male_1_5,female_6_12,male_6_12,female_13_17,male_13_17,female_18_30,male_18_30,female_30_60,male_30_60,female_60_above,male_60_above,f_female,f_male,f_total',
         ])
         ->select('id', 'today', 'status', 'dm_form_id')
         ->chunk(500, function ($chunk) use ($choicesMaps, $submissionColumnsToProcess, &$first) {

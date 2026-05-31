@@ -77,6 +77,16 @@ class ArchiveService
                 $tmp['archived_at'] = $archivedAt;
                 $as = ArchiveSubmission::create($tmp);
 
+                // Archive project pivot associations
+                foreach ($submission->projects as $project) {
+                    DB::table('archive_project_submission')->insert([
+                        'project_id' => $project->id,
+                        'submission_id' => $submission->id,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
+
                 if ($submission->sourceInformation && !$as->sourceInformation){
                     $tmp = $submission->sourceInformation->toArray();
                     ArchiveSourceInformation::create($tmp);
