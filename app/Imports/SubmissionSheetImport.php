@@ -118,13 +118,15 @@ class SubmissionSheetImport implements ToModel, WithStartRow, WithHeadingRow, Wi
     
     public function model(array $row)
     {
+        // Skip duplicate records BEFORE the transaction
+        if (Submission::where('_id', $row['_id'])->exists()) {
+            logger()->info('Skipping duplicate: ' . $row['_id']);
+            return null; // ✅ Returns from model() — row is skipped
+        }
+
         \DB::transaction(function () use ($row) {
             logger()->info('Memory usage: ' . (memory_get_usage(true)/1024/1024) . ' MB');
-                   logger()->info('test'.$this->startRow.$this->limit);
-        if (Submission::where('_id', $row['_id'])->exists()) {
-            logger()->info($row['_id']);
-            return null; // ❌ Don't import this row
-        }logger()->info($row['_id'].'end');
+            logger()->info('Importing: ' . $row['_id']);
         // try {
             $row['1.7 Block Code Number'] = str_pad($row['1.7 Block Code Number'], 3, "0", STR_PAD_LEFT);
             $row['1.6 Guzar Code Number'] = str_pad($row['1.6 Guzar Code Number'], 3, "0", STR_PAD_LEFT);
