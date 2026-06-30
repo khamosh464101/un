@@ -67,25 +67,58 @@ class GenerateBatchZip implements ShouldQueue
             }
             
             $fileCount = 0;
+            $missingFiles = [];
+            $usedNames = [];
             foreach ($completedFiles as $file) {
                 // Download PDF from GCS to temp for zipping
                 if (Storage::disk('gcs')->exists($file->file_path)) {
                     $pdfContent = Storage::disk('gcs')->get($file->file_path);
-                    $tempPdfPath = $tempDir . '/' . ($file->file_name ?? basename($file->file_path));
+                    
+                    // Prevent duplicate filenames in ZIP (append submission_id if conflict)
+                    $fileName = $file->file_name ?? basename($file->file_path);
+                    if (isset($usedNames[$fileName])) {
+                        $ext = pathinfo($fileName, PATHINFO_EXTENSION);
+                        $base = pathinfo($fileName, PATHINFO_FILENAME);
+                        $fileName = $base . '-' . $file->submission_id . '.' . $ext;
+                    }
+                    $usedNames[$fileName] = true;
+                    
+                    $tempPdfPath = $tempDir . '/' . $fileName;
                     file_put_contents($tempPdfPath, $pdfContent);
-                    $zip->addFile($tempPdfPath, $file->file_name ?? basename($file->file_path));
+                    $zip->addFile($tempPdfPath, $fileName);
                     $fileCount++;
                 } else {
-                    $this->log('warning', 'File not found on GCS', ['file_path' => $file->file_path]);
+                    $missingFiles[] = $file->file_path;
+                    // Mark item as failed since file is missing
+                    $file->update([
+                        'status' => 'failed',
+                        'error_message' => 'PDF file missing from storage during ZIP generation'
+                    ]);
+                    $this->log('warning', 'File not found on GCS — marked as failed', [
+                        'file_path' => $file->file_path,
+                        'submission_id' => $file->submission_id
+                    ]);
                 }
+            }
+            
+            if (!empty($missingFiles)) {
+                $this->log('warning', 'Some files were missing during ZIP generation', [
+                    'expected' => $completedFiles->count(),
+                    'actual_in_zip' => $fileCount,
+                    'missing_count' => count($missingFiles)
+                ]);
+                // Update batch counters to reflect newly failed items
+                $this->batch->successful_items = $this->batch->successful_items - count($missingFiles);
+                $this->batch->failed_items = $this->batch->failed_items + count($missingFiles);
+                $this->batch->save();
             }
             
             $zip->close();
             
             // Clean up temp PDF files
-            foreach ($completedFiles as $file) {
-                $tempPdfPath = $tempDir . '/' . ($file->file_name ?? basename($file->file_path));
-                @unlink($tempPdfPath);
+            $tempFiles = glob($tempDir . '/*.pdf');
+            foreach ($tempFiles as $tempFile) {
+                @unlink($tempFile);
             }
             
             $this->log('info', 'ZIP file created', ['file_count' => $fileCount, 'size' => filesize($zipPath)]);

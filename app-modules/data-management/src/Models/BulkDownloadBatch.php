@@ -40,15 +40,20 @@ class BulkDownloadBatch extends Model
         $this->successful_items = $this->items()->where('status', 'completed')->count();
         $this->failed_items = $this->items()->where('status', 'failed')->count();
         
-        if ($this->processed_items >= $this->total_items && $this->status !== 'completed') {
-            $this->status = 'completed';
+        if ($this->processed_items >= $this->total_items && !in_array($this->status, ['completed', 'generating_zip'])) {
             $this->completed_at = now();
-            $this->save();
             
-            // 🔥 TRIGGER ZIP GENERATION HERE
             if ($this->successful_items > 0) {
+                // Set to generating_zip immediately — so frontend knows ZIP is not ready yet
+                $this->status = 'generating_zip';
+                $this->save();
                 GenerateBatchZip::dispatch($this)->onQueue('bulk-downloads');
+            } else {
+                // No successful items — mark as completed (nothing to zip)
+                $this->status = 'completed';
+                $this->save();
             }
+            return;
         }
 
         
