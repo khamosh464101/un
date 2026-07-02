@@ -117,15 +117,45 @@ class SubmissionController
         return response()->json($projects);
     }
     public function getForm($projectId) {
-        $project = Project::find($projectId);
-        if ($project) {
-            $form = Form::where('form_id', $project->kobo_copy_project_id ?? $project->kobo_project_id)?->first();
-            if ($form) {
-                return response()->json($form);
-            }
-            
-        }
-        return response()->json(Form::first());
+        $cacheKey = "form_for_project_{$projectId}";
+        
+        return response()->json(
+            cache()->remember($cacheKey, 3600, function () use ($projectId) {
+                $project = Project::find($projectId);
+                $form = null;
+                
+                if ($project) {
+                    $form = Form::where('form_id', $project->kobo_copy_project_id ?? $project->kobo_project_id)->first();
+                }
+                
+                if (!$form) {
+                    $form = Form::first();
+                }
+
+                if (!$form) {
+                    return null;
+                }
+
+                // Strip raw_schema to only the parts the frontend uses (survey + choices)
+                // This reduces response from ~522KB to ~150KB
+                $schema = json_decode($form->raw_schema);
+                $trimmedSchema = (object)[
+                    'asset' => (object)[
+                        'content' => (object)[
+                            'survey' => $schema->asset->content->survey ?? [],
+                            'choices' => $schema->asset->content->choices ?? [],
+                        ]
+                    ]
+                ];
+
+                return [
+                    'id' => $form->id,
+                    'form_id' => $form->form_id,
+                    'title' => $form->title,
+                    'raw_schema' => json_encode($trimmedSchema),
+                ];
+            })
+        );
     }
 
     public function getFilterable()
