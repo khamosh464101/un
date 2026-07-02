@@ -31,7 +31,7 @@ class Submission extends Model
         'user_id'
     ];
 
-    protected $appends = ['extra_attributes_json'];
+    protected $appends = [];
 
     public function getIgnoreIdFillable()
     {

@@ -103,6 +103,11 @@ class SubmissionController
         }
         $this->getSearchData($query, $request);
         $data = $query->paginate(8);
+        
+        // Append extra_attributes_json now that extraAttributes is already eager-loaded
+        $data->getCollection()->each(function ($submission) {
+            $submission->append('extra_attributes_json');
+        });
 
         return ["search" => $request->search, "data" => $data, "filterable" => $this->filterable, "statuses" => SubmissionStatus::select('id as value', 'title as label')->get(), "projects" => Project::select("id as value", "title as label")->get(), "first" => $request->first];
     }
