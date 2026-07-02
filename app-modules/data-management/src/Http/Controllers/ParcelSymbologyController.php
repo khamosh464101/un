@@ -172,19 +172,29 @@ class ParcelSymbologyController
     {
         $ps = ParcelSymbology::find($id);
 
-        $query = Submission::with($this->query)->with('extraAttributes');
+        if (!$ps) {
+            return response()->json(['error' => 'Symbology not found'], 404);
+        }
+
+        // Only count matching submissions — don't load all relationships
+        $query = Submission::query();
 
         $query->whereHas('projects', function ($q) use ($ps) {
             $q->where('projects.id', $ps->project_id);
         });
       
-        $this->getSearchData($query, $ps->query_structure);
-        $data = $query->get();
-        return count($data);
+        self::getSearchData($query, $ps->query_structure);
         
-        
+        $count = $query->count();
 
-       
+        return response()->json([
+            'success' => true,
+            'result' => [
+                'count' => $count,
+                'symbology_name' => $ps->name,
+                'project_id' => $ps->project_id,
+            ]
+        ]);
     }
 
     /**

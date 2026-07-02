@@ -475,7 +475,6 @@ class ParcelController
      */
     public function getParcels(Request $request)
     {
-        // try {
             $parcels = [];
             
             if (!isset($request->ids[0]) || isset($request->ids[1])) {
@@ -483,66 +482,72 @@ class ParcelController
             } else {
                 $ps = ParcelSymbology::find($request->ids[0]);
 
-                $query = Submission::with($this->query)->with('extraAttributes');
+                // Only load what we actually need — NOT all 20+ relationships
+                $query = Submission::with([
+                    'sourceInformation:id,submission_id,province_code,city_code,district_code,kbl_guzar_number,block_number,house_number',
+                    'extraAttributes'
+                ]);
 
                 $query->whereHas('projects', function ($q) use ($ps) {
                     $q->where('projects.id', $ps->project_id);
                 });
             
                 ParcelSymbologyController::getSearchData($query, $ps->query_structure);
-                 $data = $query->get();
+                $data = $query->get();
+                
+                if ($data->isEmpty()) {
+                    return response()->json([
+                        'type' => 'FeatureCollection',
+                        'features' => [],
+                        'total' => 0,
+                    ]);
+                }
+
                 $form = Form::find($data[0]->dm_form_id);
                 $dataObject = json_decode($form->raw_schema);
-                $survey = $dataObject->asset->content->survey;
-                $choices = $dataObject->asset->content->choices;
+                $choices = $dataObject->asset->content->choices ?? [];
+
+                // Build a lookup map: choice name → label[0] (O(1) lookup instead of O(n))
+                $choiceMap = [];
+                foreach ($choices as $choice) {
+                    if (isset($choice->name) && isset($choice->label[0])) {
+                        $choiceMap[$choice->name] = $choice->label[0];
+                    }
+                }
 
                 $pCodes = [];
                 
-                foreach ($data as $key => $submission) {
-                    $guzar;
-                    $block;
-                    $house;
-                    foreach ($choices as $key => $value) {
-                        if (isset($value->name) && $value->name === $submission->extraAttributesJson['guzar_number']) {
-                            if (isset($value->label[0])) {
-                                $guzar = substr($value->label[0], 1);
-                            }
-                        }
-                        if (isset($value->name) && $value->name === $submission->sourceInformation->block_number) {
-                            if (isset($value->label[0])) {
-                                $block = $value->label[0];
-                            }
-                        }
-                        if (isset($value->name) && $value->name === $submission->sourceInformation->house_number) {
-                            if (isset($value->label[0])) {
-                                $house = $value->label[0];
-                            }
-                        }
-                    }
+                foreach ($data as $submission) {
+                    $si = $submission->sourceInformation;
+                    if (!$si) continue;
+
+                    // Resolve guzar from extraAttributes or kbl_guzar_number
+                    $guzarKey = $submission->extraAttributesJson['guzar_number'] ?? $si->kbl_guzar_number ?? null;
+                    $guzar = isset($choiceMap[$guzarKey]) ? substr($choiceMap[$guzarKey], 1) : null;
+
+                    // Resolve block and house from choices map
+                    $block = $choiceMap[$si->block_number] ?? null;
+                    $house = $choiceMap[$si->house_number] ?? null;
+
                     $pCodes[] = implode('-', array_filter([
-                        $submission->sourceInformation->province_code ?? null,
-                        $submission->sourceInformation->city_code ?? null,
-                        $submission->sourceInformation->district_code ?? null,
-                        $guzar ?? null,
-                        $block ?? null,
-                        $house ?? null,
-                    ]));         
-                            
+                        $si->province_code,
+                        $si->city_code,
+                        $si->district_code,
+                        $guzar,
+                        $block,
+                        $house,
+                    ]));
                 }
 
-     
-
                 $parcels = Parcel::whereIn('parcel_code', $pCodes)->get();
-
              }
             
             $features = $parcels->map(function($parcel) {
-                // Geometry is already in WGS84 from upload
                 return [
                     'type' => 'Feature',
                     'geometry' => $parcel->geometry,
                     'properties' => array_merge(
-                        $parcel->attributes,
+                        $parcel->attributes ?? [],
                         [
                             'parcel_code' => $parcel->parcel_code,
                             'house_code' => $parcel->house_code,
