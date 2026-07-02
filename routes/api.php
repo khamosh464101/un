@@ -16,6 +16,9 @@ Route::middleware(['auth:sanctum', 'twofactor'])->group(function () {
     Route::resource('/user', UserController::class)->only(['store']);
     Route::get('/user/profile', [UserController::class, 'profile']);
     Route::post('/user/profile', [UserController::class, 'updateProfile']);
+    Route::get('/user/devices', [UserController::class, 'getDevices']);
+    Route::delete('/user/devices/{id}', [UserController::class, 'deleteDevice']);
+    Route::delete('/user/devices', [UserController::class, 'deleteAllDevices']);
     Route::post('/user/tickets', [UserController::class, 'myTickets']);
     Route::post('/user/tickets/move', [UserController::class, 'move']);
     Route::post('/user/tickets/reorder', [UserController::class, 'reorder']);

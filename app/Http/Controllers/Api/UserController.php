@@ -11,6 +11,7 @@ use App\Http\Controllers\Controller;
 use Spatie\Permission\Models\Role;
 use App\Http\Requests\UpdateProfileRequest;
 use Modules\Projects\Http\Controllers\ProjectController;
+use App\Models\UserDeviceToken;
 use Auth;
 
 class UserController extends Controller
@@ -113,5 +114,26 @@ class UserController extends Controller
         $user->assignRole($role);
         $user->roles;
         return response()->json(['message' => 'Sucessfully'. $request->id ? 'updated!' : 'added!', 'data' => $user], 201);
+    }
+
+    // ── Device Token Endpoints ──
+
+    public function getDevices()
+    {
+        $devices = Auth::user()->deviceTokens()->orderBy('last_used_at', 'desc')->get();
+        return response()->json($devices);
+    }
+
+    public function deleteDevice($id)
+    {
+        $device = Auth::user()->deviceTokens()->findOrFail($id);
+        $device->delete();
+        return response()->json(['message' => 'Device removed successfully']);
+    }
+
+    public function deleteAllDevices()
+    {
+        Auth::user()->deviceTokens()->delete();
+        return response()->json(['message' => 'All devices removed successfully']);
     }
 }
